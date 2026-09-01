@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>BarberFlow Cliente</title>
+
+<!-- ===== PWA: instala como app na tela inicial ===== -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#0f0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cliente">
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+window.__PWA_ICON_512 = 'icon-512.png';
+</script>
+<style>
+:root{
+  --primary:#c9a24d;
+  --primary-dark:#a9843a;
+  --bg:#0f0f12;
+  --surface:#1a1a1f;
+  --surface2:#232329;
+  --text:#f2ede3;
+  --text-dim:#a6a2ab;
+  --danger:#e5484d;
+  --success:#3ecf8e;
+  --radius:16px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:90px;}
+.screen{display:none;animation:fadeIn .25s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 14px;
+  position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 70%,transparent);
+  z-index:10;
+}
+.topbar h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.3px;}
+.topbar .sub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+.icon-btn{
+  background:var(--surface2);border:none;color:var(--text);
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;position:relative;
+}
+.icon-btn.disabled{opacity:.3;pointer-events:none;}
+.icon-btn .badge{
+  position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;
+  font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;
+}
+
+/* ---------- Layout helpers ---------- */
+.container{padding:0 20px;}
+.card{
+  background:var(--surface);border-radius:var(--radius);padding:18px;margin-bottom:14px;
+  border:1px solid rgba(255,255,255,.05);
+}
+.card h3{margin:0 0 10px;font-size:15px;color:var(--text);}
+.hero{
+  text-align:center;padding:60px 24px 30px;
+}
+.hero .logo-circle{
+  width:84px;height:84px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px;
+  box-shadow:0 10px 30px -8px rgba(201,162,77,.6);
+}
+.hero h1{font-size:26px;margin:0 0 6px;}
+.hero p{color:var(--text-dim);font-size:14px;margin:0 0 34px;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:block;width:100%;padding:15px 18px;border-radius:14px;border:none;
+  font-size:15px;font-weight:600;cursor:pointer;text-align:center;
+  transition:transform .1s ease, opacity .15s ease;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;}
+.btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:var(--text);}
+.btn-ghost{background:var(--surface2);color:var(--text);}
+.btn-danger{background:rgba(229,72,77,.15);color:var(--danger);}
+.btn-success{background:rgba(62,207,142,.15);color:var(--success);}
+.btn-sm{padding:9px 14px;font-size:13px;border-radius:10px;width:auto;display:inline-block;}
+.btn[disabled]{opacity:.4;pointer-events:none;}
+.stack{display:flex;flex-direction:column;gap:10px;}
+.row{display:flex;gap:10px;}
+.row .btn{flex:1;}
+
+/* ---------- Inputs ---------- */
+label{display:block;font-size:12px;color:var(--text-dim);margin:14px 0 6px;font-weight:600;}
+label:first-child{margin-top:0;}
+input[type=text],input[type=tel],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.08);
+  background:var(--surface2);color:var(--text);font-size:15px;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);}
+input[type=color]{width:52px;height:44px;border:none;border-radius:10px;background:none;padding:0;cursor:pointer;}
+
+/* ---------- Bottom nav ---------- */
+.bottomnav{
+  position:fixed;bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
+  background:var(--surface);border-top:1px solid rgba(255,255,255,.06);
+  display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  z-index:20;
+}
+.navitem{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0;border-radius:12px;color:var(--text-dim);font-size:10.5px;cursor:pointer;position:relative;
+}
+.navitem.active{color:var(--primary);}
+.navitem .navicon{font-size:19px;}
+.navitem .navbadge{
+  position:absolute;top:0;right:22%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
+  min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+}
+
+/* ---------- Misc components ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:20px;
+  background:var(--surface2);color:var(--text-dim);font-size:13px;cursor:pointer;
+  border:1.5px solid transparent;
+}
+.chip.selected{border-color:var(--primary);color:var(--primary);background:rgba(201,162,77,.1);}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.service-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);border-radius:12px;padding:13px 14px;margin-bottom:8px;
+  border:1.5px solid transparent;cursor:pointer;
+}
+.service-item.selected{border-color:var(--primary);background:rgba(201,162,77,.08);}
+.service-item .info b{display:block;font-size:14.5px;}
+.service-item .info span{font-size:12px;color:var(--text-dim);}
+.service-item .price{font-weight:700;color:var(--primary);font-size:14.5px;}
+.checkbox-dot{
+  width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;
+}
+.service-item.selected .checkbox-dot{background:var(--primary);border-color:var(--primary);color:#1a1408;font-weight:800;font-size:13px;}
+.appt-card{
+  background:var(--surface2);border-radius:14px;padding:14px;margin-bottom:10px;
+  border-left:4px solid var(--primary);
+}
+.appt-card.pending{border-left-color:#e0a53a;}
+.appt-card.accepted{border-left-color:var(--success);}
+.appt-card.rejected{border-left-color:var(--danger);opacity:.55;}
+.appt-card.cancelled{border-left-color:var(--text-dim);opacity:.55;}
+.appt-card.done{border-left-color:#6a8fd8;opacity:.7;}
+.appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.appt-top b{font-size:15px;}
+.status-tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px;}
+.status-tag.pending{background:rgba(224,165,58,.18);color:#e0a53a;}
+.status-tag.accepted{background:rgba(62,207,142,.18);color:var(--success);}
+.status-tag.rejected{background:rgba(229,72,77,.18);color:var(--danger);}
+.status-tag.cancelled{background:rgba(166,162,171,.18);color:var(--text-dim);}
+.payment-row{display:flex;gap:8px;margin-top:10px;}
+.payment-row .btn{flex:1;}
+.payment-tag{font-size:12px;color:var(--text-dim);margin-top:8px;}
+.status-tag.done{background:rgba(106,143,216,.18);color:#6a8fd8;}
+.appt-meta{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
+.appt-services{font-size:12.5px;color:var(--text-dim);}
+.appt-total{font-weight:700;color:var(--primary);font-size:14.5px;margin-top:6px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
+.empty-state .em{font-size:38px;margin-bottom:10px;}
+.client-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);padding:13px 14px;border-radius:12px;margin-bottom:8px;
+}
+.client-item .avatar{
+  width:38px;height:38px;border-radius:50%;background:var(--primary);color:#1a1408;
+  display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:12px;flex-shrink:0;
+}
+.client-row{display:flex;align-items:center;flex:1;min-width:0;}
+.client-info b{display:block;font-size:14px;}
+.client-info span{font-size:11.5px;color:var(--text-dim);}
+.dot-status{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-status.dentro{background:var(--success);}
+.dot-status.fora{background:var(--text-dim);}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-box{background:var(--surface);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.05);}
+.stat-box .num{font-size:24px;font-weight:800;color:var(--primary);}
+.stat-box .lbl{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+.day-toggle-row{display:flex;gap:6px;flex-wrap:wrap;}
+.day-toggle{
+  width:42px;height:42px;border-radius:12px;background:var(--surface2);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;
+}
+.day-toggle.on{background:var(--primary);color:#1a1408;}
+.section-title{font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 10px;}
+.section-title:first-child{margin-top:0;}
+.link-box{
+  display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:12px;padding:12px 14px;
+}
+.link-box code{flex:1;font-size:15px;font-weight:700;color:var(--primary);letter-spacing:1px;word-break:break-all;}
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);color:var(--text);padding:12px 20px;border-radius:12px;
+  font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .25s,bottom .25s;
+  pointer-events:none;max-width:90%;text-align:center;border:1px solid rgba(255,255,255,.08);
+}
+.toast.show{opacity:1;bottom:115px;}
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:50;
+}
+.modal-overlay.active{display:flex;}
+.modal-sheet{
+  background:var(--surface);border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:none;opacity:1;}}
+.modal-sheet h3{margin-top:0;}
+.close-x{position:absolute;top:16px;right:20px;font-size:20px;color:var(--text-dim);cursor:pointer;}
+.hero-mini{padding:18px 0 10px;}
+.shop-banner{
+  border-radius:18px;padding:22px;margin-bottom:16px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+}
+.shop-banner h2{margin:0 0 2px;font-size:20px;}
+.shop-banner p{margin:0;font-size:13px;opacity:.85;}
+.shop-banner .badge-line{margin-top:12px;font-size:12.5px;font-weight:700;background:rgba(0,0,0,.15);
+  display:inline-block;padding:5px 12px;border-radius:20px;}
+.list-select-item{
+  display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
+  border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;
+}
+.list-select-item b{font-size:14.5px;}
+.list-select-item span{font-size:12px;color:var(--text-dim);}
+.divider{height:1px;background:rgba(255,255,255,.06);margin:16px 0;}
+.helper-text{font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;}
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.slot-btn{
+  padding:11px 4px;border-radius:10px;background:var(--surface2);color:var(--text);
+  text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;border:1.5px solid transparent;
+}
+.slot-btn.selected{border-color:var(--primary);color:var(--primary);background:rgba(201,162,77,.1);}
+.slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+</style>
+</head>
+<body>
+
+<!-- ===== Banner: instalar como app ===== -->
+<div id="pwa-install-banner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:999;max-width:480px;margin:0 auto;background:#1a1a1f;border-top:1px solid rgba(255,255,255,.08);padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.35);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="" id="pwa-banner-icon" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:14px;color:#f2ede3;">Instalar app</div>
+      <div id="pwa-banner-text" style="font-size:12px;color:#a6a2ab;margin-top:2px;">Adicione à tela inicial para acesso rápido</div>
+    </div>
+    <button id="pwa-banner-action" style="background:linear-gradient(135deg,#c9a24d,#a9843a);color:#1a1408;border:none;padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">Instalar</button>
+    <button id="pwa-banner-close" style="background:#232329;color:#a6a2ab;border:none;width:32px;height:32px;border-radius:10px;font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
+  </div>
+</div>
+
+<!-- ===== Botão fixo: sempre disponível, mesmo se o navegador
+     parar de mostrar o pop-up automático de instalação ===== -->
+<div id="pwa-install-fab" style="display:none;position:fixed;right:16px;bottom:106px;z-index:998;max-width:480px;margin:0 auto;align-items:center;gap:8px;background:linear-gradient(135deg,#c9a24d,#a9843a);color:#1a1408;padding:10px 16px 10px 10px;border-radius:30px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.4);">
+  <span style="font-size:18px;line-height:1;">📲</span><span>Instalar app</span>
+</div>
+
+<div id="app">
+
+  <!-- ============ WELCOME ============ -->
+  <div class="screen" id="screen-welcome">
+    <div class="hero">
+      <div class="logo-circle">✂️</div>
+      <h1>BarberFlow</h1>
+      <p>Agende seu horário na<br>sua barbearia de confiança</p>
+    </div>
+    <div class="container stack">
+      <label>Cole aqui o código enviado pelo seu barbeiro</label>
+      <input type="text" id="input-join-code" placeholder="Ex: AB12CD" maxlength="10" style="text-transform:uppercase">
+      <button class="btn btn-primary" onclick="joinAsClient()">Entrar</button>
+    </div>
+    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:30px;letter-spacing:.3px;">app by Daniel Nogueira</div>
+  </div>
+
+  <!-- ============ CLIENT REGISTER ============ -->
+  <div class="screen" id="screen-client-register">
+    <div class="topbar">
+      <h1>Bem-vindo</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="helper-text" style="margin-bottom:6px;">Complete seu cadastro para agendar nesta barbearia.</div>
+      <label>Seu nome</label>
+      <input type="text" id="reg-name" placeholder="Nome completo">
+      <label>Seu telefone</label>
+      <input type="tel" id="reg-phone" placeholder="(00) 00000-0000">
+      <div style="height:8px"></div>
+      <button class="btn btn-primary" onclick="registerClient()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT HOME ============ -->
+  <div class="screen" id="screen-client-home">
+    <div class="topbar">
+      <div>
+        <h1 id="client-shop-name">Barbearia</h1>
+        <div class="sub" id="client-barber-name">Barbeiro</div>
+      </div>
+      <div class="icon-btn" onclick="showScreen('screen-client-settings')">⚙️</div>
+    </div>
+    <div class="container">
+      <div class="shop-banner" id="client-banner">
+        <h2 id="client-banner-title">Bem-vindo!</h2>
+        <p id="client-welcome-msg">Marque seu horário</p>
+        <div class="badge-line" id="client-inshop-count" style="display:none;"></div>
+        <div class="badge-line" id="client-next-appt" style="display:none;"></div>
+      </div>
+
+      <div class="section-title">Escolha os serviços</div>
+      <div id="client-services-list"></div>
+
+      <div class="card" style="margin-top:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--text-dim);font-size:13px;">Total</span>
+          <span class="appt-total" id="client-total" style="font-size:19px;">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="section-title">Escolha o dia</div>
+      <input type="date" id="client-date" onchange="renderSlots()">
+      <div class="card" id="client-dayoff-banner" style="display:none;margin-top:10px;border-left:4px solid var(--danger);background:rgba(229,72,77,.1);color:var(--danger);"></div>
+
+      <div class="section-title" style="margin-bottom:4px;">Horários disponíveis</div>
+      <div class="slot-grid" id="client-slots"></div>
+
+      <div style="height:16px"></div>
+      <button class="btn btn-primary" id="btn-schedule" onclick="submitAppointment()" disabled>Solicitar agendamento</button>
+
+      <div class="section-title">Meus agendamentos</div>
+      <div id="client-my-appts"></div>
+      <button class="btn btn-outline" onclick="clearClientHistory()" style="margin-top:4px;">Apagar histórico</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT SETTINGS ============ -->
+  <div class="screen" id="screen-client-settings">
+    <div class="topbar">
+      <h1>Configurações</h1>
+      <div class="icon-btn" onclick="showScreen('screen-client-home')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="card">
+        <h3>Seus dados</h3>
+        <label>Nome</label>
+        <input type="text" id="client-edit-name">
+        <label>Telefone</label>
+        <input type="tel" id="client-edit-phone">
+        <div style="height:8px"></div>
+        <button class="btn btn-primary" onclick="saveClientProfile()">Salvar</button>
+      </div>
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ PIX PAYMENT MODAL ============ -->
+<div class="modal-overlay" id="modal-pix">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-pix')">✕</div>
+    <h3>Pagar com Pix</h3>
+    <div style="text-align:center;margin:14px 0;">
+      <img id="pix-qr-img" src="" alt="QR Code Pix" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;">
+    </div>
+    <label>Código Pix (copia e cola)</label>
+    <div class="link-box">
+      <code id="pix-code-text" style="font-size:12px;">------</code>
+      <button class="btn btn-sm btn-ghost" onclick="copyPixCode()">Copiar</button>
+    </div>
+    <div class="helper-text">Depois de pagar, confirme abaixo para o barbeiro saber que já recebeu.</div>
+    <div style="height:12px"></div>
+    <button class="btn btn-success" onclick="confirmPixPaid()">Avisar que já paguei</button>
+  </div>
+</div>
+
+<!-- ============ NEW SHOP NAME PROMPT ============ -->
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   FIREBASE (banco de dados online)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCvJ6ZKfMmnsIeJZauSnuQfxPx_RMpc0zs",
+  authDomain: "teste-funcionarios.firebaseapp.com",
+  projectId: "teste-funcionarios",
+  storageBucket: "teste-funcionarios.firebasestorage.app",
+  messagingSenderId: "873793027226",
+  appId: "1:873793027226:web:7371d8536e77219195f323"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+// Gaveta própria do BarberFlow dentro do projeto, separada do app de funcionários
+const SHOPS_COLLECTION = 'barberflow_shops';
+
+/* ============================================================
+   DATA LAYER
+   ============================================================ */
+const DB_KEY = 'barberflow_shops_v1';
+const SESSION_KEY = 'barberflow_session_v1';
+
+function loadShops(){
+  try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }catch(e){ return {}; }
+}
+// Salva a barbearia ativa (session.code, ou codeOverride) na nuvem, e mantém uma cópia local como cache/fallback.
+function saveShops(shopsObj, codeOverride){
+  const code = codeOverride || (session && session.code);
+  if(code && shopsObj[code]){
+    db.collection(SHOPS_COLLECTION).doc(code).set(shopsObj[code]).catch(function(err){
+      console.error('Erro ao salvar na nuvem:', err);
+      toast('Sem conexão com a internet — verifique e tente novamente');
+    });
+  }
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(shopsObj)); }catch(e){}
+}
+function loadSession(){
+  try{ return JSON.parse(localStorage.getItem(SESSION_KEY)) || null; }catch(e){ return null; }
+}
+function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+// Preenche campos que podem faltar em barbearias criadas antes de alguma atualização do app.
+function normalizeShop(shop){
+  if(!shop) return shop;
+  if(!shop.daysOff) shop.daysOff = [];
+  if(shop.pixCode===undefined) shop.pixCode = '';
+  if(!shop.services) shop.services = [];
+  if(!shop.clients) shop.clients = [];
+  if(!shop.appointments) shop.appointments = [];
+  if(!shop.workTimes){
+    shop.workTimes = [];
+    if(shop.workStart && shop.workEnd){
+      const toMin = t=>{const [h,m]=t.split(':').map(Number); return h*60+m;};
+      const toTime = m=>{const h=Math.floor(m/60), mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0');};
+      const step = shop.slotDuration || 30;
+      for(let m=toMin(shop.workStart); m+step<=toMin(shop.workEnd); m+=step){
+        shop.workTimes.push(toTime(m));
+      }
+    }
+  }
+  return shop;
+}
+
+let shops = loadShops();
+let session = loadSession();
+
+/* ============================================================
+   SINCRONIZAÇÃO EM TEMPO REAL COM A NUVEM
+   ============================================================ */
+let unsubscribeShopListener = null;
+let listenedCode = null;
+// Conecta a barbearia `code` ao Firestore em tempo real: qualquer mudança feita
+// por outro aparelho (barbeiro ou cliente) chega aqui e re-renderiza a tela ativa.
+function listenToShop(code, onFirstLoad){
+  if(unsubscribeShopListener && listenedCode !== code){
+    unsubscribeShopListener();
+    unsubscribeShopListener = null;
+  }
+  listenedCode = code;
+  let first = true;
+  unsubscribeShopListener = db.collection(SHOPS_COLLECTION).doc(code).onSnapshot(function(doc){
+    if(!doc.exists){
+      if(first){ first=false; onFirstLoad && onFirstLoad(null); }
+      return;
+    }
+    shops[code] = normalizeShop(doc.data());
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    if(first){
+      first = false;
+      onFirstLoad && onFirstLoad(shops[code]);
+    } else if(session && session.code===code){
+      if(session.role==='client' && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
+    }
+  }, function(err){
+    console.error('Erro de sincronização com o Firebase:', err);
+    toast('Falha de conexão com a internet');
+  });
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function applyTheme(color){
+  const dark = shadeColor(color,-18);
+  document.documentElement.style.setProperty('--primary', color);
+  document.documentElement.style.setProperty('--primary-dark', dark);
+}
+function shadeColor(hex, percent){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const num = parseInt(hex,16);
+  let r=(num>>16)+Math.round(255*(percent/100));
+  let g=((num>>8)&0x00FF)+Math.round(255*(percent/100));
+  let b=(num&0x0000FF)+Math.round(255*(percent/100));
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function goHomeMenu(){
+  clearSession();
+  session = null;
+  showScreen('screen-welcome');
+}
+
+/* ============================================================
+   INIT / ROUTER
+   ============================================================ */
+function init(){
+  const urlCode = new URLSearchParams(window.location.search).get('code');
+  if(urlCode){
+    document.getElementById('input-join-code').value = urlCode.toUpperCase();
+    joinAsClient();
+    return;
+  }
+  if(session && session.role==='client' && session.code){
+    listenToShop(session.code, function(shopData){
+      if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
+      applyTheme(shopData.color);
+      renderClientHome();
+      showScreen('screen-client-home');
+    });
+  } else {
+    showScreen('screen-welcome');
+  }
+}
+
+function formatDate(iso){
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function joinAsClient(){
+  const raw = document.getElementById('input-join-code').value.trim().toUpperCase();
+  if(!raw){ toast('Cole o código enviado pelo barbeiro'); return; }
+  toast('Procurando barbearia...');
+  db.collection(SHOPS_COLLECTION).doc(raw).get().then(function(doc){
+    if(!doc.exists){ toast('Código não encontrado. Confira com seu barbeiro.'); return; }
+    shops[raw] = normalizeShop(doc.data());
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    const shop = shops[raw];
+    applyTheme(shop.color);
+
+    // check if this device already registered as a client for this shop
+    const existingLocalId = localStorage.getItem('barberflow_client_'+raw);
+    if(existingLocalId && shop.clients.find(c=>c.id===existingLocalId)){
+      session = {role:'client', code:raw, clientId:existingLocalId};
+      saveSession(session);
+      listenToShop(raw, function(){
+        renderClientHome();
+        showScreen('screen-client-home');
+      });
+    } else {
+      session = {role:'client', code:raw, clientId:null};
+      saveSession(session);
+      listenToShop(raw, function(){
+        showScreen('screen-client-register');
+      });
+    }
+  }).catch(function(err){
+    console.error('Erro ao buscar barbearia:', err);
+    toast('Erro de conexão. Verifique sua internet e tente de novo.');
+  });
+}
+function registerClient(){
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  if(!name){ toast('Digite seu nome'); return; }
+  const shop = shops[session.code];
+  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString()};
+  shop.clients.push(client);
+  saveShops(shops);
+  localStorage.setItem('barberflow_client_'+session.code, client.id);
+  session.clientId = client.id;
+  saveSession(session);
+  renderClientHome();
+  showScreen('screen-client-home');
+  toast('Cadastro concluído! Bem-vindo(a), '+name);
+}
+
+let selectedServiceIds = [];
+let selectedSlot = null;
+
+function renderClientHome(){
+  const shop = shops[session.code];
+  if(!shop) return;
+  applyTheme(shop.color);
+  document.getElementById('client-shop-name').textContent = shop.shopName;
+  document.getElementById('client-barber-name').textContent = shop.barberName;
+  document.getElementById('client-banner-title').textContent = shop.shopName;
+  document.getElementById('client-welcome-msg').textContent = shop.welcomeMsg;
+
+  // pessoas cortando cabelo agora, na barbearia
+  const inShopCount = shop.clients.filter(c=>c.status==='dentro').length;
+  const inShopTag = document.getElementById('client-inshop-count');
+  if(inShopCount>0){
+    inShopTag.style.display='inline-block';
+    inShopTag.textContent = `✂️ ${inShopCount} ${inShopCount===1?'pessoa cortando':'pessoas cortando'} o cabelo agora`;
+  } else {
+    inShopTag.style.display='none';
+  }
+
+  // next appointment banner
+  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId);
+  const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=new Date().toISOString().slice(0,10))
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+  const bannerTag = document.getElementById('client-next-appt');
+  if(nextAccepted){
+    bannerTag.style.display='inline-block';
+    bannerTag.textContent = `✅ Agendado: ${formatDate(nextAccepted.date)} às ${nextAccepted.time}`;
+  } else {
+    bannerTag.style.display='none';
+  }
+
+  // services
+  selectedServiceIds = [];
+  const svcWrap = document.getElementById('client-services-list');
+  svcWrap.innerHTML = shop.services.length===0
+    ? `<div class="empty-state" style="padding:20px;"><div class="em">💈</div>O barbeiro ainda não cadastrou serviços</div>`
+    : shop.services.map(s=>`
+      <div class="service-item" id="csvc-${s.id}" onclick="toggleClientService('${s.id}')">
+        <div style="display:flex;align-items:center;">
+          <div class="checkbox-dot"></div>
+          <div class="info"><b>${escapeHtml(s.name)}</b></div>
+        </div>
+        <div class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</div>
+      </div>
+    `).join('');
+  updateClientTotal();
+
+  // date default = today
+  const dateInput = document.getElementById('client-date');
+  if(!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
+  dateInput.min = new Date().toISOString().slice(0,10);
+  renderSlots();
+
+  // my appointments list
+  const listWrap = document.getElementById('client-my-appts');
+  const sorted = myAppts.slice().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  listWrap.innerHTML = sorted.length===0
+    ? `<div class="empty-state" style="padding:20px;"><div class="em">🗓️</div>Você ainda não tem agendamentos</div>`
+    : sorted.map(a=>renderClientApptCard(a)).join('');
+}
+function renderClientApptCard(a){
+  const shop = shops[session.code];
+  const svcNames = a.serviceIds.map(id=>{
+    const s = shop.services.find(x=>x.id===id); return s?s.name:'';
+  }).filter(Boolean).join(', ');
+  const statusLabels = {pending:'Pendente', accepted:'Confirmado', rejected:'Recusado', done:'Atendido', cancelled:'Cancelado'};
+  const cancellable = (a.status==='pending' || a.status==='accepted');
+  const paymentLabel = a.paymentMethod==='pix'
+    ? (a.paymentStatus==='pago' ? '💳 Pago via Pix (confirmado pelo barbeiro)' : '⏳ Pix avisado, aguardando confirmação do barbeiro')
+    : a.paymentMethod==='pessoal'
+      ? (a.paymentStatus==='pago' ? '💵 Pagamento recebido pelo barbeiro' : '💵 Vai pagar pessoalmente')
+      : '';
+  const showPaymentButtons = cancellable && !a.paymentMethod;
+  return `
+    <div class="appt-card ${a.status}" ${cancellable ? `onclick="confirmCancelAppt('${a.id}')"` : ''} style="${cancellable?'cursor:pointer;':''}">
+      <div class="appt-top">
+        <b>${escapeHtml(a.clientName)}</b>
+        <span class="status-tag ${a.status}">${statusLabels[a.status]||a.status}</span>
+      </div>
+      <div class="appt-meta">📅 ${formatDate(a.date)} às ${a.time}</div>
+      <div class="appt-services">${escapeHtml(svcNames)}</div>
+      <div class="appt-total">R$ ${Number(a.total).toFixed(2).replace('.',',')}</div>
+      ${paymentLabel ? `<div class="payment-tag">${paymentLabel}</div>` : ''}
+      ${showPaymentButtons ? `
+        <div class="payment-row" onclick="event.stopPropagation()">
+          ${shop.pixCode ? `<button class="btn btn-sm btn-primary" onclick="openPixModal('${a.id}')">Pagar com Pix</button>` : ''}
+          <button class="btn btn-sm btn-outline" onclick="payPersonally('${a.id}')">Pagar pessoalmente</button>
+        </div>` : ''}
+      ${cancellable ? `<div class="helper-text" style="margin-top:8px;">Toque no card para cancelar este agendamento</div>` : ''}
+    </div>
+  `;
+}
+function confirmCancelAppt(apptId){
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  if(confirm('Deseja cancelar esse agendamento?')){
+    appt.status = 'cancelled';
+    saveShops(shops);
+    renderClientHome();
+    toast('Agendamento cancelado');
+  }
+}
+let pixTargetApptId = null;
+function openPixModal(apptId){
+  pixTargetApptId = apptId;
+  const shop = shops[session.code];
+  document.getElementById('pix-code-text').textContent = shop.pixCode;
+  document.getElementById('pix-qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(shop.pixCode);
+  document.getElementById('modal-pix').classList.add('active');
+}
+function copyPixCode(){
+  const shop = shops[session.code];
+  navigator.clipboard && navigator.clipboard.writeText(shop.pixCode).catch(()=>{});
+  toast('Código Pix copiado');
+}
+function confirmPixPaid(){
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===pixTargetApptId);
+  if(appt){
+    appt.paymentMethod = 'pix';
+    appt.paymentStatus = 'aguardando';
+    saveShops(shops);
+    renderClientHome();
+    toast('Barbeiro avisado! Ele vai confirmar o recebimento.');
+  }
+  closeModal('modal-pix');
+}
+function payPersonally(apptId){
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  appt.paymentMethod = 'pessoal';
+  appt.paymentStatus = 'pendente';
+  saveShops(shops);
+  renderClientHome();
+  toast('Combinado: pagamento pessoalmente na hora');
+}
+function clearClientHistory(){
+  const shop = shops[session.code];
+  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
+  if(!hasHistory){ toast('Não há histórico para apagar'); return; }
+  if(confirm('Apagar seu histórico de agendamentos concluídos, recusados e cancelados?')){
+    shop.appointments = shop.appointments.filter(a=>!(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')));
+    saveShops(shops);
+    renderClientHome();
+    toast('Histórico apagado');
+  }
+}
+
+function toggleClientService(id){
+  const el = document.getElementById('csvc-'+id);
+  if(selectedServiceIds.includes(id)){
+    selectedServiceIds = selectedServiceIds.filter(x=>x!==id);
+    el.classList.remove('selected');
+  } else {
+    selectedServiceIds.push(id);
+    el.classList.add('selected');
+  }
+  updateClientTotal();
+  renderSlots();
+}
+function updateClientTotal(){
+  const shop = shops[session.code];
+  const total = selectedServiceIds.reduce((sum,id)=>{
+    const s = shop.services.find(x=>x.id===id);
+    return sum + (s?Number(s.price):0);
+  },0);
+  document.getElementById('client-total').textContent = 'R$ '+total.toFixed(2).replace('.',',');
+  updateScheduleButton();
+}
+
+function timeToMinutes(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function minutesToTime(m){ const h=Math.floor(m/60); const mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+
+function renderSlots(){
+  selectedSlot = null;
+  const shop = shops[session.code];
+  const dateStr = document.getElementById('client-date').value;
+  const wrap = document.getElementById('client-slots');
+  const dayoffBanner = document.getElementById('client-dayoff-banner');
+  if(!dateStr){ wrap.innerHTML=''; dayoffBanner.style.display='none'; return; }
+
+  const dayOff = (shop.daysOff||[]).find(d=>d.date===dateStr);
+  if(dayOff){
+    dayoffBanner.style.display='block';
+    dayoffBanner.innerHTML = `🚫 <b>Sem atendimento nesse dia</b><br>${escapeHtml(dayOff.reason)}`;
+    wrap.innerHTML = '';
+    updateScheduleButton();
+    return;
+  }
+  dayoffBanner.style.display='none';
+
+  const dateObj = new Date(dateStr+'T00:00:00');
+  const weekday = dateObj.getDay();
+  if(!shop.workDays.includes(weekday)){
+    wrap.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Barbearia fechada nesse dia</div>`;
+    updateScheduleButton();
+    return;
+  }
+  const acceptedTimes = shop.appointments.filter(a=>a.date===dateStr && a.status==='accepted').map(a=>a.time);
+  const slots = (shop.workTimes||[]).slice().sort();
+  wrap.innerHTML = slots.map(t=>{
+    const taken = acceptedTimes.includes(t);
+    return `<div class="slot-btn ${taken?'taken':''}" onclick="${taken?'':`selectSlot('${t}')`}">${t}</div>`;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários configurados</div>`;
+  updateScheduleButton();
+}
+function selectSlot(t){
+  selectedSlot = t;
+  document.querySelectorAll('.slot-btn').forEach(el=>{
+    el.classList.toggle('selected', el.textContent.trim()===t);
+  });
+  updateScheduleButton();
+}
+function updateScheduleButton(){
+  const btn = document.getElementById('btn-schedule');
+  btn.disabled = !(selectedServiceIds.length>0 && selectedSlot);
+}
+function submitAppointment(){
+  const shop = shops[session.code];
+  const dateStr = document.getElementById('client-date').value;
+  if((shop.daysOff||[]).find(d=>d.date===dateStr)){ toast('O barbeiro não atende nesse dia'); return; }
+  if(!dateStr || !selectedSlot || selectedServiceIds.length===0){ toast('Escolha serviço, dia e horário'); return; }
+  const client = shop.clients.find(c=>c.id===session.clientId);
+  const total = selectedServiceIds.reduce((sum,id)=>{
+    const s = shop.services.find(x=>x.id===id); return sum + (s?Number(s.price):0);
+  },0);
+  const appt = {
+    id: uid('appt'),
+    clientId: session.clientId,
+    clientName: client ? client.name : 'Cliente',
+    date: dateStr,
+    time: selectedSlot,
+    serviceIds: selectedServiceIds.slice(),
+    total,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  shop.appointments.push(appt);
+  saveShops(shops);
+  toast('Solicitação enviada! Aguarde a confirmação do barbeiro.');
+  selectedServiceIds = [];
+  selectedSlot = null;
+  renderClientHome();
+}
+
+function saveClientProfile(){
+  const shop = shops[session.code];
+  const c = shop.clients.find(x=>x.id===session.clientId);
+  if(!c) return;
+  c.name = document.getElementById('client-edit-name').value.trim() || c.name;
+  c.phone = document.getElementById('client-edit-phone').value.trim();
+  saveShops(shops);
+  toast('Dados atualizados');
+  renderClientHome();
+}
+function openClientSettings(){
+  const shop = shops[session.code];
+  const c = shop.clients.find(x=>x.id===session.clientId);
+  if(!c) return;
+  document.getElementById('client-edit-name').value = c.name;
+  document.getElementById('client-edit-phone').value = c.phone || '';
+}
+
+/* ============================================================
+   HOOKS for screens that need pre-render on navigation
+   ============================================================ */
+const originalShowScreen = showScreen;
+showScreen = function(id){
+  originalShowScreen(id);
+  if(id==='screen-client-settings') openClientSettings();
+};
+
+/* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
+   então o polling antigo baseado em localStorage não é mais necessário. */
+
+init();
+
+/* ============================================================
+   PWA — instalação (banner + botão fixo sempre visível)
+   ============================================================ */
+(function(){
+  const banner = document.getElementById('pwa-install-banner');
+  const banterText = document.getElementById('pwa-banner-text');
+  const btnAction = document.getElementById('pwa-banner-action');
+  const btnClose = document.getElementById('pwa-banner-close');
+  const iconImg = document.getElementById('pwa-banner-icon');
+  const fab = document.getElementById('pwa-install-fab');
+  if(iconImg && window.__PWA_ICON_512) iconImg.src = window.__PWA_ICON_512;
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  if(isStandalone()){
+    return; // já instalado: não mostra nada
+  }
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  let deferredPrompt = null;
+
+  // Botão fixo (canto da tela): sempre visível enquanto o app não
+  // estiver instalado, independente do navegador querer mostrar o
+  // pop-up automático de novo ou não.
+  if(fab) fab.style.display = 'flex';
+
+  function closeBanner(){
+    banner.style.display = 'none';
+  }
+  btnClose && btnClose.addEventListener('click', closeBanner);
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    banterText.textContent = 'Adicione à tela inicial para acesso rápido';
+    btnAction.textContent = 'Instalar';
+    banner.style.display = 'block';
+  });
+
+  window.addEventListener('appinstalled', function(){
+    banner.style.display = 'none';
+    if(fab) fab.style.display = 'none';
+  });
+
+  if(isIOS){
+    banterText.textContent = 'Toque em Compartilhar e depois em "Adicionar à Tela de Início"';
+    btnAction.textContent = 'Como fazer';
+    banner.style.display = 'block';
+  }
+
+  async function triggerInstall(){
+    if(deferredPrompt){
+      banner.style.display = 'none';
+      deferredPrompt.prompt();
+      try{ await deferredPrompt.userChoice; }catch(e){}
+      deferredPrompt = null;
+    } else if(isIOS){
+      showIOSInstallGuide();
+    } else {
+      showManualInstallGuide();
+    }
+  }
+
+  btnAction.addEventListener('click', triggerInstall);
+  fab && fab.addEventListener('click', triggerInstall);
+
+  function showIOSInstallGuide(){
+    openGuideModal(`
+      <div style="font-weight:700;font-size:16px;margin-bottom:14px;">Adicionar à Tela de Início</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px;color:#d8d4dd;">
+        <span style="font-size:20px;">①</span>
+        <span>Toque no ícone <b>Compartilhar</b> (⬆️) na barra do Safari</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:14px;color:#d8d4dd;">
+        <span style="font-size:20px;">②</span>
+        <span>Role e toque em <b>"Adicionar à Tela de Início"</b></span>
+      </div>`);
+  }
+
+  function showManualInstallGuide(){
+    // Fallback para quando o navegador (Chrome/Android) não dispara o
+    // pop-up automático de novo (limite do próprio navegador). O app
+    // sempre pode ser instalado manualmente pelo menu do navegador.
+    openGuideModal(`
+      <div style="font-weight:700;font-size:16px;margin-bottom:14px;">Instalar app</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px;color:#d8d4dd;">
+        <span style="font-size:20px;">①</span>
+        <span>Toque nos <b>3 pontinhos</b> (⋮) no canto do navegador</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:14px;color:#d8d4dd;">
+        <span style="font-size:20px;">②</span>
+        <span>Toque em <b>"Instalar app"</b> ou <b>"Adicionar à tela inicial"</b></span>
+      </div>`);
+  }
+
+  function openGuideModal(innerHtml){
+    let modal = document.getElementById('pwa-guide-modal');
+    if(modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'pwa-guide-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;';
+    modal.innerHTML = `
+      <div style="background:#1a1a1f;width:100%;max-width:480px;margin:0 auto;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));color:#f2ede3;font-family:inherit;">
+        ${innerHtml}
+        <button id="pwa-guide-close" style="width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#c9a24d,#a9843a);color:#1a1408;font-weight:700;font-size:15px;cursor:pointer;">Entendi</button>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('pwa-guide-close').addEventListener('click', function(){
+      modal.remove();
+    });
+  }
+})();
+</script>
+</body>
+</html>
