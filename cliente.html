@@ -306,6 +306,37 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
 .onb-step p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.5;}
 .link-text{text-align:center;font-size:12.5px;color:var(--text-dim);margin-top:16px;}
 .link-text b{color:var(--primary);cursor:pointer;}
+
+/* ---------- Notificações ---------- */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;position:absolute;}
+.switch .slider{position:absolute;inset:0;background:rgba(255,255,255,.14);border-radius:26px;cursor:pointer;transition:background .18s ease;}
+.switch .slider:before{content:'';position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .18s ease;}
+.switch input:checked + .slider{background:var(--primary);}
+.switch input:checked + .slider:before{transform:translateX(20px);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row .label{font-size:13.5px;font-weight:600;}
+.settings-row .desc{font-size:11.5px;color:var(--text-dim);margin-top:2px;line-height:1.4;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--surface2);outline:none;margin:4px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+.notif-banner{
+  position:fixed;top:-140px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 24px);max-width:456px;
+  background:linear-gradient(160deg,var(--surface),var(--surface2));
+  border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  padding:14px 14px;display:flex;align-items:flex-start;gap:12px;
+  box-shadow:0 20px 50px -14px rgba(0,0,0,.7);
+  z-index:1200;transition:top .35s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+}
+.notif-banner.show{top:calc(12px + env(safe-area-inset-top));}
+.notif-banner .nb-icon{width:38px;height:38px;border-radius:12px;background:rgba(201,162,77,.16);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.notif-banner .nb-text{flex:1;min-width:0;}
+.notif-banner .nb-title{font-weight:700;font-size:14px;margin-bottom:2px;}
+.notif-banner .nb-body{font-size:12.5px;color:var(--text-dim);line-height:1.4;}
+.notif-banner .nb-close{color:var(--text-dim);font-size:13px;padding:2px;flex-shrink:0;}
+.sound-chip-row{display:flex;flex-wrap:wrap;gap:8px;}
 </style>
 </head>
 <body>
@@ -470,10 +501,48 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
         <div style="height:8px"></div>
         <button class="btn btn-primary" onclick="saveClientProfile()">Salvar</button>
       </div>
+
+      <div class="card">
+        <h3>🔔 Notificações</h3>
+        <div class="settings-row">
+          <div>
+            <div class="label">Ativar notificações</div>
+            <div class="desc">Som e aviso na tela quando seu agendamento mudar</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="notif-master-toggle-client" onchange="toggleNotifMaster(this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="divider"></div>
+        <label style="margin-top:0;">Som da notificação</label>
+        <div class="sound-chip-row" id="notif-sound-picker-client"></div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="testNotifSound()">▶️ Testar som</button>
+        <label>Volume</label>
+        <input type="range" id="notif-volume-client" min="0" max="1" step="0.05" oninput="setNotifVolume(this.value)">
+        <div class="divider"></div>
+        <label style="margin-top:0;">Avisar sobre</label>
+        <div id="notif-type-toggles-client"></div>
+        <div class="divider"></div>
+        <div class="settings-row">
+          <div>
+            <div class="label">Notificações do navegador</div>
+            <div class="desc" id="notif-system-status-client">Receba avisos mesmo com o app em segundo plano</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="notif-system-btn-client" onclick="requestSystemNotifPermission()">Ativar</button>
+        </div>
+      </div>
+
       <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
     </div>
   </div>
 
+</div>
+
+<div class="notif-banner" id="notif-banner">
+  <div class="nb-icon" id="notif-banner-icon">🔔</div>
+  <div class="nb-text">
+    <div class="nb-title" id="notif-banner-title"></div>
+    <div class="nb-body" id="notif-banner-body"></div>
+  </div>
+  <div class="nb-close">✕</div>
 </div>
 
 <!-- ============ PIX PAYMENT MODAL ============ -->
@@ -671,6 +740,168 @@ let shops = loadShops();
 let session = loadSession();
 
 /* ============================================================
+   NOTIFICAÇÕES — som + aviso na tela + notificação do navegador
+   ============================================================ */
+const NOTIF_SETTINGS_KEY = 'barberflow_notif_settings_client_v1';
+const NOTIF_SOUND_PRESETS = {
+  sino:     {label:'Sino',     notes:[[1318.5,'sine',0.16,0],[1760,'sine',0.26,0.12]]},
+  alerta:   {label:'Alerta',   notes:[[880,'square',0.08,0],[880,'square',0.08,0.16],[880,'square',0.08,0.32]]},
+  suave:    {label:'Suave',    notes:[[660,'sine',0.4,0]]},
+  pop:      {label:'Pop',      notes:[[220,'triangle',0.07,0],[440,'triangle',0.09,0.06]]},
+  classico: {label:'Clássico', notes:[[523.25,'triangle',0.13,0],[659.25,'triangle',0.13,0.1],[783.99,'triangle',0.2,0.2]]}
+};
+const NOTIF_TYPES = {
+  accepted:         {label:'Agendamento confirmado', icon:'✅'},
+  rejected:         {label:'Agendamento recusado',    icon:'❌'},
+  done:             {label:'Atendimento concluído',   icon:'💈'},
+  paymentConfirmed: {label:'Pagamento confirmado',    icon:'💳'}
+};
+function defaultNotifSettings(){
+  const t = {}; Object.keys(NOTIF_TYPES).forEach(k=>t[k]=true);
+  return {enabled:true, sound:'alerta', volume:0.85, types:t, systemEnabled:false};
+}
+function loadNotifSettings(){
+  const def = defaultNotifSettings();
+  try{
+    const raw = JSON.parse(localStorage.getItem(NOTIF_SETTINGS_KEY));
+    if(!raw) return def;
+    return Object.assign({}, def, raw, {types:Object.assign({}, def.types, raw.types||{})});
+  }catch(e){ return def; }
+}
+let notifSettings = loadNotifSettings();
+function saveNotifSettings(){ localStorage.setItem(NOTIF_SETTINGS_KEY, JSON.stringify(notifSettings)); }
+
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
+  return audioCtx;
+}
+// Destrava o áudio no primeiro toque (política de autoplay dos navegadores)
+['pointerdown','touchstart','click'].forEach(evt=>{
+  window.addEventListener(evt, function unlock(){ getAudioCtx(); }, {once:true, passive:true});
+});
+function playNotifSound(soundKey, volume){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const preset = NOTIF_SOUND_PRESETS[soundKey] || NOTIF_SOUND_PRESETS.sino;
+  const vol = volume==null ? 0.85 : Number(volume);
+  preset.notes.forEach(function(n){
+    const freq=n[0], type=n[1], dur=n[2], delay=n[3];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    const start = ctx.currentTime + delay;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(Math.max(0.0002,vol*0.5), start+0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start+dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(start); osc.stop(start+dur+0.03);
+  });
+}
+function testNotifSound(){ playNotifSound(notifSettings.sound, notifSettings.volume); }
+
+function showNotifBanner(icon, title, body){
+  const el = document.getElementById('notif-banner');
+  if(!el) return;
+  document.getElementById('notif-banner-icon').textContent = icon;
+  document.getElementById('notif-banner-title').textContent = title;
+  document.getElementById('notif-banner-body').textContent = body;
+  el.classList.add('show');
+  clearTimeout(window._notifBannerTimer);
+  window._notifBannerTimer = setTimeout(function(){ el.classList.remove('show'); }, 4800);
+}
+(function(){
+  const el = document.getElementById('notif-banner');
+  if(el) el.addEventListener('click', function(){ el.classList.remove('show'); });
+})();
+function fireSystemNotification(title, body){
+  if(!notifSettings.systemEnabled) return;
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  if(document.visibilityState==='visible') return;
+  try{ new Notification(title, {body:body, icon:(window.__PWA_ICON_512||undefined), tag:'bf-'+Date.now()}); }catch(e){}
+}
+// Ponto único: som + aviso na tela + notificação do navegador (se em segundo plano)
+function notify(typeKey, title, body, icon){
+  if(!notifSettings.enabled) return;
+  if(notifSettings.types && notifSettings.types[typeKey]===false) return;
+  playNotifSound(notifSettings.sound, notifSettings.volume);
+  showNotifBanner(icon||'🔔', title, body);
+  fireSystemNotification(title, body);
+  if(navigator.vibrate){ try{ navigator.vibrate([80,40,80]); }catch(e){} }
+}
+function requestSystemNotifPermission(){
+  if(!('Notification' in window)){ toast('Seu navegador não suporta notificações do sistema'); return; }
+  Notification.requestPermission().then(function(perm){
+    notifSettings.systemEnabled = (perm==='granted');
+    saveNotifSettings();
+    renderNotifSettingsUI();
+    toast(perm==='granted' ? 'Notificações do navegador ativadas' : 'Permissão não concedida');
+  });
+}
+function toggleNotifMaster(checked){ notifSettings.enabled = checked; saveNotifSettings(); }
+function selectNotifSound(key){ notifSettings.sound = key; saveNotifSettings(); renderNotifSettingsUI(); playNotifSound(key, notifSettings.volume); }
+function setNotifVolume(val){ notifSettings.volume = Number(val); saveNotifSettings(); }
+function toggleNotifType(key, checked){ notifSettings.types[key] = checked; saveNotifSettings(); }
+function renderNotifSettingsUI(){
+  const master = document.getElementById('notif-master-toggle-client');
+  if(!master) return;
+  master.checked = notifSettings.enabled;
+  const soundWrap = document.getElementById('notif-sound-picker-client');
+  soundWrap.innerHTML = Object.keys(NOTIF_SOUND_PRESETS).map(function(k){
+    return '<div class="chip '+(notifSettings.sound===k?'selected':'')+'" onclick="selectNotifSound(\''+k+'\')">'+NOTIF_SOUND_PRESETS[k].label+'</div>';
+  }).join('');
+  document.getElementById('notif-volume-client').value = notifSettings.volume;
+  const typesWrap = document.getElementById('notif-type-toggles-client');
+  typesWrap.innerHTML = Object.keys(NOTIF_TYPES).map(function(k){
+    const t = NOTIF_TYPES[k];
+    return '<div class="settings-row"><div><div class="label">'+t.icon+' '+t.label+'</div></div>'+
+      '<label class="switch"><input type="checkbox" '+(notifSettings.types[k]!==false?'checked':'')+' onchange="toggleNotifType(\''+k+'\',this.checked)"><span class="slider"></span></label></div>';
+  }).join('');
+  const sysBtn = document.getElementById('notif-system-btn-client');
+  const sysStatus = document.getElementById('notif-system-status-client');
+  const supported = 'Notification' in window;
+  if(!supported){
+    sysBtn.style.display = 'none';
+    sysStatus.textContent = 'Seu navegador não suporta notificações do sistema';
+  } else if(Notification.permission==='granted' && notifSettings.systemEnabled){
+    sysBtn.textContent = 'Ativado ✓'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Você vai receber avisos mesmo com o app em segundo plano';
+  } else if(Notification.permission==='denied'){
+    sysBtn.textContent = 'Bloqueado'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Permissão bloqueada no navegador — ative manualmente nas configurações do site';
+  } else {
+    sysBtn.style.display = ''; sysBtn.textContent = 'Ativar'; sysBtn.disabled = false;
+    sysStatus.textContent = 'Receba avisos mesmo com o app em segundo plano';
+  }
+}
+// Compara o estado anterior da barbearia com o novo e dispara as notificações
+// do cliente (agendamento aceito/recusado, atendimento concluído, pagamento confirmado)
+function detectClientEvents(prevShop, newShop){
+  if(!prevShop || !newShop || !session || !session.clientId) return;
+  const prevAppts = {};
+  (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
+  (newShop.appointments||[]).filter(function(a){ return a.clientId===session.clientId; }).forEach(function(a){
+    const prev = prevAppts[a.id];
+    if(!prev) return;
+    if(prev.status==='pending' && a.status==='accepted'){
+      notify('accepted', 'Agendamento confirmado!', 'Seu horário em '+formatDate(a.date)+' às '+a.time+' foi confirmado pelo barbeiro.', '✅');
+    }
+    if(prev.status==='pending' && a.status==='rejected'){
+      notify('rejected', 'Agendamento recusado', 'Seu pedido para '+formatDate(a.date)+' às '+a.time+' foi recusado pelo barbeiro.', '❌');
+    }
+    if(prev.status!=='done' && a.status==='done'){
+      notify('done', 'Atendimento concluído', 'Esperamos que tenha gostado do seu corte! Que tal deixar uma avaliação?', '💈');
+    }
+    if(prev.paymentStatus!=='pago' && a.paymentStatus==='pago'){
+      notify('paymentConfirmed', 'Pagamento confirmado', 'Seu pagamento de R$ '+Number(a.total).toFixed(2).replace('.',',')+' foi confirmado.', '💳');
+    }
+  });
+}
+
+/* ============================================================
    SINCRONIZAÇÃO EM TEMPO REAL COM A NUVEM
    ============================================================ */
 let unsubscribeShopListener = null;
@@ -689,12 +920,14 @@ function listenToShop(code, onFirstLoad){
       if(first){ first=false; onFirstLoad && onFirstLoad(null); }
       return;
     }
+    const prevShop = shops[code];
     shops[code] = normalizeShop(doc.data());
     try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
     if(first){
       first = false;
       onFirstLoad && onFirstLoad(shops[code]);
     } else if(session && session.code===code){
+      detectClientEvents(prevShop, shops[code]);
       if(session.role==='client' && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
     }
   }, function(err){
@@ -1213,6 +1446,7 @@ function openClientSettings(){
   if(!c) return;
   document.getElementById('client-edit-name').value = c.name;
   document.getElementById('client-edit-phone').value = c.phone || '';
+  renderNotifSettingsUI();
 }
 
 /* ============================================================
