@@ -4,238 +4,367 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>BarberFlow — Painel do Barbeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --primary:#c9a24d;
   --primary-dark:#a9843a;
-  --bg:#0f0f12;
-  --surface:#1a1a1f;
-  --surface2:#232329;
-  --text:#f2ede3;
-  --text-dim:#a6a2ab;
-  --danger:#e5484d;
+  --bg:#0a0a0d;
+  --surface:#15151a;
+  --surface2:#1c1c23;
+  --surface3:#25252e;
+  --border:rgba(255,255,255,.07);
+  --border-strong:rgba(255,255,255,.14);
+  --text:#f5f1e9;
+  --text-dim:#9d98a6;
+  --text-faint:#6d6976;
+  --danger:#f2565b;
   --success:#3ecf8e;
+  --warning:#e0a53a;
+  --radius-sm:12px;
   --radius:16px;
+  --radius-lg:22px;
+  --shadow-sm:0 2px 14px rgba(0,0,0,.28);
+  --shadow-md:0 10px 32px -8px rgba(0,0,0,.55);
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7);
+  --font:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;height:100%;}
 body{
-  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-  background:var(--bg);
+  font-family:var(--font);
+  background:
+    radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--primary) 15%, transparent), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
   color:var(--text);
   overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
 }
-#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:90px;}
-.screen{display:none;animation:fadeIn .25s ease;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:104px;}
+.screen{display:none;animation:fadeIn .3s ease;}
 .screen.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ---------- Topbar ---------- */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:18px 20px 14px;
-  position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 70%,transparent);
+  padding:22px 20px 16px;
+  position:sticky;top:0;
+  background:linear-gradient(180deg,color-mix(in srgb, var(--bg) 92%, transparent) 65%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   z-index:10;
 }
-.topbar h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.3px;}
-.topbar .sub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+.topbar h1{font-size:20px;margin:0;font-weight:800;letter-spacing:-.3px;}
+.topbar .sub{font-size:11.5px;color:var(--text-faint);margin-top:4px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
 .icon-btn{
-  background:var(--surface2);border:none;color:var(--text);
-  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;cursor:pointer;position:relative;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;position:relative;box-shadow:var(--shadow-sm);
+  transition:transform .12s ease, background .15s ease;
 }
+.icon-btn:active{transform:scale(.92);background:var(--surface3);}
 .icon-btn.disabled{opacity:.3;pointer-events:none;}
 .icon-btn .badge{
-  position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;
+  position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;
   font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;
   display:flex;align-items:center;justify-content:center;padding:0 4px;
+  box-shadow:0 0 0 2px var(--bg);
 }
 
 /* ---------- Layout helpers ---------- */
 .container{padding:0 20px;}
 .card{
-  background:var(--surface);border-radius:var(--radius);padding:18px;margin-bottom:14px;
-  border:1px solid rgba(255,255,255,.05);
+  background:linear-gradient(160deg,var(--surface),color-mix(in srgb,var(--surface) 80%,var(--surface2)) 130%);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);
 }
-.card h3{margin:0 0 10px;font-size:15px;color:var(--text);}
-.hero{
-  text-align:center;padding:60px 24px 30px;
-}
+.card h3{margin:0 0 13px;font-size:15px;font-weight:800;letter-spacing:.1px;color:var(--text);}
+.hero{text-align:center;padding:72px 26px 30px;}
 .hero .logo-circle{
-  width:84px;height:84px;border-radius:50%;
+  width:90px;height:90px;border-radius:28px;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px;
-  box-shadow:0 10px 30px -8px rgba(201,162,77,.6);
+  display:flex;align-items:center;justify-content:center;font-size:37px;margin:0 auto 24px;
+  box-shadow:0 18px 42px -12px color-mix(in srgb,var(--primary) 65%,transparent);
 }
-.hero h1{font-size:26px;margin:0 0 6px;}
-.hero p{color:var(--text-dim);font-size:14px;margin:0 0 34px;}
+.hero h1{font-size:29px;margin:0 0 9px;font-weight:800;letter-spacing:-.5px;}
+.hero p{color:var(--text-dim);font-size:14.5px;margin:0 0 38px;line-height:1.6;}
 
 /* ---------- Buttons ---------- */
 .btn{
-  display:block;width:100%;padding:15px 18px;border-radius:14px;border:none;
-  font-size:15px;font-weight:600;cursor:pointer;text-align:center;
-  transition:transform .1s ease, opacity .15s ease;
+  display:block;width:100%;padding:16px 18px;border-radius:var(--radius-sm);border:none;
+  font-size:15px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:.1px;
+  transition:transform .1s ease, opacity .15s ease, box-shadow .15s ease;
+  font-family:var(--font);
 }
 .btn:active{transform:scale(.97);}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;}
-.btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:var(--text);}
-.btn-ghost{background:var(--surface2);color:var(--text);}
-.btn-danger{background:rgba(229,72,77,.15);color:var(--danger);}
-.btn-success{background:rgba(62,207,142,.15);color:var(--success);}
-.btn-sm{padding:9px 14px;font-size:13px;border-radius:10px;width:auto;display:inline-block;}
-.btn[disabled]{opacity:.4;pointer-events:none;}
-.stack{display:flex;flex-direction:column;gap:10px;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  box-shadow:0 10px 26px -10px color-mix(in srgb,var(--primary) 70%,transparent);
+}
+.btn-outline{background:transparent;border:1.5px solid var(--border-strong);color:var(--text);}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger);}
+.btn-success{background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success);}
+.btn-sm{padding:10px 16px;font-size:13px;border-radius:10px;width:auto;display:inline-block;}
+.btn[disabled]{opacity:.35;pointer-events:none;box-shadow:none;}
+.stack{display:flex;flex-direction:column;gap:11px;}
 .row{display:flex;gap:10px;}
 .row .btn{flex:1;}
 
 /* ---------- Inputs ---------- */
-label{display:block;font-size:12px;color:var(--text-dim);margin:14px 0 6px;font-weight:600;}
+label{display:block;font-size:12px;color:var(--text-dim);margin:16px 0 7px;font-weight:700;letter-spacing:.15px;}
 label:first-child{margin-top:0;}
-input[type=text],input[type=tel],input[type=number],input[type=date],select,textarea{
-  width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.08);
-  background:var(--surface2);color:var(--text);font-size:15px;outline:none;
+input[type=text],input[type=tel],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;padding:14px 15px;border-radius:13px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:15px;outline:none;font-family:var(--font);
+  transition:border-color .15s ease, box-shadow .15s ease;
 }
-input:focus,select:focus,textarea:focus{border-color:var(--primary);}
-input[type=color]{width:52px;height:44px;border:none;border-radius:10px;background:none;padding:0;cursor:pointer;}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent);}
+input[type=color]{width:54px;height:46px;border:none;border-radius:12px;background:none;padding:0;cursor:pointer;}
+textarea{resize:vertical;font-family:var(--font);}
 
 /* ---------- Bottom nav ---------- */
 .bottomnav{
   position:fixed;bottom:0;left:0;right:0;
   max-width:480px;margin:0 auto;
-  background:var(--surface);border-top:1px solid rgba(255,255,255,.06);
-  display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
-  z-index:20;
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-top:1px solid var(--border);
+  display:flex;gap:2px;padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+  z-index:20;box-shadow:0 -10px 30px rgba(0,0,0,.35);
 }
 .navitem{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:6px 0;border-radius:12px;color:var(--text-dim);font-size:10.5px;cursor:pointer;position:relative;
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 2px;border-radius:14px;color:var(--text-faint);font-size:10px;font-weight:700;
+  cursor:pointer;position:relative;transition:background .15s ease, color .15s ease;
 }
-.navitem.active{color:var(--primary);}
-.navitem .navicon{font-size:19px;}
+.navitem.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);}
+.navitem .navicon{font-size:19px;transition:transform .15s ease;display:block;}
+.navitem.active .navicon{transform:translateY(-1px);}
 .navitem .navbadge{
-  position:absolute;top:0;right:22%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
-  min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  position:absolute;top:0;right:16%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--surface);
 }
 
 /* ---------- Misc components ---------- */
 .chip{
-  display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:20px;
-  background:var(--surface2);color:var(--text-dim);font-size:13px;cursor:pointer;
-  border:1.5px solid transparent;
+  display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:12px;
+  background:var(--surface2);color:var(--text-dim);font-size:13px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);transition:all .15s ease;
 }
-.chip.selected{border-color:var(--primary);color:var(--primary);background:rgba(201,162,77,.1);}
-.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;background:var(--surface2);padding:5px;border-radius:15px;border:1px solid var(--border);}
+.chip-row .chip{flex:1;text-align:center;border:none;background:transparent;justify-content:center;}
+.chip-row .chip.selected{box-shadow:var(--shadow-sm);}
 .service-item{
   display:flex;align-items:center;justify-content:space-between;
-  background:var(--surface2);border-radius:12px;padding:13px 14px;margin-bottom:8px;
-  border:1.5px solid transparent;cursor:pointer;
+  background:var(--surface2);border-radius:var(--radius);padding:14px 15px;margin-bottom:9px;
+  border:1.5px solid var(--border);cursor:pointer;transition:border-color .15s ease, background .15s ease;
 }
-.service-item.selected{border-color:var(--primary);background:rgba(201,162,77,.08);}
-.service-item .info b{display:block;font-size:14.5px;}
+.service-item.selected{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--surface2));}
+.service-item .info b{display:block;font-size:14.5px;font-weight:700;}
 .service-item .info span{font-size:12px;color:var(--text-dim);}
-.service-item .price{font-weight:700;color:var(--primary);font-size:14.5px;}
+.service-item .price{font-weight:800;color:var(--primary);font-size:14.5px;}
 .checkbox-dot{
-  width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,.25);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;
+  width:21px;height:21px;border-radius:7px;border:1.5px solid var(--border-strong);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;
+  transition:all .15s ease;
 }
 .service-item.selected .checkbox-dot{background:var(--primary);border-color:var(--primary);color:#1a1408;font-weight:800;font-size:13px;}
-.appt-card{
-  background:var(--surface2);border-radius:14px;padding:14px;margin-bottom:10px;
-  border-left:4px solid var(--primary);
+.stars-display{display:inline-flex;gap:1px;}
+.stars-display .st{font-size:14px;color:var(--border-strong);}
+.stars-display .st.on{color:var(--primary);}
+.star-picker{display:flex;gap:10px;justify-content:center;margin:16px 0 4px;}
+.star-picker .st{font-size:36px;cursor:pointer;color:var(--border-strong);transition:transform .1s ease, color .15s ease;}
+.star-picker .st.on{color:var(--primary);}
+.star-picker .st:active{transform:scale(.88);}
+.rating-summary-card{display:flex;align-items:center;gap:16px;text-align:left;}
+.rating-summary-card .avg{font-size:32px;font-weight:800;color:var(--primary);line-height:1;}
+.rating-summary-card .avg-wrap{flex-shrink:0;text-align:center;}
+.rating-summary-card .count{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+.review-card{
+  background:var(--surface2);border-radius:var(--radius);padding:14px 15px;margin-bottom:9px;
+  border:1.5px solid var(--border);
 }
-.appt-card.pending{border-left-color:#e0a53a;}
+.review-card .rtop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
+.review-card .rname{font-weight:700;font-size:14px;}
+.review-card .rdate{font-size:11px;color:var(--text-faint);white-space:nowrap;}
+.review-card .rcomment{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:5px;}
+.service-icon-wrap{
+  width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--primary) 13%,transparent);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;font-size:19px;
+}
+/* ---------- Carrossel de serviços (cliente) ---------- */
+.services-carousel{
+  display:flex;gap:11px;overflow-x:auto;padding:4px 2px 14px;margin:0 -2px;
+  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+}
+.services-carousel::-webkit-scrollbar{display:none;}
+.service-card-h{
+  scroll-snap-align:start;flex-shrink:0;width:114px;position:relative;
+  background:var(--surface2);border-radius:var(--radius);padding:15px 11px;text-align:center;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s ease;
+}
+.service-card-h.selected{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--surface2));box-shadow:var(--shadow-sm);}
+.service-card-h .service-icon-wrap{margin:0 auto 10px;width:48px;height:48px;}
+.service-card-h b{display:block;font-size:12.5px;line-height:1.3;margin-bottom:4px;font-weight:700;}
+.service-card-h .price{display:block;font-size:12.5px;color:var(--primary);font-weight:800;}
+.service-card-h .check-dot{
+  position:absolute;top:8px;right:8px;width:19px;height:19px;border-radius:50%;
+  background:var(--primary);color:#1a1408;font-size:11px;font-weight:800;
+  display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);
+}
+.service-card-h.selected .check-dot{display:flex;}
+/* ---------- Seletor de ícone (modal serviço) ---------- */
+.icon-picker-grid{
+  display:flex;gap:9px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch;
+}
+.icon-picker-grid::-webkit-scrollbar{display:none;}
+.icon-picker-item{
+  width:48px;height:48px;border-radius:13px;background:var(--surface2);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s ease;
+}
+.icon-picker-item.selected{border-color:var(--primary);color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);}
+/* ---------- Upload de imagem do serviço ---------- */
+.img-upload-box{
+  display:flex;align-items:center;gap:13px;background:var(--surface2);border-radius:var(--radius);
+  padding:11px;border:1.5px dashed var(--border-strong);cursor:pointer;
+}
+.img-upload-box .thumb{
+  width:52px;height:52px;border-radius:11px;object-fit:cover;flex-shrink:0;background:var(--surface);
+}
+.img-upload-box .placeholder{
+  width:52px;height:52px;border-radius:11px;background:var(--surface);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:20px;
+}
+.img-upload-box .txt{flex:1;font-size:13px;color:var(--text-dim);}
+.img-upload-box .txt b{display:block;color:var(--text);font-size:13.5px;margin-bottom:2px;}
+.img-remove-btn{color:var(--danger);font-size:12.5px;font-weight:700;background:none;border:none;padding:6px 4px;cursor:pointer;}
+.appt-card{
+  background:var(--surface2);border-radius:var(--radius);padding:15px;margin-bottom:10px;
+  border:1px solid var(--border);border-left:4px solid var(--primary);
+}
+.appt-card.pending{border-left-color:var(--warning);}
 .appt-card.accepted{border-left-color:var(--success);}
 .appt-card.rejected{border-left-color:var(--danger);opacity:.55;}
 .appt-card.cancelled{border-left-color:var(--text-dim);opacity:.55;}
 .appt-card.done{border-left-color:#6a8fd8;opacity:.7;}
-.appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
-.appt-top b{font-size:15px;}
-.status-tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px;}
-.status-tag.pending{background:rgba(224,165,58,.18);color:#e0a53a;}
-.status-tag.accepted{background:rgba(62,207,142,.18);color:var(--success);}
-.status-tag.rejected{background:rgba(229,72,77,.18);color:var(--danger);}
-.status-tag.cancelled{background:rgba(166,162,171,.18);color:var(--text-dim);}
-.payment-row{display:flex;gap:8px;margin-top:10px;}
+.appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:8px;}
+.appt-top b{font-size:15px;font-weight:800;}
+.status-tag{font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.status-tag.pending{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning);}
+.status-tag.accepted{background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);}
+.status-tag.rejected{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger);}
+.status-tag.cancelled{background:color-mix(in srgb,var(--text-dim) 18%,transparent);color:var(--text-dim);}
+.payment-row{display:flex;gap:8px;margin-top:11px;}
 .payment-row .btn{flex:1;}
 .payment-tag{font-size:12px;color:var(--text-dim);margin-top:8px;}
 .status-tag.done{background:rgba(106,143,216,.18);color:#6a8fd8;}
 .appt-meta{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
 .appt-services{font-size:12.5px;color:var(--text-dim);}
-.appt-total{font-weight:700;color:var(--primary);font-size:14.5px;margin-top:6px;}
-.empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
-.empty-state .em{font-size:38px;margin-bottom:10px;}
+.appt-total{font-weight:800;color:var(--primary);font-size:14.5px;margin-top:7px;}
+.empty-state{text-align:center;padding:52px 20px;color:var(--text-dim);}
+.empty-state .em{font-size:40px;margin-bottom:12px;}
 .client-item{
   display:flex;align-items:center;justify-content:space-between;
-  background:var(--surface2);padding:13px 14px;border-radius:12px;margin-bottom:8px;
+  background:var(--surface2);padding:13px 15px;border-radius:var(--radius);margin-bottom:9px;
+  border:1px solid var(--border);
 }
 .client-item .avatar{
-  width:38px;height:38px;border-radius:50%;background:var(--primary);color:#1a1408;
-  display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:12px;flex-shrink:0;
+  width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  display:flex;align-items:center;justify-content:center;font-weight:800;margin-right:12px;flex-shrink:0;
 }
 .client-row{display:flex;align-items:center;flex:1;min-width:0;}
-.client-info b{display:block;font-size:14px;}
+.client-info b{display:block;font-size:14px;font-weight:700;}
 .client-info span{font-size:11.5px;color:var(--text-dim);}
 .dot-status{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.dot-status.dentro{background:var(--success);}
-.dot-status.fora{background:var(--text-dim);}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.stat-box{background:var(--surface);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.05);}
-.stat-box .num{font-size:24px;font-weight:800;color:var(--primary);}
-.stat-box .lbl{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
-.day-toggle-row{display:flex;gap:6px;flex-wrap:wrap;}
+.dot-status.dentro{background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 20%,transparent);}
+.dot-status.fora{background:var(--text-faint);}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
+.stat-box{background:var(--surface);border-radius:var(--radius-lg);padding:17px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.stat-box .num{font-size:25px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
+.stat-box .lbl{font-size:11.5px;color:var(--text-dim);margin-top:3px;font-weight:600;}
+.day-toggle-row{display:flex;gap:7px;flex-wrap:wrap;}
 .day-toggle{
-  width:42px;height:42px;border-radius:12px;background:var(--surface2);color:var(--text-dim);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;
+  width:43px;height:43px;border-radius:13px;background:var(--surface2);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;
+  border:1.5px solid var(--border);transition:all .15s ease;
 }
-.day-toggle.on{background:var(--primary);color:#1a1408;}
-.section-title{font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 10px;}
+.day-toggle.on{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;border-color:transparent;box-shadow:var(--shadow-sm);}
+.section-title{font-size:12.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin:26px 0 12px;}
 .section-title:first-child{margin-top:0;}
 .link-box{
-  display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:13px;padding:13px 15px;
+  border:1px solid var(--border);
 }
-.link-box code{flex:1;font-size:15px;font-weight:700;color:var(--primary);letter-spacing:1px;word-break:break-all;}
+.link-box code{flex:1;font-size:15px;font-weight:800;color:var(--primary);letter-spacing:1.5px;word-break:break-all;}
 .toast{
-  position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
-  background:var(--surface2);color:var(--text);padding:12px 20px;border-radius:12px;
-  font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .25s,bottom .25s;
-  pointer-events:none;max-width:90%;text-align:center;border:1px solid rgba(255,255,255,.08);
+  position:fixed;bottom:104px;left:50%;transform:translateX(-50%);
+  background:var(--surface3);color:var(--text);padding:13px 22px;border-radius:14px;
+  font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:100;opacity:0;transition:opacity .25s,bottom .25s;
+  pointer-events:none;max-width:90%;text-align:center;border:1px solid var(--border-strong);
 }
-.toast.show{opacity:1;bottom:115px;}
+.toast.show{opacity:1;bottom:120px;}
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:50;
+  position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(2px);display:none;align-items:flex-end;justify-content:center;z-index:50;
 }
 .modal-overlay.active{display:flex;}
 .modal-sheet{
-  background:var(--surface);border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));
-  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease;
+  background:var(--surface);border-radius:26px 26px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.2,.9,.3,1);
+  border-top:1px solid var(--border-strong);box-shadow:var(--shadow-lg);
 }
 @keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:none;opacity:1;}}
-.modal-sheet h3{margin-top:0;}
-.close-x{position:absolute;top:16px;right:20px;font-size:20px;color:var(--text-dim);cursor:pointer;}
+.modal-sheet h3{margin-top:0;font-weight:800;font-size:17px;}
+.close-x{position:absolute;top:18px;right:20px;font-size:18px;color:var(--text-dim);cursor:pointer;
+  width:32px;height:32px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;}
 .hero-mini{padding:18px 0 10px;}
 .shop-banner{
-  border-radius:18px;padding:22px;margin-bottom:16px;
+  border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;position:relative;overflow:hidden;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  box-shadow:0 16px 36px -14px color-mix(in srgb,var(--primary) 60%,transparent);
 }
-.shop-banner h2{margin:0 0 2px;font-size:20px;}
-.shop-banner p{margin:0;font-size:13px;opacity:.85;}
-.shop-banner .badge-line{margin-top:12px;font-size:12.5px;font-weight:700;background:rgba(0,0,0,.15);
-  display:inline-block;padding:5px 12px;border-radius:20px;}
+.shop-banner h2{margin:0 0 3px;font-size:21px;font-weight:800;letter-spacing:-.3px;}
+.shop-banner p{margin:0;font-size:13px;opacity:.85;font-weight:600;}
+.shop-banner .badge-line{margin-top:13px;font-size:12.5px;font-weight:800;background:rgba(0,0,0,.16);
+  display:inline-block;padding:6px 13px;border-radius:20px;}
 .list-select-item{
   display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
-  border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;
+  border-radius:var(--radius);padding:15px;margin-bottom:9px;cursor:pointer;border:1px solid var(--border);
+  transition:border-color .15s ease;
 }
-.list-select-item b{font-size:14.5px;}
+.list-select-item b{font-size:14.5px;font-weight:700;}
 .list-select-item span{font-size:12px;color:var(--text-dim);}
-.divider{height:1px;background:rgba(255,255,255,.06);margin:16px 0;}
-.helper-text{font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;}
-.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.helper-text{font-size:12px;color:var(--text-faint);margin-top:6px;line-height:1.6;}
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px;}
 .slot-btn{
-  padding:11px 4px;border-radius:10px;background:var(--surface2);color:var(--text);
-  text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;border:1.5px solid transparent;
+  padding:12px 4px;border-radius:12px;background:var(--surface2);color:var(--text);
+  text-align:center;font-size:13.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);
+  transition:all .15s ease;
 }
-.slot-btn.selected{border-color:var(--primary);color:var(--primary);background:rgba(201,162,77,.1);}
+.slot-btn.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);box-shadow:var(--shadow-sm);}
 .slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+
+/* ---------- Auth / onboarding / gold ---------- */
+.auth-link{text-align:center;font-size:13px;color:var(--text-dim);margin-top:18px;}
+.auth-link b{color:var(--primary);cursor:pointer;font-weight:800;}
+.error-text{color:var(--danger);font-size:12.5px;margin-top:8px;line-height:1.5;display:none;}
+.error-text.show{display:block;}
+.onb-step{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+.onb-num{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
+.onb-step h4{margin:2px 0 4px;font-size:14.5px;font-weight:800;}
+.onb-step p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+.gold-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;font-size:11px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;}
+.trial-pill{display:flex;align-items:center;justify-content:space-between;background:#2a2210;color:#e0b84a;border-radius:14px;padding:11px 15px;margin-bottom:14px;font-size:12.5px;font-weight:700;gap:10px;}
+.trial-pill button{flex-shrink:0;}
+.spinner{width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--primary);animation:spin .7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -249,41 +378,108 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <p>Painel profissional de gestão<br>para a sua barbearia</p>
     </div>
     <div class="container stack">
-      <button class="btn btn-primary" onclick="showScreen('screen-barber-entry')">Acessar painel do barbeiro</button>
-    </div>
-    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:30px;letter-spacing:.3px;">app by Daniel Nogueira</div>
-  </div>
-
-  <!-- ============ BARBER ENTRY (choose shop / create) ============ -->
-  <div class="screen" id="screen-barber-entry">
-    <div class="topbar">
-      <div>
-        <h1>Área do barbeiro</h1>
-        <div class="sub">Suas barbearias neste aparelho</div>
-      </div>
-      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+      <button class="btn btn-primary" onclick="openLoginScreen()">Entrar</button>
+      <button class="btn btn-outline" onclick="openSignupScreen()">Criar minha conta grátis</button>
     </div>
     <div class="container">
-      <div id="barber-shops-list"></div>
-      <button class="btn btn-primary" onclick="openNewShopModal()">+ Criar nova barbearia</button>
+      <div class="helper-text" style="text-align:center;margin-top:22px;">Teste grátis por 30 dias. Depois, continue com a versão <b style="color:var(--primary);">Gold</b> ilimitada.</div>
+    </div>
+    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:24px;letter-spacing:.3px;">app by Daniel Nogueira</div>
+  </div>
+
+  <!-- ============ LOGIN ============ -->
+  <div class="screen" id="screen-login">
+    <div class="topbar">
+      <h1>Entrar</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+    </div>
+    <div class="container stack">
+      <label>E-mail</label>
+      <input type="text" id="login-email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <label>Senha</label>
+      <input type="text" id="login-password" placeholder="Sua senha" autocomplete="current-password" style="-webkit-text-security:disc;text-security:disc;">
+      <div class="error-text" id="login-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="loginBarber()">Entrar</button>
+      <div class="auth-link"><b onclick="openForgotScreen()">Esqueci minha senha</b></div>
+      <div class="auth-link">Ainda não tem conta? <b onclick="openSignupScreen()">Criar conta</b></div>
     </div>
   </div>
 
-  <!-- ============ BARBER SETUP (create shop) ============ -->
-  <div class="screen" id="screen-barber-setup">
+  <!-- ============ SIGNUP ============ -->
+  <div class="screen" id="screen-signup">
     <div class="topbar">
-      <h1>Nova barbearia</h1>
-      <div class="icon-btn" onclick="showScreen('screen-barber-entry')">←</div>
+      <h1>Criar conta</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
     </div>
     <div class="container stack">
+      <div class="helper-text" style="margin-top:0;">Seus 30 dias de teste grátis começam assim que você criar a conta.</div>
       <label>Nome da barbearia</label>
-      <input type="text" id="setup-shop-name" placeholder="Ex: Barbearia Estilo">
+      <input type="text" id="signup-shop-name" placeholder="Ex: Barbearia Estilo">
       <label>Seu nome (barbeiro)</label>
-      <input type="text" id="setup-barber-name" placeholder="Ex: João Silva">
+      <input type="text" id="signup-barber-name" placeholder="Ex: João Silva">
       <label>Cor principal do seu app</label>
-      <input type="color" id="setup-color" value="#c9a24d">
-      <div style="height:8px"></div>
-      <button class="btn btn-primary" onclick="createShop()">Criar barbearia</button>
+      <input type="color" id="signup-color" value="#c9a24d">
+      <label>E-mail</label>
+      <input type="text" id="signup-email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <label>Senha</label>
+      <input type="text" id="signup-password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;">
+      <label>Confirmar senha</label>
+      <input type="text" id="signup-password2" placeholder="Repita a senha" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;">
+      <div class="error-text" id="signup-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" id="signup-btn" onclick="signupBarber()">Criar conta e começar teste grátis</button>
+      <div class="auth-link">Já tem conta? <b onclick="openLoginScreen()">Entrar</b></div>
+    </div>
+  </div>
+
+  <!-- ============ FORGOT PASSWORD ============ -->
+  <div class="screen" id="screen-forgot">
+    <div class="topbar">
+      <h1>Recuperar senha</h1>
+      <div class="icon-btn" onclick="showScreen('screen-login')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="helper-text" style="margin-top:0;">Digite seu e-mail. Vamos enviar um link para você redefinir sua senha.</div>
+      <label>E-mail</label>
+      <input type="text" id="forgot-email" placeholder="seuemail@exemplo.com">
+      <div class="error-text" id="forgot-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" onclick="sendPasswordReset()">Enviar link de recuperação</button>
+    </div>
+  </div>
+
+  <!-- ============ ONBOARDING (tutorial primeira vez do barbeiro) ============ -->
+  <div class="screen" id="screen-onboarding-barber">
+    <div class="topbar">
+      <div>
+        <h1>Bem-vindo(a)! 🎉</h1>
+        <div class="sub">Veja como usar o BarberFlow</div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="onb-step">
+        <div class="onb-num">1</div>
+        <div><h4>Cadastre seus serviços</h4><p>Vá na aba <b>Serviços</b> e adicione cada corte, barba ou combo que você oferece, com nome, preço e ícone.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">2</div>
+        <div><h4>Configure seus horários</h4><p>Na aba <b>Horários</b>, escolha os dias que você atende e cadastre os horários disponíveis para agendamento.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">3</div>
+        <div><h4>Compartilhe seu link</h4><p>Em <b>⚙️ Configurações</b>, copie seu código ou compartilhe o link direto no WhatsApp Status para seus clientes agendarem.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">4</div>
+        <div><h4>Gerencie seus agendamentos</h4><p>Toda solicitação de horário chega na aba <b>Agenda</b>. Você aceita, recusa e confirma pagamentos por lá.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">5</div>
+        <div><h4>Teste grátis de 30 dias</h4><p>Use o app sem limites por 30 dias. Depois, para continuar, é só adquirir a versão <b style="color:var(--primary);">Gold</b> ilimitada.</p></div>
+      </div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" onclick="finishOnboarding()">Entendi, vamos começar!</button>
     </div>
   </div>
 
@@ -294,12 +490,16 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
         <h1 id="dash-shop-name">Barbearia</h1>
         <div class="sub" id="dash-barber-name">Barbeiro</div>
       </div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
         <div class="icon-btn" onclick="showScreen('screen-barber-config')">⚙️</div>
       </div>
     </div>
 
     <div class="container">
+      <div class="trial-pill" id="trial-banner" style="display:none;">
+        <span id="trial-days-text">Teste grátis</span>
+        <button class="btn btn-sm btn-primary" onclick="openWhatsAppPurchase()">Virar Gold</button>
+      </div>
       <!-- TAB: AGENDA -->
       <div id="tab-agenda">
         <div class="stat-grid">
@@ -367,14 +567,27 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
         <div id="finance-period-list"></div>
       </div>
 
+      <!-- TAB: AVALIAÇÕES -->
+      <div id="tab-avaliacoes" style="display:none;">
+        <div class="card rating-summary-card" id="barber-rating-summary">
+          <div class="avg-wrap">
+            <div class="avg" id="barber-rating-avg">–</div>
+            <div class="stars-display" id="barber-rating-stars"></div>
+          </div>
+          <div class="count" id="barber-rating-count">Ainda sem avaliações</div>
+        </div>
+        <div class="section-title">O que os clientes disseram</div>
+        <div id="list-reviews"></div>
+      </div>
+
       <!-- TAB: HORÁRIOS -->
       <div id="tab-horarios" style="display:none;">
         <div class="card">
-          <h3>Dias de atendimento</h3>
+          <h3>📅 Dias de atendimento</h3>
           <div class="day-toggle-row" id="workdays-row"></div>
         </div>
         <div class="card">
-          <h3>Horários disponíveis</h3>
+          <h3>🕒 Horários disponíveis</h3>
           <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Adicione manualmente cada horário que você quer disponibilizar. Só esses horários vão aparecer para o cliente.</div>
           <div id="worktimes-list"></div>
           <div class="row" style="margin-top:12px;">
@@ -383,7 +596,7 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
           </div>
         </div>
         <div class="card">
-          <h3>Dias sem atendimento</h3>
+          <h3>🚫 Dias sem atendimento</h3>
           <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Marque um dia específico que você não vai trabalhar (feriado, folga, viagem...). Ele aparece em vermelho para o cliente.</div>
           <div id="daysoff-list"></div>
           <label>Data</label>
@@ -405,7 +618,29 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <div class="navitem" data-tab="servicos" onclick="switchTab('servicos')"><div class="navicon">💈</div>Serviços</div>
       <div class="navitem" data-tab="horarios" onclick="switchTab('horarios')"><div class="navicon">🕒</div>Horários</div>
       <div class="navitem" data-tab="faturamento" onclick="switchTab('faturamento')"><div class="navicon">💰</div>Faturamento</div>
+      <div class="navitem" data-tab="avaliacoes" onclick="switchTab('avaliacoes')"><div class="navicon">⭐</div>Avaliações</div>
       <div class="navitem" id="nav-preview-toggle" onclick="toggleClientPreview()"><div class="navicon">👁️</div>Ver cliente</div>
+    </div>
+  </div>
+
+  <!-- ============ TRIAL EXPIRADO / GOLD ============ -->
+  <div class="screen" id="screen-trial-expired">
+    <div class="hero" style="padding-top:56px;">
+      <div class="logo-circle">🔒</div>
+      <h1 id="gold-title">Seu teste grátis acabou</h1>
+      <p id="gold-subtitle">Você aproveitou os 30 dias de teste do BarberFlow. Para continuar usando o app sem limites, adquira a versão Gold.</p>
+    </div>
+    <div class="container stack">
+      <button class="btn btn-primary" onclick="openWhatsAppPurchase()">💬 Falar no WhatsApp para adquirir o Gold</button>
+      <div class="card" style="margin-top:6px;">
+        <h3>🔑 Já comprou? Ative seu código</h3>
+        <label>Código de ativação Gold</label>
+        <input type="text" id="gold-redeem-code" placeholder="Ex: GOLD-XXXX" style="text-transform:uppercase;">
+        <div class="error-text" id="gold-redeem-error"></div>
+        <div style="height:8px"></div>
+        <button class="btn btn-success" onclick="redeemGoldCode()">Ativar versão Gold</button>
+      </div>
+      <button class="btn btn-ghost" onclick="logoutBarber()">Sair da conta</button>
     </div>
   </div>
 
@@ -417,7 +652,7 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
     </div>
     <div class="container stack">
       <div class="card">
-        <h3>Link para clientes</h3>
+        <h3>🔗 Link para clientes</h3>
         <div class="link-box">
           <code id="config-code">------</code>
           <button class="btn btn-sm btn-ghost" onclick="copyCode()">Copiar</button>
@@ -431,13 +666,8 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
         <button class="btn btn-primary" onclick="shareClientLink()">📲 Compartilhar no WhatsApp (Status)</button>
         <div class="helper-text" style="margin-top:8px;">Vai abrir o menu de compartilhar do seu celular — escolha <b>WhatsApp → Status</b>. Quando o cliente tocar no link, o app dele já abre pronto, com seu código preenchido, e um aviso pra adicionar o ícone na tela inicial.</div>
       </div>
-      <div class="card" style="border-color:rgba(201,162,77,.35);">
-        <h3>👁️ Pré-visualização</h3>
-        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Veja exatamente como fica o app para os seus clientes — cores, mensagem de boas-vindas e serviços já aparecem do jeito que você configurou. Use isso enquanto personaliza, para conferir o resultado antes de compartilhar com os clientes de verdade.</div>
-        <button class="btn btn-primary" onclick="enterClientPreview()">👁️ Ver como o cliente vê</button>
-      </div>
       <div class="card">
-        <h3>Personalização</h3>
+        <h3>🎨 Personalização</h3>
         <label>Nome da barbearia</label>
         <input type="text" id="config-shop-name">
         <label>Nome do barbeiro</label>
@@ -450,15 +680,24 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar personalização</button>
       </div>
       <div class="card">
-        <h3>Pagamento via Pix</h3>
+        <h3>💳 Pagamento via Pix</h3>
         <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Cadastre sua chave ou código Pix copia e cola. O cliente poderá pagar antecipado direto pelo app.</div>
         <label>Código Pix (copia e cola) ou chave</label>
         <textarea id="config-pix-code" rows="3" placeholder="Cole aqui seu código Pix copia e cola, ou sua chave (CPF, e-mail, telefone...)"></textarea>
         <div style="height:10px"></div>
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar Pix</button>
       </div>
+      <div class="card">
+        <h3>👤 Minha conta</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;color:var(--text-dim);" id="config-account-email">-</span>
+          <span class="gold-badge" id="config-plan-badge" style="display:none;">✨ Gold</span>
+        </div>
+        <div class="helper-text" id="config-trial-text" style="margin-top:2px;"></div>
+      </div>
       <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
-      <button class="btn btn-danger" onclick="deleteShopConfirm()">Excluir esta barbearia</button>
+      <button class="btn btn-outline" onclick="logoutBarber()">Sair da conta</button>
+      <button class="btn btn-danger" onclick="deleteShopConfirm()">Excluir minha conta e barbearia</button>
     </div>
   </div>
 
@@ -501,7 +740,7 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       </div>
 
       <div class="section-title">Escolha os serviços</div>
-      <div id="client-services-list"></div>
+      <div class="services-carousel" id="client-services-list"></div>
 
       <div class="card" style="margin-top:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -523,6 +762,16 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <div class="section-title">Meus agendamentos</div>
       <div id="client-my-appts"></div>
       <button class="btn btn-outline" onclick="clearClientHistory()" style="margin-top:4px;">Apagar histórico</button>
+
+      <div class="section-title">Avaliações</div>
+      <div class="card rating-summary-card" id="client-rating-summary">
+        <div class="avg-wrap">
+          <div class="avg" id="client-rating-avg">–</div>
+          <div class="stars-display" id="client-rating-stars"></div>
+        </div>
+        <div class="count" id="client-rating-count">Ainda sem avaliações</div>
+      </div>
+      <div id="client-reviews-list"></div>
     </div>
   </div>
 
@@ -534,7 +783,7 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
     </div>
     <div class="container stack">
       <div class="card">
-        <h3>Seus dados</h3>
+        <h3>👤 Seus dados</h3>
         <label>Nome</label>
         <input type="text" id="client-edit-name">
         <label>Telefone</label>
@@ -557,6 +806,11 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
     <input type="text" id="svc-name" placeholder="Ex: Corte, Barba, Sobrancelha">
     <label>Preço (R$)</label>
     <input type="number" id="svc-price" placeholder="Ex: 35">
+    <label>Ícone do serviço</label>
+    <div class="icon-picker-grid" id="svc-icon-picker"></div>
+    <label>Ou envie uma imagem do corte</label>
+    <div id="svc-image-preview-wrap"></div>
+    <input type="file" id="svc-image-input" accept="image/*" style="display:none" onchange="onServiceImageSelected(event)">
     <div style="height:14px"></div>
     <button class="btn btn-primary" onclick="saveService()">Salvar serviço</button>
     <div id="svc-delete-wrap"></div>
@@ -567,7 +821,7 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
 <div class="modal-overlay" id="modal-pix">
   <div class="modal-sheet" style="position:relative;">
     <div class="close-x" onclick="closeModal('modal-pix')">✕</div>
-    <h3>Pagar com Pix</h3>
+    <h3>💳 Pagar com Pix</h3>
     <div style="text-align:center;margin:14px 0;">
       <img id="pix-qr-img" src="" alt="QR Code Pix" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;">
     </div>
@@ -582,11 +836,26 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
   </div>
 </div>
 
+<!-- ============ REVIEW MODAL ============ -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-review')">✕</div>
+    <h3>⭐ Avaliar atendimento</h3>
+    <div class="helper-text" style="margin-top:0;">Sua nota e comentário ficam visíveis para o barbeiro e para outros clientes.</div>
+    <div class="star-picker" id="review-star-picker"></div>
+    <label>Comentário (opcional)</label>
+    <textarea id="review-comment" rows="3" maxlength="300" placeholder="Como foi seu atendimento?"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="submitReview()">Enviar avaliação</button>
+  </div>
+</div>
+
 <!-- ============ NEW SHOP NAME PROMPT ============ -->
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 /* ============================================================
    FIREBASE (banco de dados online)
@@ -601,8 +870,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 // Gaveta própria do BarberFlow dentro do projeto, separada do app de funcionários
 const SHOPS_COLLECTION = 'barberflow_shops';
+const USERS_COLLECTION = 'barberflow_users';
+const DEVICE_TRIALS_COLLECTION = 'barberflow_device_trials';
+const GIFTCODES_COLLECTION = 'barberflow_giftcodes';
 
 /* ============================================================
    DATA LAYER
@@ -639,9 +912,85 @@ function genCode(){
 }
 // Link padrão do app do cliente publicado (usado se o barbeiro não preencher outro)
 const DEFAULT_CLIENT_APP_URL = 'https://nox-games.github.io/BarberFlow/cliente.html';
-function defaultShop(code){
+
+/* ============================================================
+   TESTE GRÁTIS (30 dias) + VERSÃO GOLD — controle por conta
+   ============================================================ */
+const TRIAL_DAYS = 30;
+const WHATSAPP_NUMBER = '5588981488038';
+const WHATSAPP_MESSAGE = 'Olá! Meu teste grátis do BarberFlow acabou e quero adquirir a versão Gold.';
+
+// Identificador do aparelho: usado para impedir que o mesmo celular
+// fique criando contas novas para "renovar" o teste grátis.
+function getDeviceId(){
+  let id = localStorage.getItem('barberflow_device_id');
+  if(!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : ('dev_'+Math.random().toString(36).slice(2)+Date.now()));
+    localStorage.setItem('barberflow_device_id', id);
+  }
+  return id;
+}
+
+function trialDaysLeftForUser(u){
+  if(!u || u.plan==='gold') return TRIAL_DAYS;
+  if(!u.trialStartedAt) return TRIAL_DAYS;
+  const started = new Date(u.trialStartedAt).getTime();
+  const elapsedDays = (Date.now() - started) / 86400000;
+  return Math.max(0, Math.ceil(TRIAL_DAYS - elapsedDays));
+}
+function isTrialExpiredForUser(u){
+  if(!u) return false;
+  if(u.plan==='gold') return false;
+  if(!u.trialStartedAt) return false;
+  const started = new Date(u.trialStartedAt).getTime();
+  const elapsedDays = (Date.now() - started) / 86400000;
+  return elapsedDays >= TRIAL_DAYS;
+}
+function updateTrialBanner(u){
+  const el = document.getElementById('trial-days-text');
+  const banner = document.getElementById('trial-banner');
+  if(!el || !banner) return;
+  if(!u || u.plan==='gold'){ banner.style.display='none'; return; }
+  banner.style.display='flex';
+  const days = trialDaysLeftForUser(u);
+  if(days <= 3){
+    el.textContent = days<=1 ? 'Último dia do teste grátis — adquira o Gold para não perder o acesso' : `Faltam ${days} dias do seu teste grátis`;
+    banner.style.background = '#3a1414';
+    banner.style.color = '#e5787c';
+  } else {
+    el.textContent = `Teste grátis: ${days} dias restantes`;
+    banner.style.background = '#2a2210';
+    banner.style.color = '#e0b84a';
+  }
+}
+function openWhatsAppPurchase(){
+  const link = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(WHATSAPP_MESSAGE);
+  window.open(link, '_blank');
+}
+// Ponto único de entrada na área do barbeiro: verifica se o tutorial já foi visto
+// e se a conta ainda tem acesso (teste válido ou Gold) antes de mostrar o painel.
+function enterBarberArea(shop){
+  if(!currentUserDoc){ showScreen('screen-welcome'); return; }
+  if(!currentUserDoc.onboardingSeen){
+    showScreen('screen-onboarding-barber');
+    return;
+  }
+  if(isTrialExpiredForUser(currentUserDoc)){
+    document.getElementById('gold-title').textContent = 'Seu teste grátis acabou';
+    document.getElementById('gold-subtitle').textContent = 'Você aproveitou os 30 dias de teste do BarberFlow. Para continuar usando o app sem limites, adquira a versão Gold.';
+    showScreen('screen-trial-expired');
+    return;
+  }
+  applyTheme(shop.color);
+  renderBarberDashboard();
+  updateTrialBanner(currentUserDoc);
+  showScreen('screen-barber-dashboard');
+}
+
+function defaultShop(code, ownerUid){
   return {
     code,
+    ownerUid: ownerUid || null,
     shopName:'Minha Barbearia',
     barberName:'Barbeiro',
     welcomeMsg:'Bem-vindo! Marque seu horário 💈',
@@ -654,7 +1003,7 @@ function defaultShop(code){
     clientAppUrl:DEFAULT_CLIENT_APP_URL,
     clients:[],
     appointments:[],
-    ownedByThisDevice:true
+    reviews:[]
   };
 }
 // Preenche campos que podem faltar em barbearias criadas antes de alguma atualização do app.
@@ -666,6 +1015,7 @@ function normalizeShop(shop){
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
   if(!shop.appointments) shop.appointments = [];
+  if(!shop.reviews) shop.reviews = [];
   if(!shop.workTimes){
     shop.workTimes = [];
     if(shop.workStart && shop.workEnd){
@@ -683,12 +1033,31 @@ function normalizeShop(shop){
 let shops = loadShops();
 let session = loadSession();
 let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
+let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
+let currentUserDoc = null;   // documento barberflow_users/{uid} em cache
 
 /* ============================================================
    SINCRONIZAÇÃO EM TEMPO REAL COM A NUVEM
    ============================================================ */
 let unsubscribeShopListener = null;
 let listenedCode = null;
+let unsubscribeUserListener = null;
+// Conecta o documento do barbeiro (plano/teste grátis) em tempo real —
+// assim, se ele ativar um código Gold, o acesso libera na hora.
+function listenToUser(uid){
+  if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+  unsubscribeUserListener = db.collection(USERS_COLLECTION).doc(uid).onSnapshot(function(doc){
+    if(!doc.exists) return;
+    currentUserDoc = doc.data();
+    if(session && session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
+      updateTrialBanner(currentUserDoc);
+    }
+    if(document.getElementById('screen-trial-expired').classList.contains('active') && !isTrialExpiredForUser(currentUserDoc)){
+      const shop = currentShop();
+      if(shop) enterBarberArea(shop);
+    }
+  }, function(err){ console.error('Erro ao sincronizar conta:', err); });
+}
 // Conecta a barbearia `code` ao Firestore em tempo real: qualquer mudança feita
 // por outro aparelho (barbeiro ou cliente) chega aqui e re-renderiza a tela ativa.
 function listenToShop(code, onFirstLoad){
@@ -709,7 +1078,14 @@ function listenToShop(code, onFirstLoad){
       first = false;
       onFirstLoad && onFirstLoad(shops[code]);
     } else if(session && session.code===code){
-      if(session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')) renderBarberDashboard();
+      if(session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
+        if(isTrialExpiredForUser(currentUserDoc)){
+          showScreen('screen-trial-expired');
+        } else {
+          renderBarberDashboard();
+          updateTrialBanner(currentUserDoc);
+        }
+      }
       if((session.role==='client' || previewMode) && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
     }
   }, function(err){
@@ -750,6 +1126,10 @@ function shadeColor(hex, percent){
 
 function goHomeMenu(){
   if(previewMode){ exitClientPreview(); return; }
+  if(session && session.role==='barber'){
+    if(currentShop()) enterBarberArea(currentShop());
+    return;
+  }
   clearSession();
   session = null;
   showScreen('screen-welcome');
@@ -773,9 +1153,7 @@ function exitClientPreview(){
   previewMode = false;
   document.getElementById('preview-banner').style.display = 'none';
   const shop = currentShop();
-  if(shop) applyTheme(shop.color);
-  renderBarberDashboard();
-  showScreen('screen-barber-dashboard');
+  if(shop) enterBarberArea(shop);
 }
 function toggleClientPreview(){
   if(previewMode){
@@ -786,88 +1164,247 @@ function toggleClientPreview(){
 }
 
 /* ============================================================
-   INIT / ROUTER
+   INIT / ROUTER — a sessão do barbeiro agora é controlada pelo
+   Firebase Authentication (login por e-mail e senha)
    ============================================================ */
 function init(){
-  if(session && session.role==='barber' && session.code){
-    listenToShop(session.code, function(shopData){
-      if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
-      applyTheme(shopData.color);
-      renderBarberDashboard();
-      showScreen('screen-barber-dashboard');
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      currentUser = user;
+      loadBarberAccount(user);
+    } else {
+      currentUser = null;
+      currentUserDoc = null;
+      if(session && session.role==='client' && session.code){
+        listenToShop(session.code, function(shopData){
+          if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
+          applyTheme(shopData.color);
+          renderClientHome();
+          showScreen('screen-client-home');
+        });
+      } else {
+        showScreen('screen-welcome');
+      }
+    }
+  });
+}
+// Carrega os dados da conta do barbeiro (barberflow_users/{uid}) e, a partir
+// dela, a barbearia vinculada, aplicando as regras de teste grátis / Gold.
+function loadBarberAccount(user){
+  db.collection(USERS_COLLECTION).doc(user.uid).get().then(function(doc){
+    if(!doc.exists){
+      toast('Não encontramos sua conta. Fale com o suporte.');
+      logoutBarber();
+      return;
+    }
+    currentUserDoc = doc.data();
+    listenToUser(user.uid);
+    session = {role:'barber', code:currentUserDoc.shopCode, uid:user.uid};
+    saveSession(session);
+    listenToShop(currentUserDoc.shopCode, function(shopData){
+      if(!shopData){ toast('Barbearia não encontrada na nuvem'); logoutBarber(); return; }
+      enterBarberArea(shopData);
     });
-  } else if(session && session.role==='client' && session.code){
-    listenToShop(session.code, function(shopData){
-      if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
-      applyTheme(shopData.color);
-      renderClientHome();
-      showScreen('screen-client-home');
-    });
-  } else {
-    showScreen('screen-welcome');
-  }
+  }).catch(function(err){
+    console.error('Erro ao carregar conta:', err);
+    toast('Erro de conexão. Verifique sua internet.');
+  });
 }
 
 /* ============================================================
-   BARBER: ENTRY / SHOP LIST / CREATE
+   BARBER: AUTENTICAÇÃO (login / criar conta / recuperar senha)
    ============================================================ */
-function renderBarberEntryList(){
-  const wrap = document.getElementById('barber-shops-list');
-  const mine = Object.values(shops).filter(s=>s.ownedByThisDevice);
-  if(mine.length===0){
-    wrap.innerHTML = `<div class="empty-state"><div class="em">💈</div>Você ainda não criou<br>nenhuma barbearia aqui.</div>`;
-    return;
-  }
-  wrap.innerHTML = mine.map(s=>`
-    <div class="list-select-item" onclick="enterShop('${s.code}')">
-      <div>
-        <b>${escapeHtml(s.shopName)}</b><br>
-        <span>Código: ${s.code} · ${s.services.length} serviço(s)</span>
-      </div>
-      <span style="color:var(--primary);font-size:18px;">›</span>
-    </div>
-  `).join('');
+function openLoginScreen(){
+  document.getElementById('login-email').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-error').classList.remove('show');
+  showScreen('screen-login');
 }
-function enterShop(code){
-  session = {role:'barber', code};
-  saveSession(session);
-  listenToShop(code, function(shopData){
-    if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
-    applyTheme(shopData.color);
-    renderBarberDashboard();
-    showScreen('screen-barber-dashboard');
+function openSignupScreen(){
+  document.getElementById('signup-shop-name').value='';
+  document.getElementById('signup-barber-name').value='';
+  document.getElementById('signup-color').value='#c9a24d';
+  document.getElementById('signup-email').value='';
+  document.getElementById('signup-password').value='';
+  document.getElementById('signup-password2').value='';
+  document.getElementById('signup-error').classList.remove('show');
+  showScreen('screen-signup');
+}
+function openForgotScreen(){
+  document.getElementById('forgot-email').value = document.getElementById('login-email').value || '';
+  document.getElementById('forgot-error').classList.remove('show');
+  showScreen('screen-forgot');
+}
+function showFieldError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function authErrorMessage(err){
+  const map = {
+    'auth/invalid-email':'E-mail inválido.',
+    'auth/user-not-found':'Não existe conta com esse e-mail.',
+    'auth/wrong-password':'Senha incorreta.',
+    'auth/invalid-credential':'E-mail ou senha incorretos.',
+    'auth/email-already-in-use':'Já existe uma conta com esse e-mail.',
+    'auth/weak-password':'A senha precisa ter no mínimo 6 caracteres.',
+    'auth/too-many-requests':'Muitas tentativas. Aguarde um pouco e tente de novo.',
+    'auth/network-request-failed':'Sem conexão com a internet.'
+  };
+  return map[err.code] || ('Erro: '+err.message);
+}
+function loginBarber(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  document.getElementById('login-error').classList.remove('show');
+  if(!email || !password){ showFieldError('login-error','Preencha e-mail e senha'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  auth.signInWithEmailAndPassword(email, password).catch(function(err){
+    showFieldError('login-error', authErrorMessage(err));
+  }).finally(function(){
+    btn.disabled = false; btn.textContent = 'Entrar';
   });
 }
-function openNewShopModal(){
-  document.getElementById('setup-shop-name').value='';
-  document.getElementById('setup-barber-name').value='';
-  document.getElementById('setup-color').value='#c9a24d';
-  showScreen('screen-barber-setup');
+function signupBarber(){
+  const shopName = document.getElementById('signup-shop-name').value.trim();
+  const barberName = document.getElementById('signup-barber-name').value.trim();
+  const color = document.getElementById('signup-color').value;
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const password2 = document.getElementById('signup-password2').value;
+  document.getElementById('signup-error').classList.remove('show');
+  if(!shopName || !barberName){ showFieldError('signup-error','Preencha o nome da barbearia e o seu nome'); return; }
+  if(!email || !password){ showFieldError('signup-error','Preencha e-mail e senha'); return; }
+  if(password.length<6){ showFieldError('signup-error','A senha precisa ter no mínimo 6 caracteres'); return; }
+  if(password!==password2){ showFieldError('signup-error','As senhas não coincidem'); return; }
+
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  const deviceId = getDeviceId();
+
+  auth.createUserWithEmailAndPassword(email, password).then(function(cred){
+    const uid = cred.user.uid;
+    // Verifica se este aparelho já usou o teste grátis com outra conta.
+    return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).get().then(function(devDoc){
+      let trialStartedAt;
+      if(devDoc.exists){
+        // Aparelho já tem um teste iniciado — herda a mesma data (não reinicia os 30 dias).
+        trialStartedAt = devDoc.data().firstTrialStartedAt;
+        return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).set({
+          firstTrialStartedAt: trialStartedAt,
+          emails: firebase.firestore.FieldValue.arrayUnion(email)
+        }, {merge:true}).then(function(){ return trialStartedAt; });
+      } else {
+        trialStartedAt = new Date().toISOString();
+        return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).set({
+          firstTrialStartedAt: trialStartedAt,
+          emails: [email]
+        }).then(function(){ return trialStartedAt; });
+      }
+    }).then(function(trialStartedAt){
+      let code = genCode();
+      // (checagem simples de colisão de código; extremamente raro)
+      const shop = defaultShop(code, uid);
+      shop.shopName = shopName; shop.barberName = barberName; shop.color = color;
+      const userDoc = {
+        email: email,
+        shopCode: code,
+        deviceId: deviceId,
+        plan: 'trial',
+        trialStartedAt: trialStartedAt,
+        onboardingSeen: false,
+        createdAt: new Date().toISOString()
+      };
+      return Promise.all([
+        db.collection(SHOPS_COLLECTION).doc(code).set(shop),
+        db.collection(USERS_COLLECTION).doc(uid).set(userDoc)
+      ]).then(function(){
+        shops[code] = shop;
+        try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+        toast('Conta criada! Bem-vindo(a) ao BarberFlow.');
+      });
+    });
+  }).catch(function(err){
+    console.error('Erro ao criar conta:', err);
+    showFieldError('signup-error', authErrorMessage(err));
+  }).finally(function(){
+    btn.disabled = false; btn.textContent = 'Criar conta e começar teste grátis';
+  });
 }
-function createShop(){
-  const name = document.getElementById('setup-shop-name').value.trim();
-  const barber = document.getElementById('setup-barber-name').value.trim();
-  const color = document.getElementById('setup-color').value;
-  if(!name || !barber){ toast('Preencha o nome da barbearia e o seu nome'); return; }
-  let code = genCode();
-  while(shops[code]) code = genCode();
-  const shop = defaultShop(code);
-  shop.shopName = name; shop.barberName = barber; shop.color = color;
-  shops[code] = shop;
-  saveShops(shops, code);
-  enterShop(code);
-  toast('Barbearia criada! Código: '+code);
+function sendPasswordReset(){
+  const email = document.getElementById('forgot-email').value.trim();
+  document.getElementById('forgot-error').classList.remove('show');
+  if(!email){ showFieldError('forgot-error','Digite seu e-mail'); return; }
+  auth.sendPasswordResetEmail(email).then(function(){
+    toast('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+    showScreen('screen-login');
+  }).catch(function(err){
+    showFieldError('forgot-error', authErrorMessage(err));
+  });
+}
+function logoutBarber(){
+  if(unsubscribeShopListener){ unsubscribeShopListener(); unsubscribeShopListener=null; listenedCode=null; }
+  if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+  auth.signOut().then(function(){
+    clearSession();
+    session = null;
+    currentUser = null;
+    currentUserDoc = null;
+    showScreen('screen-welcome');
+  });
+}
+function finishOnboarding(){
+  if(!currentUser) return;
+  db.collection(USERS_COLLECTION).doc(currentUser.uid).update({onboardingSeen:true}).then(function(){
+    currentUserDoc.onboardingSeen = true;
+    const shop = currentShop();
+    if(shop) enterBarberArea(shop);
+  });
+}
+function redeemGoldCode(){
+  const raw = document.getElementById('gold-redeem-code').value.trim().toUpperCase();
+  const errEl = document.getElementById('gold-redeem-error');
+  errEl.classList.remove('show');
+  if(!raw){ errEl.textContent='Digite o código de ativação'; errEl.classList.add('show'); return; }
+  if(!currentUser){ return; }
+  const codeRef = db.collection(GIFTCODES_COLLECTION).doc(raw);
+  codeRef.get().then(function(doc){
+    if(!doc.exists){ errEl.textContent='Código não encontrado. Confira com quem te vendeu.'; errEl.classList.add('show'); return; }
+    if(doc.data().used){ errEl.textContent='Esse código já foi usado.'; errEl.classList.add('show'); return; }
+    // Ordem importa: primeiro marcamos o código como usado por esta conta,
+    // só depois atualizamos o plano — as regras do Firestore conferem essa ordem.
+    return codeRef.update({used:true, usedBy:currentUser.uid, usedByEmail:currentUser.email, usedAt:new Date().toISOString()})
+    .then(function(){
+      return db.collection(USERS_COLLECTION).doc(currentUser.uid).update({plan:'gold', goldCode:raw});
+    }).then(function(){
+      currentUserDoc.plan = 'gold';
+      toast('Versão Gold ativada! Aproveite 🎉');
+      const shop = currentShop();
+      if(shop) enterBarberArea(shop);
+    });
+  }).catch(function(err){
+    console.error('Erro ao ativar código:', err);
+    errEl.textContent='Erro de conexão. Tente novamente.'; errEl.classList.add('show');
+  });
 }
 function deleteShopConfirm(){
-  if(!session) return;
-  if(confirm('Tem certeza que deseja excluir esta barbearia e todos os dados? Essa ação não pode ser desfeita.')){
+  if(!session || !currentUser) return;
+  if(confirm('Tem certeza que deseja excluir sua conta e a barbearia com todos os dados? Essa ação não pode ser desfeita.')){
     const code = session.code;
+    const uid = currentUser.uid;
     if(unsubscribeShopListener){ unsubscribeShopListener(); unsubscribeShopListener=null; listenedCode=null; }
-    db.collection(SHOPS_COLLECTION).doc(code).delete().catch(function(err){ console.error('Erro ao excluir na nuvem:', err); });
+    if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+    db.collection(SHOPS_COLLECTION).doc(code).delete().catch(function(err){ console.error('Erro ao excluir barbearia:', err); });
+    db.collection(USERS_COLLECTION).doc(uid).delete().catch(function(err){ console.error('Erro ao excluir conta:', err); });
     delete shops[code];
     try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
-    goHomeMenu();
-    toast('Barbearia excluída');
+    const user = auth.currentUser;
+    clearSession();
+    session = null; currentUser = null; currentUserDoc = null;
+    showScreen('screen-welcome');
+    toast('Barbearia e conta excluídas');
+    if(user){ user.delete().catch(function(){ auth.signOut(); }); } else { auth.signOut(); }
   }
 }
 
@@ -877,7 +1414,7 @@ function deleteShopConfirm(){
 let currentTab = 'agenda';
 function switchTab(tab){
   currentTab = tab;
-  ['agenda','clientes','servicos','horarios','faturamento'].forEach(t=>{
+  ['agenda','clientes','servicos','horarios','faturamento','avaliacoes'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===tab)?'block':'none';
   });
   document.querySelectorAll('.navitem').forEach(n=>{
@@ -890,6 +1427,7 @@ function currentShop(){ return shops[session.code]; }
 function renderBarberDashboard(){
   const shop = currentShop();
   if(!shop) return;
+  updateTrialBanner(currentUserDoc);
   document.getElementById('dash-shop-name').textContent = shop.shopName;
   document.getElementById('dash-barber-name').textContent = shop.barberName;
 
@@ -961,7 +1499,10 @@ function renderBarberDashboard(){
       ? `<div class="empty-state" style="padding:24px;"><div class="em">💈</div>Nenhum serviço cadastrado.<br>Adicione cortes, barba, etc.</div>`
       : shop.services.map(s=>`
         <div class="service-item" onclick="openServiceModal('${s.id}')">
-          <div class="info"><b>${escapeHtml(s.name)}</b></div>
+          <div style="display:flex;align-items:center;">
+            <div class="service-icon-wrap">${svcVisualHtml(s,20)}</div>
+            <div class="info"><b>${escapeHtml(s.name)}</b></div>
+          </div>
           <div class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</div>
         </div>
       `).join('');
@@ -976,6 +1517,51 @@ function renderBarberDashboard(){
   if(currentTab==='faturamento'){
     renderFinanceTab();
   }
+
+  if(currentTab==='avaliacoes'){
+    renderReviewsTab();
+  }
+}
+
+/* ============================================================
+   AVALIAÇÕES (estrelas + comentários dos clientes)
+   ============================================================ */
+function starsHtml(rating){
+  let s = '';
+  for(let i=1;i<=5;i++){ s += `<span class="st ${i<=Math.round(rating)?'on':''}">★</span>`; }
+  return s;
+}
+function shopRatingStats(shop){
+  const reviews = shop.reviews || [];
+  const count = reviews.length;
+  const avg = count===0 ? 0 : reviews.reduce((sum,r)=>sum+Number(r.rating||0),0) / count;
+  return {count, avg};
+}
+function renderReviewCard(r){
+  const dateFmt = r.createdAt ? formatDate(r.createdAt.slice(0,10)) : '';
+  return `
+    <div class="review-card">
+      <div class="rtop">
+        <span class="rname">${escapeHtml(r.clientName||'Cliente')}</span>
+        <span class="rdate">${dateFmt}</span>
+      </div>
+      <div class="stars-display">${starsHtml(r.rating)}</div>
+      ${r.comment ? `<div class="rcomment">${escapeHtml(r.comment)}</div>` : ''}
+    </div>
+  `;
+}
+function renderReviewsTab(){
+  const shop = currentShop();
+  if(!shop) return;
+  const {count, avg} = shopRatingStats(shop);
+  document.getElementById('barber-rating-avg').textContent = count===0 ? '–' : avg.toFixed(1).replace('.',',');
+  document.getElementById('barber-rating-stars').innerHTML = starsHtml(avg);
+  document.getElementById('barber-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
+  const listWrap = document.getElementById('list-reviews');
+  const sorted = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  listWrap.innerHTML = sorted.length===0
+    ? `<div class="empty-state" style="padding:24px;"><div class="em">⭐</div>Nenhuma avaliação recebida ainda</div>`
+    : sorted.map(r=>renderReviewCard(r)).join('');
 }
 
 function renderApptCard(a, mode){
@@ -1158,8 +1744,93 @@ function toggleClientStatus(clientId){
   renderBarberDashboard();
 }
 
+/* ---------- Ícones de serviço ---------- */
+const SERVICE_ICON_KEYS = ['tesoura','degrade','social','undercut','barba','sobrancelha','navalha','infantil','platinado'];
+function serviceIconPaths(key){
+  const icons = {
+    tesoura: '<circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><line x1="20" y1="4" x2="8.5" y2="15.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="8.5" y1="8.5" x2="12" y2="12"/>',
+    degrade: '<rect x="8" y="3" width="8" height="12" rx="2"/><rect x="9" y="15" width="6" height="2.5" rx="1"/><path d="M10 17.5v2.5M12.5 17.5v3M15 17.5v2.5"/><path d="M10 7h4M10 10h4"/>',
+    social: '<path d="M4 5h16" stroke-width="2.2"/><path d="M6 5v11M9.5 5v9M13 5v11M16.5 5v9M20 5v11"/>',
+    undercut: '<path d="M5 5v14M9 5v14M13 5v14M17 5v14M21 5v14"/>',
+    barba: '<path d="M8 4h8v5c0 5-1 8.5-2.3 10.7-.7 1.2-1.3 1.8-1.7 1.8s-1-.6-1.7-1.8C9 17.5 8 14 8 9z"/><path d="M9 8c1.5-1 4.5-1 6 0"/><path d="M9.5 13h5M10 16.5h4"/>',
+    sobrancelha: '<path d="M3 14q5-7 10-1"/><path d="M11 14q5-7 10-1"/>',
+    navalha: '<rect x="4" y="7" width="16" height="10" rx="2"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>',
+    infantil: '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>',
+    platinado: '<path d="M12 2l1.8 6.7L20 10l-6.2 1.7L12 18l-1.8-6.3L4 10l6.2-1.3z"/><path d="M19 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'
+  };
+  return icons[key] || icons.tesoura;
+}
+function svcIconHtml(key, size){
+  size = size || 22;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${serviceIconPaths(key)}</svg>`;
+}
+// Retorna a imagem enviada pelo barbeiro (se houver) ou o ícone padrão do serviço.
+function svcVisualHtml(s, size){
+  size = size || 22;
+  if(s.customImage){
+    return `<img src="${s.customImage}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;">`;
+  }
+  return svcIconHtml(s.icon||'tesoura', size);
+}
+
 /* ---------- Serviços ---------- */
 let editingServiceId = null;
+let editingServiceIcon = 'tesoura';
+let editingServiceImage = null;
+function renderIconPicker(){
+  const wrap = document.getElementById('svc-icon-picker');
+  wrap.innerHTML = SERVICE_ICON_KEYS.map(k=>`
+    <div class="icon-picker-item ${k===editingServiceIcon?'selected':''}" onclick="selectServiceIcon('${k}')">${svcIconHtml(k,24)}</div>
+  `).join('');
+}
+function selectServiceIcon(k){
+  editingServiceIcon = k;
+  renderIconPicker();
+}
+function renderImagePicker(){
+  const wrap = document.getElementById('svc-image-preview-wrap');
+  if(editingServiceImage){
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('svc-image-input').click()">
+        <img class="thumb" src="${editingServiceImage}">
+        <div class="txt"><b>Imagem enviada</b>Toque para trocar</div>
+        <button type="button" class="img-remove-btn" onclick="event.stopPropagation();removeServiceImage()">Remover</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('svc-image-input').click()">
+        <div class="placeholder">📷</div>
+        <div class="txt"><b>Nenhuma imagem</b>Toque para enviar uma foto ou desenho do corte</div>
+      </div>`;
+  }
+}
+function onServiceImageSelected(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona pra não pesar no armazenamento
+      const maxSize = 300;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      editingServiceImage = canvas.toDataURL('image/jpeg', 0.82);
+      renderImagePicker();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function removeServiceImage(){
+  editingServiceImage = null;
+  renderImagePicker();
+}
 function openServiceModal(serviceId){
   editingServiceId = serviceId || null;
   const shop = currentShop();
@@ -1169,13 +1840,19 @@ function openServiceModal(serviceId){
     document.getElementById('service-modal-title').textContent = 'Editar serviço';
     document.getElementById('svc-name').value = s.name;
     document.getElementById('svc-price').value = s.price;
+    editingServiceIcon = s.icon || 'tesoura';
+    editingServiceImage = s.customImage || null;
     delWrap.innerHTML = `<div style="height:10px"></div><button class="btn btn-danger" onclick="deleteService()">Excluir serviço</button>`;
   } else {
     document.getElementById('service-modal-title').textContent = 'Novo serviço';
     document.getElementById('svc-name').value = '';
     document.getElementById('svc-price').value = '';
+    editingServiceIcon = 'tesoura';
+    editingServiceImage = null;
     delWrap.innerHTML = '';
   }
+  renderIconPicker();
+  renderImagePicker();
   document.getElementById('modal-service').classList.add('active');
 }
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
@@ -1186,9 +1863,9 @@ function saveService(){
   const shop = currentShop();
   if(editingServiceId){
     const s = shop.services.find(x=>x.id===editingServiceId);
-    s.name=name; s.price=price;
+    s.name=name; s.price=price; s.icon=editingServiceIcon; s.customImage=editingServiceImage||null;
   } else {
-    shop.services.push({id:uid('svc'), name, price});
+    shop.services.push({id:uid('svc'), name, price, icon:editingServiceIcon, customImage:editingServiceImage||null});
   }
   saveShops(shops);
   closeModal('modal-service');
@@ -1296,6 +1973,17 @@ function openConfigScreen(){
   document.getElementById('config-color').value = shop.color;
   document.getElementById('config-pix-code').value = shop.pixCode || '';
   document.getElementById('config-client-url').value = shop.clientAppUrl || '';
+  document.getElementById('config-account-email').textContent = (currentUser && currentUser.email) || '-';
+  const badge = document.getElementById('config-plan-badge');
+  const trialText = document.getElementById('config-trial-text');
+  if(currentUserDoc && currentUserDoc.plan==='gold'){
+    badge.style.display = 'inline-flex';
+    trialText.textContent = 'Você tem a versão Gold ilimitada. Obrigado!';
+  } else {
+    badge.style.display = 'none';
+    const days = currentUserDoc ? trialDaysLeftForUser(currentUserDoc) : 0;
+    trialText.textContent = 'Teste grátis: '+days+' dia(s) restante(s).';
+  }
 }
 document.getElementById('screen-barber-config').addEventListener('transitionend',()=>{});
 function saveShopConfig(){
@@ -1441,12 +2129,11 @@ function renderClientHome(){
   svcWrap.innerHTML = shop.services.length===0
     ? `<div class="empty-state" style="padding:20px;"><div class="em">💈</div>O barbeiro ainda não cadastrou serviços</div>`
     : shop.services.map(s=>`
-      <div class="service-item" id="csvc-${s.id}" onclick="toggleClientService('${s.id}')">
-        <div style="display:flex;align-items:center;">
-          <div class="checkbox-dot"></div>
-          <div class="info"><b>${escapeHtml(s.name)}</b></div>
-        </div>
-        <div class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</div>
+      <div class="service-card-h" id="csvc-${s.id}" onclick="toggleClientService('${s.id}')" style="position:relative;">
+        <span class="check-dot">✓</span>
+        <div class="service-icon-wrap">${svcVisualHtml(s,24)}</div>
+        <b>${escapeHtml(s.name)}</b>
+        <span class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</span>
       </div>
     `).join('');
   updateClientTotal();
@@ -1463,6 +2150,17 @@ function renderClientHome(){
   listWrap.innerHTML = sorted.length===0
     ? `<div class="empty-state" style="padding:20px;"><div class="em">🗓️</div>Você ainda não tem agendamentos</div>`
     : sorted.map(a=>renderClientApptCard(a)).join('');
+
+  // avaliações da barbearia (visíveis para todos os clientes)
+  const {count, avg} = shopRatingStats(shop);
+  document.getElementById('client-rating-avg').textContent = count===0 ? '–' : avg.toFixed(1).replace('.',',');
+  document.getElementById('client-rating-stars').innerHTML = starsHtml(avg);
+  document.getElementById('client-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
+  const reviewsWrap = document.getElementById('client-reviews-list');
+  const sortedReviews = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  reviewsWrap.innerHTML = sortedReviews.length===0
+    ? `<div class="empty-state" style="padding:16px;"><div class="em">⭐</div>Seja o primeiro a avaliar!</div>`
+    : sortedReviews.map(r=>renderReviewCard(r)).join('');
 }
 function renderClientApptCard(a){
   const shop = shops[session.code];
@@ -1477,6 +2175,7 @@ function renderClientApptCard(a){
       ? (a.paymentStatus==='pago' ? '💵 Pagamento recebido pelo barbeiro' : '💵 Vai pagar pessoalmente')
       : '';
   const showPaymentButtons = cancellable && !a.paymentMethod;
+  const myReview = a.status==='done' ? (shop.reviews||[]).find(r=>r.apptId===a.id) : null;
   return `
     <div class="appt-card ${a.status}" ${cancellable ? `onclick="confirmCancelAppt('${a.id}')"` : ''} style="${cancellable?'cursor:pointer;':''}">
       <div class="appt-top">
@@ -1491,6 +2190,15 @@ function renderClientApptCard(a){
         <div class="payment-row" onclick="event.stopPropagation()">
           ${shop.pixCode ? `<button class="btn btn-sm btn-primary" onclick="openPixModal('${a.id}')">Pagar com Pix</button>` : ''}
           <button class="btn btn-sm btn-outline" onclick="payPersonally('${a.id}')">Pagar pessoalmente</button>
+        </div>` : ''}
+      ${a.status==='done' && !myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-primary" onclick="openReviewModal('${a.id}')">⭐ Avaliar atendimento</button>
+        </div>` : ''}
+      ${myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <div class="stars-display">${starsHtml(myReview.rating)}</div>
+          ${myReview.comment ? `<div class="rcomment">${escapeHtml(myReview.comment)}</div>` : ''}
         </div>` : ''}
       ${cancellable ? `<div class="helper-text" style="margin-top:8px;">Toque no card para cancelar este agendamento</div>` : ''}
     </div>
@@ -1544,6 +2252,45 @@ function payPersonally(apptId){
   saveShops(shops);
   renderClientHome();
   toast('Combinado: pagamento pessoalmente na hora');
+}
+let reviewTargetApptId = null;
+let reviewRating = 0;
+function openReviewModal(apptId){
+  reviewTargetApptId = apptId;
+  reviewRating = 0;
+  document.getElementById('review-comment').value = '';
+  renderStarPicker();
+  document.getElementById('modal-review').classList.add('active');
+}
+function renderStarPicker(){
+  const wrap = document.getElementById('review-star-picker');
+  wrap.innerHTML = [1,2,3,4,5].map(n=>`<span class="st ${n<=reviewRating?'on':''}" onclick="setReviewRating(${n})">★</span>`).join('');
+}
+function setReviewRating(n){
+  reviewRating = n;
+  renderStarPicker();
+}
+function submitReview(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma avaliação real é salva'); closeModal('modal-review'); return; }
+  if(reviewRating<1){ toast('Escolha de 1 a 5 estrelas'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===reviewTargetApptId);
+  if(!appt) return;
+  if(!shop.reviews) shop.reviews = [];
+  const client = shop.clients.find(c=>c.id===session.clientId);
+  shop.reviews.push({
+    id: uid('review'),
+    apptId: reviewTargetApptId,
+    clientId: session.clientId,
+    clientName: (client ? client.name : appt.clientName) || 'Cliente',
+    rating: reviewRating,
+    comment: document.getElementById('review-comment').value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  saveShops(shops);
+  closeModal('modal-review');
+  toast('Obrigado pela avaliação!');
+  renderClientHome();
 }
 function clearClientHistory(){
   if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
@@ -1681,7 +2428,6 @@ function openClientSettings(){
 const originalShowScreen = showScreen;
 showScreen = function(id){
   originalShowScreen(id);
-  if(id==='screen-barber-entry') renderBarberEntryList();
   if(id==='screen-barber-config') openConfigScreen();
   if(id==='screen-client-settings') openClientSettings();
 };

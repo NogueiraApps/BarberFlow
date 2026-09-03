@@ -180,6 +180,25 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
 .appt-meta{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
 .appt-services{font-size:12.5px;color:var(--text-dim);}
 .appt-total{font-weight:700;color:var(--primary);font-size:14.5px;margin-top:6px;}
+.stars-display{display:inline-flex;gap:1px;}
+.stars-display .st{font-size:14px;color:rgba(255,255,255,.2);}
+.stars-display .st.on{color:var(--primary);}
+.star-picker{display:flex;gap:10px;justify-content:center;margin:16px 0 4px;}
+.star-picker .st{font-size:36px;cursor:pointer;color:rgba(255,255,255,.2);transition:transform .1s ease, color .15s ease;}
+.star-picker .st.on{color:var(--primary);}
+.star-picker .st:active{transform:scale(.88);}
+.rating-summary-card{display:flex;align-items:center;gap:16px;text-align:left;}
+.rating-summary-card .avg{font-size:32px;font-weight:800;color:var(--primary);line-height:1;}
+.rating-summary-card .avg-wrap{flex-shrink:0;text-align:center;}
+.rating-summary-card .count{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+.review-card{
+  background:var(--surface2);border-radius:14px;padding:14px 15px;margin-bottom:9px;
+  border:1.5px solid rgba(255,255,255,.06);
+}
+.review-card .rtop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
+.review-card .rname{font-weight:700;font-size:14px;}
+.review-card .rdate{font-size:11px;color:var(--text-dim);white-space:nowrap;}
+.review-card .rcomment{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:5px;}
 .empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
 .empty-state .em{font-size:38px;margin-bottom:10px;}
 .client-item{
@@ -254,6 +273,14 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
 }
 .slot-btn.selected{border-color:var(--primary);color:var(--primary);background:rgba(201,162,77,.1);}
 .slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+
+/* ---------- Onboarding (tutorial do cliente) ---------- */
+.onb-step{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.onb-num{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+.onb-step h4{margin:2px 0 4px;font-size:14px;font-weight:700;}
+.onb-step p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.5;}
+.link-text{text-align:center;font-size:12.5px;color:var(--text-dim);margin-top:16px;}
+.link-text b{color:var(--primary);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -291,7 +318,40 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <input type="text" id="input-join-code" placeholder="Ex: AB12CD" maxlength="10" style="text-transform:uppercase">
       <button class="btn btn-primary" onclick="joinAsClient()">Entrar</button>
     </div>
-    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:30px;letter-spacing:.3px;">app by Daniel Nogueira</div>
+    <div class="link-text"><b onclick="showScreen('screen-tutorial')">Como funciona o app?</b></div>
+    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:20px;letter-spacing:.3px;">app by Daniel Nogueira</div>
+  </div>
+
+  <!-- ============ TUTORIAL (primeira vez do cliente) ============ -->
+  <div class="screen" id="screen-tutorial">
+    <div class="topbar">
+      <h1>Como funciona</h1>
+      <div class="icon-btn" onclick="closeTutorial()">✕</div>
+    </div>
+    <div class="container">
+      <div class="onb-step">
+        <div class="onb-num">1</div>
+        <div><h4>Cole o código</h4><p>Peça ao seu barbeiro o código da barbearia e cole na tela inicial para entrar.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">2</div>
+        <div><h4>Escolha os serviços</h4><p>Selecione um ou mais serviços (corte, barba, etc.) que você quer fazer.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">3</div>
+        <div><h4>Escolha dia e horário</h4><p>Veja os horários livres e escolha o que for melhor para você.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">4</div>
+        <div><h4>Aguarde a confirmação</h4><p>O barbeiro vai aceitar ou recusar seu pedido. Você acompanha tudo na tela inicial.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">5</div>
+        <div><h4>Pague pelo app ou pessoalmente</h4><p>Se o barbeiro aceitar Pix, você pode pagar direto pelo app ou combinar de pagar na hora.</p></div>
+      </div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" onclick="closeTutorial()">Entendi!</button>
+    </div>
   </div>
 
   <!-- ============ CLIENT REGISTER ============ -->
@@ -351,6 +411,16 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <div class="section-title">Meus agendamentos</div>
       <div id="client-my-appts"></div>
       <button class="btn btn-outline" onclick="clearClientHistory()" style="margin-top:4px;">Apagar histórico</button>
+
+      <div class="section-title">Avaliações</div>
+      <div class="card rating-summary-card" id="client-rating-summary">
+        <div class="avg-wrap">
+          <div class="avg" id="client-rating-avg">–</div>
+          <div class="stars-display" id="client-rating-stars"></div>
+        </div>
+        <div class="count" id="client-rating-count">Ainda sem avaliações</div>
+      </div>
+      <div id="client-reviews-list"></div>
     </div>
   </div>
 
@@ -395,11 +465,26 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
   </div>
 </div>
 
+<!-- ============ REVIEW MODAL ============ -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-review')">✕</div>
+    <h3>⭐ Avaliar atendimento</h3>
+    <div class="helper-text" style="margin-top:0;">Sua nota e comentário ficam visíveis para o barbeiro e para outros clientes.</div>
+    <div class="star-picker" id="review-star-picker"></div>
+    <label>Comentário (opcional)</label>
+    <textarea id="review-comment" rows="3" maxlength="300" placeholder="Como foi seu atendimento?"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="submitReview()">Enviar avaliação</button>
+  </div>
+</div>
+
 <!-- ============ NEW SHOP NAME PROMPT ============ -->
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 /* ============================================================
    FIREBASE (banco de dados online)
@@ -414,8 +499,15 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 // Gaveta própria do BarberFlow dentro do projeto, separada do app de funcionários
 const SHOPS_COLLECTION = 'barberflow_shops';
+// Login anônimo: garante que as regras de segurança do Firestore
+// consigam identificar que a escrita veio de dentro do app (cliente real),
+// sem exigir e-mail/senha do cliente — é só o barbeiro que faz login.
+auth.signInAnonymously().catch(function(err){
+  console.error('Erro no login anônimo:', err);
+});
 
 /* ============================================================
    DATA LAYER
@@ -452,6 +544,7 @@ function normalizeShop(shop){
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
   if(!shop.appointments) shop.appointments = [];
+  if(!shop.reviews) shop.reviews = [];
   if(!shop.workTimes){
     shop.workTimes = [];
     if(shop.workStart && shop.workEnd){
@@ -541,6 +634,11 @@ function goHomeMenu(){
 /* ============================================================
    INIT / ROUTER
    ============================================================ */
+const TUTORIAL_SEEN_KEY = 'barberflow_client_tutorial_seen';
+function closeTutorial(){
+  localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
+  showScreen('screen-welcome');
+}
 function init(){
   const urlCode = new URLSearchParams(window.location.search).get('code');
   if(urlCode){
@@ -555,6 +653,9 @@ function init(){
       renderClientHome();
       showScreen('screen-client-home');
     });
+  } else if(!localStorage.getItem(TUTORIAL_SEEN_KEY)){
+    // Primeira vez que esse cliente abre o app: mostra o tutorial antes da tela inicial.
+    showScreen('screen-tutorial');
   } else {
     showScreen('screen-welcome');
   }
@@ -566,6 +667,72 @@ function formatDate(iso){
 }
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   AVALIAÇÕES (estrelas + comentários)
+   ============================================================ */
+function starsHtml(rating){
+  let s = '';
+  for(let i=1;i<=5;i++){ s += `<span class="st ${i<=Math.round(rating)?'on':''}">★</span>`; }
+  return s;
+}
+function shopRatingStats(shop){
+  const reviews = shop.reviews || [];
+  const count = reviews.length;
+  const avg = count===0 ? 0 : reviews.reduce((sum,r)=>sum+Number(r.rating||0),0) / count;
+  return {count, avg};
+}
+function renderReviewCard(r){
+  const dateFmt = r.createdAt ? formatDate(r.createdAt.slice(0,10)) : '';
+  return `
+    <div class="review-card">
+      <div class="rtop">
+        <span class="rname">${escapeHtml(r.clientName||'Cliente')}</span>
+        <span class="rdate">${dateFmt}</span>
+      </div>
+      <div class="stars-display">${starsHtml(r.rating)}</div>
+      ${r.comment ? `<div class="rcomment">${escapeHtml(r.comment)}</div>` : ''}
+    </div>
+  `;
+}
+let reviewTargetApptId = null;
+let reviewRating = 0;
+function openReviewModal(apptId){
+  reviewTargetApptId = apptId;
+  reviewRating = 0;
+  document.getElementById('review-comment').value = '';
+  renderStarPicker();
+  document.getElementById('modal-review').classList.add('active');
+}
+function renderStarPicker(){
+  const wrap = document.getElementById('review-star-picker');
+  wrap.innerHTML = [1,2,3,4,5].map(n=>`<span class="st ${n<=reviewRating?'on':''}" onclick="setReviewRating(${n})">★</span>`).join('');
+}
+function setReviewRating(n){
+  reviewRating = n;
+  renderStarPicker();
+}
+function submitReview(){
+  if(reviewRating<1){ toast('Escolha de 1 a 5 estrelas'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===reviewTargetApptId);
+  if(!appt) return;
+  if(!shop.reviews) shop.reviews = [];
+  const client = shop.clients.find(c=>c.id===session.clientId);
+  shop.reviews.push({
+    id: uid('review'),
+    apptId: reviewTargetApptId,
+    clientId: session.clientId,
+    clientName: (client ? client.name : appt.clientName) || 'Cliente',
+    rating: reviewRating,
+    comment: document.getElementById('review-comment').value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  saveShops(shops);
+  closeModal('modal-review');
+  toast('Obrigado pela avaliação!');
+  renderClientHome();
 }
 
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
@@ -679,6 +846,17 @@ function renderClientHome(){
   listWrap.innerHTML = sorted.length===0
     ? `<div class="empty-state" style="padding:20px;"><div class="em">🗓️</div>Você ainda não tem agendamentos</div>`
     : sorted.map(a=>renderClientApptCard(a)).join('');
+
+  // avaliações da barbearia (visíveis para todos os clientes)
+  const {count, avg} = shopRatingStats(shop);
+  document.getElementById('client-rating-avg').textContent = count===0 ? '–' : avg.toFixed(1).replace('.',',');
+  document.getElementById('client-rating-stars').innerHTML = starsHtml(avg);
+  document.getElementById('client-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
+  const reviewsWrap = document.getElementById('client-reviews-list');
+  const sortedReviews = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  reviewsWrap.innerHTML = sortedReviews.length===0
+    ? `<div class="empty-state" style="padding:16px;"><div class="em">⭐</div>Seja o primeiro a avaliar!</div>`
+    : sortedReviews.map(r=>renderReviewCard(r)).join('');
 }
 function renderClientApptCard(a){
   const shop = shops[session.code];
@@ -693,6 +871,7 @@ function renderClientApptCard(a){
       ? (a.paymentStatus==='pago' ? '💵 Pagamento recebido pelo barbeiro' : '💵 Vai pagar pessoalmente')
       : '';
   const showPaymentButtons = cancellable && !a.paymentMethod;
+  const myReview = a.status==='done' ? (shop.reviews||[]).find(r=>r.apptId===a.id) : null;
   return `
     <div class="appt-card ${a.status}" ${cancellable ? `onclick="confirmCancelAppt('${a.id}')"` : ''} style="${cancellable?'cursor:pointer;':''}">
       <div class="appt-top">
@@ -707,6 +886,15 @@ function renderClientApptCard(a){
         <div class="payment-row" onclick="event.stopPropagation()">
           ${shop.pixCode ? `<button class="btn btn-sm btn-primary" onclick="openPixModal('${a.id}')">Pagar com Pix</button>` : ''}
           <button class="btn btn-sm btn-outline" onclick="payPersonally('${a.id}')">Pagar pessoalmente</button>
+        </div>` : ''}
+      ${a.status==='done' && !myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-primary" onclick="openReviewModal('${a.id}')">⭐ Avaliar atendimento</button>
+        </div>` : ''}
+      ${myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <div class="stars-display">${starsHtml(myReview.rating)}</div>
+          ${myReview.comment ? `<div class="rcomment">${escapeHtml(myReview.comment)}</div>` : ''}
         </div>` : ''}
       ${cancellable ? `<div class="helper-text" style="margin-top:8px;">Toque no card para cancelar este agendamento</div>` : ''}
     </div>
