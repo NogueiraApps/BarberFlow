@@ -371,7 +371,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="container stack">
       <label>Cole aqui o código enviado pelo seu barbeiro</label>
-      <input type="text" id="input-join-code" placeholder="Ex: AB12CD" maxlength="10" style="text-transform:uppercase">
+      <input type="text" id="input-join-code" placeholder="Ex: AB12CD" maxlength="10" style="text-transform:uppercase" oninput="updateJoinButtonState(this)">
       <button class="btn btn-primary" id="btn-entrar" onclick="joinAsClient()" disabled>Entrar</button>
     </div>
     <div class="link-text"><b onclick="showScreen('screen-tutorial')">Como funciona o app?</b></div>
@@ -1009,6 +1009,14 @@ function formatDate(iso){
   const [y,m,d] = iso.split('-');
   return `${d}/${m}/${y}`;
 }
+// Habilita o botão "Entrar" assim que a pessoa digitar/colar um código válido
+// (esse era o bug: o botão nascia "disabled" no HTML e nada nunca o reativava).
+function updateJoinButtonState(input){
+  const btn = document.getElementById('btn-entrar');
+  if(!btn) return;
+  const val = (input ? input.value : document.getElementById('input-join-code').value).trim();
+  btn.disabled = val.length < 4;
+}
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1456,6 +1464,7 @@ const originalShowScreen = showScreen;
 showScreen = function(id){
   originalShowScreen(id);
   if(id==='screen-client-settings') openClientSettings();
+  if(id==='screen-welcome') updateJoinButtonState();
 };
 
 /* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
