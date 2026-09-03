@@ -534,6 +534,37 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
   </div>
 
+  <!-- ============ CLIENT BANNED ============ -->
+  <div class="screen" id="screen-client-banned">
+    <div class="topbar">
+      <h1>Conta banida</h1>
+    </div>
+    <div class="container stack">
+      <div class="card" style="text-align:center;border-left:4px solid var(--danger);">
+        <div style="font-size:40px;margin-bottom:8px;">🚫</div>
+        <h3 style="margin-bottom:6px;">Você foi banido(a) desta barbearia</h3>
+        <div class="helper-text" id="ban-reason-text" style="margin-top:0;">Você não pode mais agendar horários aqui.</div>
+      </div>
+      <div class="card" id="ban-appeal-card"></div>
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Sair / entrar em outra barbearia</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT ACCOUNT REMOVED ============ -->
+  <div class="screen" id="screen-client-removed">
+    <div class="topbar">
+      <h1>Conta removida</h1>
+    </div>
+    <div class="container stack">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:40px;margin-bottom:8px;">👋</div>
+        <h3 style="margin-bottom:6px;">Sua conta foi removida pelo barbeiro</h3>
+        <div class="helper-text" style="margin-top:0;">Para voltar a usar o app nesta barbearia, peça um novo link ao seu barbeiro e cadastre-se de novo.</div>
+      </div>
+      <button class="btn btn-primary" onclick="goHomeMenu()">Entendi</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="notif-banner" id="notif-banner">
@@ -720,6 +751,12 @@ function normalizeShop(shop){
   if(shop.pixCode===undefined) shop.pixCode = '';
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
+  shop.clients.forEach(function(c){
+    if(c.banned===undefined) c.banned = false;
+    if(c.banReason===undefined) c.banReason = '';
+    if(c.bannedAt===undefined) c.bannedAt = null;
+    if(c.banAppeal===undefined) c.banAppeal = null;
+  });
   if(!shop.appointments) shop.appointments = [];
   if(!shop.reviews) shop.reviews = [];
   if(!shop.workTimes){
@@ -754,7 +791,10 @@ const NOTIF_TYPES = {
   accepted:         {label:'Agendamento confirmado', icon:'✅'},
   rejected:         {label:'Agendamento recusado',    icon:'❌'},
   done:             {label:'Atendimento concluído',   icon:'💈'},
-  paymentConfirmed: {label:'Pagamento confirmado',    icon:'💳'}
+  paymentConfirmed: {label:'Pagamento confirmado',    icon:'💳'},
+  banned:           {label:'Conta banida',            icon:'🚫'},
+  unbanned:         {label:'Conta desbanida',         icon:'✅'},
+  appealRejected:   {label:'Pedido de desbanimento recusado', icon:'❌'}
 };
 function defaultNotifSettings(){
   const t = {}; Object.keys(NOTIF_TYPES).forEach(k=>t[k]=true);
@@ -881,6 +921,19 @@ function renderNotifSettingsUI(){
 // do cliente (agendamento aceito/recusado, atendimento concluído, pagamento confirmado)
 function detectClientEvents(prevShop, newShop){
   if(!prevShop || !newShop || !session || !session.clientId) return;
+  const prevClient = (prevShop.clients||[]).find(function(c){ return c.id===session.clientId; });
+  const newClient = (newShop.clients||[]).find(function(c){ return c.id===session.clientId; });
+  if(prevClient && newClient){
+    if(!prevClient.banned && newClient.banned){
+      notify('banned', 'Você foi banido(a)', newClient.banReason ? 'Motivo: '+newClient.banReason : 'Você não pode mais agendar nesta barbearia.', '🚫');
+    }
+    if(prevClient.banned && !newClient.banned){
+      notify('unbanned', 'Você foi desbanido(a)!', 'Você já pode voltar a agendar normalmente.', '✅');
+    }
+    if(prevClient.banAppeal && prevClient.banAppeal.status==='pending' && newClient.banAppeal && newClient.banAppeal.status==='rejected'){
+      notify('appealRejected', 'Pedido de desbanimento recusado', 'Seu pedido de desbanimento foi recusado.', '❌');
+    }
+  }
   const prevAppts = {};
   (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
   (newShop.appointments||[]).filter(function(a){ return a.clientId===session.clientId; }).forEach(function(a){
@@ -928,7 +981,9 @@ function listenToShop(code, onFirstLoad){
       onFirstLoad && onFirstLoad(shops[code]);
     } else if(session && session.code===code){
       detectClientEvents(prevShop, shops[code]);
-      if(session.role==='client' && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
+      const onHome = document.getElementById('screen-client-home').classList.contains('active');
+      const onBanned = document.getElementById('screen-client-banned').classList.contains('active');
+      if(session.role==='client' && (onHome || onBanned)) enterClientArea();
     }
   }, function(err){
     console.error('Erro de sincronização com o Firebase:', err);
@@ -976,6 +1031,73 @@ function goHomeMenu(){
 }
 
 /* ============================================================
+   BANIMENTO / EXCLUSÃO — ponto único de entrada na área do cliente:
+   decide se mostra a home normal, o aviso de banido ou o aviso de
+   conta removida, conforme o estado atual do cliente na barbearia.
+   ============================================================ */
+function enterClientArea(){
+  const shop = shops[session.code];
+  if(!shop) return;
+  const client = shop.clients.find(function(c){ return c.id===session.clientId; });
+  if(!client){
+    // A conta foi excluída pelo barbeiro: encerra a sessão neste aparelho.
+    localStorage.removeItem('barberflow_client_'+session.code);
+    clearSession();
+    session = null;
+    showScreen('screen-client-removed');
+    return;
+  }
+  if(client.banned){
+    renderBannedScreen(client);
+    showScreen('screen-client-banned');
+    return;
+  }
+  applyTheme(shop.color);
+  renderClientHome();
+  showScreen('screen-client-home');
+}
+function renderBannedScreen(client){
+  document.getElementById('ban-reason-text').textContent = client.banReason
+    ? 'Motivo informado pelo barbeiro: "'+client.banReason+'"'
+    : 'O barbeiro não informou um motivo.';
+  const card = document.getElementById('ban-appeal-card');
+  const appeal = client.banAppeal;
+  if(!appeal){
+    card.innerHTML = `
+      <h3>Pedir desbanimento</h3>
+      <div class="helper-text" style="margin-top:0;">Você pode enviar uma mensagem para o barbeiro pedindo para ser desbanido(a). Só é possível enviar uma mensagem.</div>
+      <textarea id="ban-appeal-input" rows="3" maxlength="300" placeholder="Explique por que você quer ser desbanido(a)..."></textarea>
+      <div style="height:10px"></div>
+      <button class="btn btn-primary" onclick="sendBanAppeal()">Enviar pedido</button>
+    `;
+  } else if(appeal.status==='pending'){
+    card.innerHTML = `
+      <h3>Pedido enviado</h3>
+      <div class="helper-text" style="margin-top:0;">"${escapeHtml(appeal.message)}"</div>
+      <div class="helper-text">Aguardando resposta do barbeiro. Se ele não responder em 1 dia, o pedido é recusado automaticamente.</div>
+    `;
+  } else {
+    card.innerHTML = `
+      <h3>Pedido recusado</h3>
+      <div class="helper-text" style="margin-top:0;">"${escapeHtml(appeal.message)}"</div>
+      <div class="helper-text" style="color:var(--danger);">${appeal.autoRejected ? 'O barbeiro não respondeu em 1 dia — pedido recusado automaticamente.' : 'O barbeiro recusou seu pedido de desbanimento.'}</div>
+    `;
+  }
+}
+function sendBanAppeal(){
+  const input = document.getElementById('ban-appeal-input');
+  const msg = input ? input.value.trim() : '';
+  if(!msg){ toast('Escreva uma mensagem'); return; }
+  const shop = shops[session.code];
+  const client = shop.clients.find(function(c){ return c.id===session.clientId; });
+  if(!client) return;
+  client.banAppeal = {message: msg, sentAt: new Date().toISOString(), status: 'pending'};
+  saveShops(shops);
+  toast('Pedido enviado ao barbeiro');
+  renderBannedScreen(client);
+}
+
+/* ============================================================
    INIT / ROUTER
    ============================================================ */
 const TUTORIAL_SEEN_KEY = 'barberflow_client_tutorial_seen';
@@ -993,9 +1115,7 @@ function init(){
   if(session && session.role==='client' && session.code){
     listenToShop(session.code, function(shopData){
       if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
-      applyTheme(shopData.color);
-      renderClientHome();
-      showScreen('screen-client-home');
+      enterClientArea();
     });
   } else if(!localStorage.getItem(TUTORIAL_SEEN_KEY)){
     // Primeira vez que esse cliente abre o app: mostra o tutorial antes da tela inicial.
@@ -1105,8 +1225,7 @@ function joinAsClient(){
       session = {role:'client', code:raw, clientId:existingLocalId};
       saveSession(session);
       listenToShop(raw, function(){
-        renderClientHome();
-        showScreen('screen-client-home');
+        enterClientArea();
       });
     } else {
       session = {role:'client', code:raw, clientId:null};
@@ -1129,7 +1248,7 @@ function registerClient(){
   const phone = document.getElementById('reg-phone').value.trim();
   if(!name){ toast('Digite seu nome'); return; }
   const shop = shops[session.code];
-  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString()};
+  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
   shop.clients.push(client);
   saveShops(shops);
   localStorage.setItem('barberflow_client_'+session.code, client.id);
@@ -1181,7 +1300,7 @@ function renderClientHome(){
   document.getElementById('client-welcome-msg').textContent = shop.welcomeMsg;
 
   // pessoas cortando cabelo agora, na barbearia
-  const inShopCount = shop.clients.filter(c=>c.status==='dentro').length;
+  const inShopCount = shop.clients.filter(c=>c.status==='dentro' && !c.banned).length;
   const inShopTag = document.getElementById('client-inshop-count');
   if(inShopCount>0){
     inShopTag.style.display='inline-block';
