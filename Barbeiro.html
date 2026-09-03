@@ -365,6 +365,37 @@ textarea{resize:vertical;font-family:var(--font);}
 .trial-pill button{flex-shrink:0;}
 .spinner{width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--primary);animation:spin .7s linear infinite;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- Notificações ---------- */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;position:absolute;}
+.switch .slider{position:absolute;inset:0;background:var(--surface3);border-radius:26px;cursor:pointer;border:1px solid var(--border-strong);transition:background .18s ease;}
+.switch .slider:before{content:'';position:absolute;height:19px;width:19px;left:2.5px;top:2.5px;background:#fff;border-radius:50%;transition:transform .18s ease;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.switch input:checked + .slider{background:var(--primary);border-color:transparent;}
+.switch input:checked + .slider:before{transform:translateX(20px);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row .label{font-size:13.5px;font-weight:700;}
+.settings-row .desc{font-size:11.5px;color:var(--text-faint);margin-top:2px;line-height:1.4;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--surface2);outline:none;margin:6px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+.notif-banner{
+  position:fixed;top:-140px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 24px);max-width:456px;
+  background:linear-gradient(160deg,var(--surface2),var(--surface3));
+  border:1px solid var(--border-strong);border-radius:var(--radius-lg);
+  padding:14px;display:flex;align-items:flex-start;gap:12px;
+  box-shadow:var(--shadow-lg);
+  z-index:1200;transition:top .35s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+}
+.notif-banner.show{top:calc(12px + env(safe-area-inset-top));}
+.notif-banner .nb-icon{width:38px;height:38px;border-radius:12px;background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.notif-banner .nb-text{flex:1;min-width:0;}
+.notif-banner .nb-title{font-weight:800;font-size:14px;margin-bottom:2px;}
+.notif-banner .nb-body{font-size:12.5px;color:var(--text-dim);line-height:1.4;}
+.notif-banner .nb-close{color:var(--text-faint);font-size:13px;padding:2px;flex-shrink:0;}
+.sound-chip-row{display:flex;flex-wrap:wrap;gap:8px;}
 </style>
 </head>
 <body>
@@ -382,7 +413,7 @@ textarea{resize:vertical;font-family:var(--font);}
       <button class="btn btn-outline" onclick="openSignupScreen()">Criar minha conta grátis</button>
     </div>
     <div class="container">
-      <div class="helper-text" style="text-align:center;margin-top:22px;">Teste grátis por 30 dias. Depois, continue com a versão <b style="color:var(--primary);">Gold</b> ilimitada.</div>
+      <div class="helper-text" style="text-align:center;margin-top:22px;">Teste grátis por 14 dias. Depois, continue com a versão <b style="color:var(--primary);">Gold</b> ilimitada.</div>
     </div>
     <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:24px;letter-spacing:.3px;">app by Daniel Nogueira</div>
   </div>
@@ -413,7 +444,7 @@ textarea{resize:vertical;font-family:var(--font);}
       <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
     </div>
     <div class="container stack">
-      <div class="helper-text" style="margin-top:0;">Seus 30 dias de teste grátis começam assim que você criar a conta.</div>
+      <div class="helper-text" style="margin-top:0;">Seus 14 dias de teste grátis começam assim que você criar a conta.</div>
       <label>Nome da barbearia</label>
       <input type="text" id="signup-shop-name" placeholder="Ex: Barbearia Estilo">
       <label>Seu nome (barbeiro)</label>
@@ -476,7 +507,7 @@ textarea{resize:vertical;font-family:var(--font);}
       </div>
       <div class="onb-step">
         <div class="onb-num">5</div>
-        <div><h4>Teste grátis de 30 dias</h4><p>Use o app sem limites por 30 dias. Depois, para continuar, é só adquirir a versão <b style="color:var(--primary);">Gold</b> ilimitada.</p></div>
+        <div><h4>Teste grátis de 14 dias</h4><p>Use o app sem limites por 14 dias. Depois, para continuar, é só adquirir a versão <b style="color:var(--primary);">Gold</b> ilimitada.</p></div>
       </div>
       <div style="height:6px"></div>
       <button class="btn btn-primary" onclick="finishOnboarding()">Entendi, vamos começar!</button>
@@ -498,7 +529,7 @@ textarea{resize:vertical;font-family:var(--font);}
     <div class="container">
       <div class="trial-pill" id="trial-banner" style="display:none;">
         <span id="trial-days-text">Teste grátis</span>
-        <button class="btn btn-sm btn-primary" onclick="openWhatsAppPurchase()">Virar Gold</button>
+        <button class="btn btn-sm btn-primary" onclick="showScreen('screen-plans')">Virar Gold</button>
       </div>
       <!-- TAB: AGENDA -->
       <div id="tab-agenda">
@@ -523,7 +554,11 @@ textarea{resize:vertical;font-family:var(--font);}
           <div class="stat-box"><div class="num" id="stat-total-clients">0</div><div class="lbl">Clientes cadastrados</div></div>
           <div class="stat-box"><div class="num" id="stat-in">0</div><div class="lbl">Na barbearia agora</div></div>
         </div>
-        <div class="section-title">Lista de clientes</div>
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip selected" data-csub="ativos" onclick="setClientsSubView('ativos')">Ativos</div>
+          <div class="chip" data-csub="banidos" onclick="setClientsSubView('banidos')">🚫 Banidos<span id="banned-count-chip"></span></div>
+        </div>
+        <div class="section-title" id="clients-list-title">Lista de clientes</div>
         <div id="list-clients"></div>
       </div>
 
@@ -628,10 +663,10 @@ textarea{resize:vertical;font-family:var(--font);}
     <div class="hero" style="padding-top:56px;">
       <div class="logo-circle">🔒</div>
       <h1 id="gold-title">Seu teste grátis acabou</h1>
-      <p id="gold-subtitle">Você aproveitou os 30 dias de teste do BarberFlow. Para continuar usando o app sem limites, adquira a versão Gold.</p>
+      <p id="gold-subtitle">Você aproveitou os 14 dias de teste do BarberFlow. Para continuar usando o app sem limites, escolha um plano Gold.</p>
     </div>
     <div class="container stack">
-      <button class="btn btn-primary" onclick="openWhatsAppPurchase()">💬 Falar no WhatsApp para adquirir o Gold</button>
+      <button class="btn btn-primary" onclick="showScreen('screen-plans')">💎 Ver planos Gold</button>
       <div class="card" style="margin-top:6px;">
         <h3>🔑 Já comprou? Ative seu código</h3>
         <label>Código de ativação Gold</label>
@@ -641,6 +676,26 @@ textarea{resize:vertical;font-family:var(--font);}
         <button class="btn btn-success" onclick="redeemGoldCode()">Ativar versão Gold</button>
       </div>
       <button class="btn btn-ghost" onclick="logoutBarber()">Sair da conta</button>
+    </div>
+  </div>
+
+  <!-- ============ TELA DE PLANOS GOLD ============ -->
+  <div class="screen" id="screen-plans">
+    <div class="topbar">
+      <h1>Planos Gold</h1>
+      <div class="icon-btn" onclick="closePlansScreen()">←</div>
+    </div>
+    <div class="container stack" style="padding-bottom:32px;">
+      <p class="helper-text" style="margin-top:0;">Escolha o plano ideal pra sua barbearia. Quanto maior o período, maior o desconto.</p>
+      <div id="plans-list" class="stack"></div>
+      <div class="card" style="margin-top:6px;">
+        <h3>🔑 Já comprou? Ative seu código</h3>
+        <label>Código de ativação Gold</label>
+        <input type="text" id="gold-redeem-code-plans" placeholder="Ex: GOLD-XXXX" style="text-transform:uppercase;">
+        <div class="error-text" id="gold-redeem-error-plans"></div>
+        <div style="height:8px"></div>
+        <button class="btn btn-success" onclick="redeemGoldCode('gold-redeem-code-plans','gold-redeem-error-plans')">Ativar versão Gold</button>
+      </div>
     </div>
   </div>
 
@@ -686,6 +741,33 @@ textarea{resize:vertical;font-family:var(--font);}
         <textarea id="config-pix-code" rows="3" placeholder="Cole aqui seu código Pix copia e cola, ou sua chave (CPF, e-mail, telefone...)"></textarea>
         <div style="height:10px"></div>
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar Pix</button>
+      </div>
+      <div class="card">
+        <h3>🔔 Notificações</h3>
+        <div class="settings-row">
+          <div>
+            <div class="label">Ativar notificações</div>
+            <div class="desc">Som e aviso na tela para agendamentos e pagamentos</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="notif-master-toggle-barber" onchange="toggleNotifMaster('barber',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="divider"></div>
+        <label style="margin-top:0;">Som da notificação</label>
+        <div class="sound-chip-row" id="notif-sound-picker-barber"></div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="testNotifSound('barber')">▶️ Testar som</button>
+        <label>Volume</label>
+        <input type="range" id="notif-volume-barber" min="0" max="1" step="0.05" oninput="setNotifVolume('barber',this.value)">
+        <div class="divider"></div>
+        <label style="margin-top:0;">Avisar sobre</label>
+        <div id="notif-type-toggles-barber"></div>
+        <div class="divider"></div>
+        <div class="settings-row">
+          <div>
+            <div class="label">Notificações do navegador</div>
+            <div class="desc" id="notif-system-status-barber">Receba avisos mesmo com o app em segundo plano</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="notif-system-btn-barber" onclick="requestSystemNotifPermission('barber')">Ativar</button>
+        </div>
       </div>
       <div class="card">
         <h3>👤 Minha conta</h3>
@@ -791,10 +873,48 @@ textarea{resize:vertical;font-family:var(--font);}
         <div style="height:8px"></div>
         <button class="btn btn-primary" onclick="saveClientProfile()">Salvar</button>
       </div>
+
+      <div class="card">
+        <h3>🔔 Notificações</h3>
+        <div class="settings-row">
+          <div>
+            <div class="label">Ativar notificações</div>
+            <div class="desc">Som e aviso na tela quando seu agendamento mudar</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="notif-master-toggle-client" onchange="toggleNotifMaster('client',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="divider"></div>
+        <label style="margin-top:0;">Som da notificação</label>
+        <div class="sound-chip-row" id="notif-sound-picker-client"></div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="testNotifSound('client')">▶️ Testar som</button>
+        <label>Volume</label>
+        <input type="range" id="notif-volume-client" min="0" max="1" step="0.05" oninput="setNotifVolume('client',this.value)">
+        <div class="divider"></div>
+        <label style="margin-top:0;">Avisar sobre</label>
+        <div id="notif-type-toggles-client"></div>
+        <div class="divider"></div>
+        <div class="settings-row">
+          <div>
+            <div class="label">Notificações do navegador</div>
+            <div class="desc" id="notif-system-status-client">Receba avisos mesmo com o app em segundo plano</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="notif-system-btn-client" onclick="requestSystemNotifPermission('client')">Ativar</button>
+        </div>
+      </div>
+
       <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
     </div>
   </div>
 
+</div>
+
+<div class="notif-banner" id="notif-banner">
+  <div class="nb-icon" id="notif-banner-icon">🔔</div>
+  <div class="nb-text">
+    <div class="nb-title" id="notif-banner-title"></div>
+    <div class="nb-body" id="notif-banner-body"></div>
+  </div>
+  <div class="nb-close">✕</div>
 </div>
 
 <!-- ============ SERVICE MODAL ============ -->
@@ -847,6 +967,19 @@ textarea{resize:vertical;font-family:var(--font);}
     <textarea id="review-comment" rows="3" maxlength="300" placeholder="Como foi seu atendimento?"></textarea>
     <div style="height:12px"></div>
     <button class="btn btn-primary" onclick="submitReview()">Enviar avaliação</button>
+  </div>
+</div>
+
+<!-- ============ BAN CLIENT MODAL ============ -->
+<div class="modal-overlay" id="modal-ban">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-ban')">✕</div>
+    <h3>🚫 Banir cliente</h3>
+    <div class="helper-text" style="margin-top:0;">O cliente sai da lista de clientes, some da sua agenda para novos pedidos e não consegue mais agendar. Ele vai ver um aviso no app dele.</div>
+    <label>Motivo (opcional, o cliente vai ver)</label>
+    <textarea id="ban-reason-input" rows="3" maxlength="300" placeholder="Ex: Faltou a vários agendamentos sem avisar"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn btn-danger" onclick="confirmBanClient()">Banir cliente</button>
   </div>
 </div>
 
@@ -911,14 +1044,68 @@ function genCode(){
   return out;
 }
 // Link padrão do app do cliente publicado (usado se o barbeiro não preencher outro)
-const DEFAULT_CLIENT_APP_URL = 'https://nox-games.github.io/BarberFlow/cliente.html';
+const DEFAULT_CLIENT_APP_URL = 'https://nogueiraapps.github.io/BarberFlow/';
 
 /* ============================================================
-   TESTE GRÁTIS (30 dias) + VERSÃO GOLD — controle por conta
+   TESTE GRÁTIS (14 dias) + VERSÃO GOLD — controle por conta
    ============================================================ */
-const TRIAL_DAYS = 30;
+const TRIAL_DAYS = 14;
 const WHATSAPP_NUMBER = '5588981488038';
 const WHATSAPP_MESSAGE = 'Olá! Meu teste grátis do BarberFlow acabou e quero adquirir a versão Gold.';
+// URL do worker (Deno Deploy) que cria a cobrança no Mercado Pago.
+const CREATE_PREFERENCE_URL = 'https://barberflow-payments.toondancing000.deno.net/create-preference';
+
+// Planos pagos oferecidos após o fim do teste grátis.
+// Para mudar preços, basta editar os valores abaixo.
+const PLANS = [
+  { id:'mensal',    label:'1 mês',      price:29.90,  perMonth:29.90, badge:null,               desc:'Cobrança única, sem fidelidade' },
+  { id:'semestral', label:'6 meses',    price:149.90, perMonth:24.98, badge:'Economize 16%',    desc:'Equivale a R$ 24,98/mês' },
+  { id:'anual',     label:'1 ano',      price:249.90, perMonth:20.83, badge:'Mais popular · Economize 30%', desc:'Equivale a R$ 20,83/mês' },
+  { id:'vitalicio', label:'Vitalício',  price:497.00, perMonth:null,  badge:'Pague uma vez',    desc:'Acesso Gold para sempre, sem mensalidade' }
+];
+function formatBRL(v){ return 'R$ ' + v.toFixed(2).replace('.',','); }
+function renderPlans(){
+  const list = document.getElementById('plans-list');
+  if(!list) return;
+  list.innerHTML = PLANS.map(function(p){
+    return '<div class="card" style="border:1px solid var(--primary);">'
+      + (p.badge ? '<div class="gold-badge" style="margin-bottom:8px;">'+p.badge+'</div>' : '')
+      + '<h3 style="margin-bottom:2px;">'+p.label+'</h3>'
+      + '<div style="font-size:22px;font-weight:800;color:var(--primary);">'+formatBRL(p.price)+'</div>'
+      + '<div class="helper-text" style="margin-top:2px;">'+p.desc+'</div>'
+      + '<div style="height:10px"></div>'
+      + '<button class="btn btn-primary" id="plan-btn-'+p.id+'" onclick="payWithMercadoPago(\''+p.id+'\')">Escolher esse plano</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Chama o worker (Deno Deploy) para criar a cobrança no Mercado Pago e
+// redireciona o barbeiro para a página de pagamento. Se der qualquer
+// problema (sem internet, worker fora do ar etc.), cai no WhatsApp manual.
+async function payWithMercadoPago(planId){
+  const btn = document.getElementById('plan-btn-'+planId);
+  const uidToCharge = currentUser ? currentUser.uid : null;
+  if(!uidToCharge){
+    openWhatsAppPurchase(planId);
+    return;
+  }
+  const originalText = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Abrindo pagamento...'; }
+  try{
+    const res = await fetch(CREATE_PREFERENCE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: uidToCharge, planoId: planId })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.init_point) throw new Error('sem init_point');
+    window.location.href = data.init_point;
+  }catch(err){
+    console.error('Falha ao criar pagamento:', err);
+    if(btn){ btn.disabled = false; btn.textContent = originalText; }
+    openWhatsAppPurchase(planId);
+  }
+}
 
 // Identificador do aparelho: usado para impedir que o mesmo celular
 // fique criando contas novas para "renovar" o teste grátis.
@@ -930,6 +1117,11 @@ function getDeviceId(){
   }
   return id;
 }
+
+// Duração (em dias) de cada plano pago. null = nunca expira (vitalício).
+// Precisa bater com o campo "plano" gravado em cada código no Firestore
+// (veja o app admin.html usado para gerar os códigos).
+const PLAN_DURATIONS = { mensal:30, semestral:180, anual:365, vitalicio:null };
 
 function trialDaysLeftForUser(u){
   if(!u || u.plan==='gold') return TRIAL_DAYS;
@@ -946,38 +1138,81 @@ function isTrialExpiredForUser(u){
   const elapsedDays = (Date.now() - started) / 86400000;
   return elapsedDays >= TRIAL_DAYS;
 }
+// Plano Gold vence quando goldExpiresAt existir e já tiver passado.
+// Sem goldExpiresAt = vitalício, nunca expira.
+function isGoldExpiredForUser(u){
+  if(!u || u.plan!=='gold') return false;
+  if(!u.goldExpiresAt) return false;
+  return Date.now() >= new Date(u.goldExpiresAt).getTime();
+}
+// Checagem única usada em toda a área do barbeiro: true = acesso bloqueado
+// (seja porque o teste grátis acabou, seja porque o plano Gold venceu).
+function isAccessExpiredForUser(u){
+  if(!u) return false;
+  if(u.plan==='gold') return isGoldExpiredForUser(u);
+  return isTrialExpiredForUser(u);
+}
+function goldDaysLeftForUser(u){
+  if(!u || u.plan!=='gold' || !u.goldExpiresAt) return null;
+  const diffDays = (new Date(u.goldExpiresAt).getTime() - Date.now()) / 86400000;
+  return Math.max(0, Math.ceil(diffDays));
+}
 function updateTrialBanner(u){
   const el = document.getElementById('trial-days-text');
   const banner = document.getElementById('trial-banner');
   if(!el || !banner) return;
-  if(!u || u.plan==='gold'){ banner.style.display='none'; return; }
+  if(!u){ banner.style.display='none'; return; }
+  // Gold vitalício ou sem data de expiração: sem banner de contagem.
+  if(u.plan==='gold' && !u.goldExpiresAt){ banner.style.display='none'; return; }
   banner.style.display='flex';
-  const days = trialDaysLeftForUser(u);
+  const days = u.plan==='gold' ? goldDaysLeftForUser(u) : trialDaysLeftForUser(u);
+  const label = u.plan==='gold' ? 'plano Gold' : 'teste grátis';
   if(days <= 3){
-    el.textContent = days<=1 ? 'Último dia do teste grátis — adquira o Gold para não perder o acesso' : `Faltam ${days} dias do seu teste grátis`;
+    el.textContent = days<=1 ? `Último dia do seu ${label} — renove para não perder o acesso` : `Faltam ${days} dias do seu ${label}`;
     banner.style.background = '#3a1414';
     banner.style.color = '#e5787c';
   } else {
-    el.textContent = `Teste grátis: ${days} dias restantes`;
+    el.textContent = `${label==='plano Gold' ? 'Plano Gold' : 'Teste grátis'}: ${days} dias restantes`;
     banner.style.background = '#2a2210';
     banner.style.color = '#e0b84a';
   }
 }
-function openWhatsAppPurchase(){
-  const link = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(WHATSAPP_MESSAGE);
-  window.open(link, '_blank');
+// Botão "←" da tela de Planos Gold: antes voltava sempre para a tela de
+// bloqueio (screen-trial-expired), mesmo quando o teste grátis ainda estava
+// válido. Agora só bloqueia se o acesso estiver realmente expirado.
+function closePlansScreen(){
+  if(isAccessExpiredForUser(currentUserDoc)){
+    showScreen('screen-trial-expired');
+    return;
+  }
+  const shop = currentShop();
+  if(shop){ enterBarberArea(shop); }
+  else { showScreen('screen-welcome'); }
+}
+function openWhatsAppPurchase(planId){
+  const plan = PLANS.find(function(p){ return p.id===planId; });
+  const msg = plan
+    ? 'Olá! Meu teste grátis do BarberFlow acabou e quero adquirir o plano "'+plan.label+'" ('+formatBRL(plan.price)+').'
+    : WHATSAPP_MESSAGE;
+  const link = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
+  // window.location.href costuma ser mais compatível do que window.open em WebViews
+  // de apps gerados por conversores site-para-apk (usados para publicar na Play Store).
+  window.location.href = link;
 }
 // Ponto único de entrada na área do barbeiro: verifica se o tutorial já foi visto
-// e se a conta ainda tem acesso (teste válido ou Gold) antes de mostrar o painel.
+// e se a conta ainda tem acesso (teste válido ou Gold ainda não vencido) antes de mostrar o painel.
 function enterBarberArea(shop){
   if(!currentUserDoc){ showScreen('screen-welcome'); return; }
   if(!currentUserDoc.onboardingSeen){
     showScreen('screen-onboarding-barber');
     return;
   }
-  if(isTrialExpiredForUser(currentUserDoc)){
-    document.getElementById('gold-title').textContent = 'Seu teste grátis acabou';
-    document.getElementById('gold-subtitle').textContent = 'Você aproveitou os 30 dias de teste do BarberFlow. Para continuar usando o app sem limites, adquira a versão Gold.';
+  if(isAccessExpiredForUser(currentUserDoc)){
+    const wasGold = currentUserDoc.plan==='gold';
+    document.getElementById('gold-title').textContent = wasGold ? 'Seu plano Gold venceu' : 'Seu teste grátis acabou';
+    document.getElementById('gold-subtitle').textContent = wasGold
+      ? 'Seu plano Gold chegou ao fim. Escolha um novo plano para continuar usando o app sem limites.'
+      : 'Você aproveitou os 14 dias de teste do BarberFlow. Para continuar usando o app sem limites, escolha um plano Gold.';
     showScreen('screen-trial-expired');
     return;
   }
@@ -1011,9 +1246,15 @@ function normalizeShop(shop){
   if(!shop) return shop;
   if(!shop.daysOff) shop.daysOff = [];
   if(shop.pixCode===undefined) shop.pixCode = '';
-  if(!shop.clientAppUrl) shop.clientAppUrl = DEFAULT_CLIENT_APP_URL;
+  if(!shop.clientAppUrl || shop.clientAppUrl === 'https://nox-games.github.io/BarberFlow/cliente.html' || shop.clientAppUrl === 'https://sl1nk.com/rvz58ye') shop.clientAppUrl = DEFAULT_CLIENT_APP_URL;
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
+  shop.clients.forEach(function(c){
+    if(c.banned===undefined) c.banned = false;
+    if(c.banReason===undefined) c.banReason = '';
+    if(c.bannedAt===undefined) c.bannedAt = null;
+    if(c.banAppeal===undefined) c.banAppeal = null;
+  });
   if(!shop.appointments) shop.appointments = [];
   if(!shop.reviews) shop.reviews = [];
   if(!shop.workTimes){
@@ -1030,11 +1271,262 @@ function normalizeShop(shop){
   return shop;
 }
 
+/* ============================================================
+   NOTIFICAÇÕES — som + aviso na tela + notificação do navegador
+   (o barbeiro e o cliente têm cada um suas próprias preferências,
+   guardadas separadamente no aparelho de cada um)
+   ============================================================ */
+const NOTIF_SOUND_PRESETS = {
+  sino:     {label:'Sino',     notes:[[1318.5,'sine',0.16,0],[1760,'sine',0.26,0.12]]},
+  alerta:   {label:'Alerta',   notes:[[880,'square',0.08,0],[880,'square',0.08,0.16],[880,'square',0.08,0.32]]},
+  suave:    {label:'Suave',    notes:[[660,'sine',0.4,0]]},
+  pop:      {label:'Pop',      notes:[[220,'triangle',0.07,0],[440,'triangle',0.09,0.06]]},
+  classico: {label:'Clássico', notes:[[523.25,'triangle',0.13,0],[659.25,'triangle',0.13,0.1],[783.99,'triangle',0.2,0.2]]}
+};
+const NOTIF_TYPES = {
+  barber: {
+    newAppt:   {label:'Novo agendamento', icon:'🔔'},
+    payment:   {label:'Aviso de pagamento', icon:'💳'},
+    cancelled: {label:'Cliente cancelou', icon:'❌'},
+    review:    {label:'Nova avaliação', icon:'⭐'},
+    banAppeal: {label:'Pedido de desbanimento', icon:'📩'}
+  },
+  client: {
+    accepted:         {label:'Agendamento confirmado', icon:'✅'},
+    rejected:         {label:'Agendamento recusado',    icon:'❌'},
+    done:             {label:'Atendimento concluído',   icon:'💈'},
+    paymentConfirmed: {label:'Pagamento confirmado',    icon:'💳'}
+  }
+};
+function notifKey(scope){ return 'barberflow_notif_settings_'+scope+'_v1'; }
+function defaultNotifSettings(scope){
+  const t = {}; Object.keys(NOTIF_TYPES[scope]).forEach(k=>t[k]=true);
+  return {enabled:true, sound: scope==='barber'?'sino':'alerta', volume:0.85, types:t, systemEnabled:false};
+}
+function loadNotifSettings(scope){
+  const def = defaultNotifSettings(scope);
+  try{
+    const raw = JSON.parse(localStorage.getItem(notifKey(scope)));
+    if(!raw) return def;
+    return Object.assign({}, def, raw, {types:Object.assign({}, def.types, raw.types||{})});
+  }catch(e){ return def; }
+}
+let notifSettingsBarber = loadNotifSettings('barber');
+let notifSettingsClient = loadNotifSettings('client');
+function notifSettingsFor(scope){ return scope==='barber' ? notifSettingsBarber : notifSettingsClient; }
+function saveNotifSettings(scope){ localStorage.setItem(notifKey(scope), JSON.stringify(notifSettingsFor(scope))); }
+
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
+  return audioCtx;
+}
+// Destrava o áudio no primeiro toque (política de autoplay dos navegadores)
+['pointerdown','touchstart','click'].forEach(evt=>{
+  window.addEventListener(evt, function unlock(){ getAudioCtx(); }, {once:true, passive:true});
+});
+
+/* ---------- Som suave de toque nos botões (um único som para todo o app) ---------- */
+function playUiClickSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  // Duas camadas suaves e quentes, como um "toc" macio de madeira — calmo, nada estridente.
+  [[560, 0.05, 'sine'], [340, 0.032, 'sine']].forEach(function(layer){
+    const freq = layer[0], peak = layer[1], type = layer[2];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.86, now+0.11);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(peak, now+0.014);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now+0.24);
+  });
+}
+document.addEventListener('click', function(e){
+  const el = e.target.closest('button, .btn, .icon-btn, .chip, .navitem, .slot-btn, .day-toggle, .close-x, .icon-picker-item, .service-item, .service-card-h, .checkbox-dot');
+  if(el) playUiClickSound();
+}, true);
+function playNotifSound(soundKey, volume){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const preset = NOTIF_SOUND_PRESETS[soundKey] || NOTIF_SOUND_PRESETS.sino;
+  const vol = volume==null ? 0.85 : Number(volume);
+  preset.notes.forEach(function(n){
+    const freq=n[0], type=n[1], dur=n[2], delay=n[3];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    const start = ctx.currentTime + delay;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(Math.max(0.0002,vol*0.5), start+0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start+dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(start); osc.stop(start+dur+0.03);
+  });
+}
+function testNotifSound(scope){ const s=notifSettingsFor(scope); playNotifSound(s.sound, s.volume); }
+
+function showNotifBanner(icon, title, body){
+  const el = document.getElementById('notif-banner');
+  if(!el) return;
+  document.getElementById('notif-banner-icon').textContent = icon;
+  document.getElementById('notif-banner-title').textContent = title;
+  document.getElementById('notif-banner-body').textContent = body;
+  el.classList.add('show');
+  clearTimeout(window._notifBannerTimer);
+  window._notifBannerTimer = setTimeout(function(){ el.classList.remove('show'); }, 4800);
+}
+(function(){
+  const el = document.getElementById('notif-banner');
+  if(el) el.addEventListener('click', function(){ el.classList.remove('show'); });
+})();
+function fireSystemNotification(enabled, title, body){
+  if(!enabled) return;
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  if(document.visibilityState==='visible') return;
+  try{ new Notification(title, {body:body, tag:'bf-'+Date.now()}); }catch(e){}
+}
+// Ponto único: som + aviso na tela + notificação do navegador (se em segundo plano)
+function notify(scope, typeKey, title, body, icon){
+  const s = notifSettingsFor(scope);
+  if(!s.enabled) return;
+  if(s.types && s.types[typeKey]===false) return;
+  playNotifSound(s.sound, s.volume);
+  showNotifBanner(icon||'🔔', title, body);
+  fireSystemNotification(s.systemEnabled, title, body);
+  if(navigator.vibrate){ try{ navigator.vibrate([80,40,80]); }catch(e){} }
+}
+function requestSystemNotifPermission(scope){
+  if(!('Notification' in window)){ toast('Seu navegador não suporta notificações do sistema'); return; }
+  Notification.requestPermission().then(function(perm){
+    const s = notifSettingsFor(scope);
+    s.systemEnabled = (perm==='granted');
+    saveNotifSettings(scope);
+    renderNotifSettingsUI(scope);
+    toast(perm==='granted' ? 'Notificações do navegador ativadas' : 'Permissão não concedida');
+  });
+}
+function toggleNotifMaster(scope, checked){ notifSettingsFor(scope).enabled = checked; saveNotifSettings(scope); }
+function selectNotifSound(scope, key){ notifSettingsFor(scope).sound = key; saveNotifSettings(scope); renderNotifSettingsUI(scope); playNotifSound(key, notifSettingsFor(scope).volume); }
+function setNotifVolume(scope, val){ notifSettingsFor(scope).volume = Number(val); saveNotifSettings(scope); }
+function toggleNotifType(scope, key, checked){ notifSettingsFor(scope).types[key] = checked; saveNotifSettings(scope); }
+function renderNotifSettingsUI(scope){
+  const s = notifSettingsFor(scope);
+  const types = NOTIF_TYPES[scope];
+  const master = document.getElementById('notif-master-toggle-'+scope);
+  if(!master) return; // essa tela não está montada agora
+  master.checked = s.enabled;
+  const soundWrap = document.getElementById('notif-sound-picker-'+scope);
+  soundWrap.innerHTML = Object.keys(NOTIF_SOUND_PRESETS).map(function(k){
+    return '<div class="chip '+(s.sound===k?'selected':'')+'" onclick="selectNotifSound(\''+scope+'\',\''+k+'\')">'+NOTIF_SOUND_PRESETS[k].label+'</div>';
+  }).join('');
+  document.getElementById('notif-volume-'+scope).value = s.volume;
+  const typesWrap = document.getElementById('notif-type-toggles-'+scope);
+  typesWrap.innerHTML = Object.keys(types).map(function(k){
+    const t = types[k];
+    return '<div class="settings-row"><div><div class="label">'+t.icon+' '+t.label+'</div></div>'+
+      '<label class="switch"><input type="checkbox" '+(s.types[k]!==false?'checked':'')+' onchange="toggleNotifType(\''+scope+'\',\''+k+'\',this.checked)"><span class="slider"></span></label></div>';
+  }).join('');
+  const sysBtn = document.getElementById('notif-system-btn-'+scope);
+  const sysStatus = document.getElementById('notif-system-status-'+scope);
+  const supported = 'Notification' in window;
+  if(!supported){
+    sysBtn.style.display = 'none';
+    sysStatus.textContent = 'Seu navegador não suporta notificações do sistema';
+  } else if(Notification.permission==='granted' && s.systemEnabled){
+    sysBtn.textContent = 'Ativado ✓'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Você vai receber avisos mesmo com o app em segundo plano';
+  } else if(Notification.permission==='denied'){
+    sysBtn.textContent = 'Bloqueado'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Permissão bloqueada no navegador — ative manualmente nas configurações do site';
+  } else {
+    sysBtn.style.display = ''; sysBtn.textContent = 'Ativar'; sysBtn.disabled = false;
+    sysStatus.textContent = 'Receba avisos mesmo com o app em segundo plano';
+  }
+}
+// Compara o estado anterior da barbearia com o novo e dispara as notificações do barbeiro
+// (novo agendamento, aviso de pagamento Pix, cliente cancelou, nova avaliação)
+function detectBarberEvents(prevShop, newShop){
+  if(!prevShop || !newShop) return;
+  const prevAppts = {};
+  (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
+  (newShop.appointments||[]).forEach(function(a){
+    const prev = prevAppts[a.id];
+    if(!prev){
+      if(a.status==='pending'){
+        notify('barber', 'newAppt', 'Novo agendamento', a.clientName+' pediu horário em '+formatDate(a.date)+' às '+a.time+'.', '🔔');
+      }
+      return;
+    }
+    if((prev.status==='pending'||prev.status==='accepted') && a.status==='cancelled'){
+      notify('barber', 'cancelled', 'Agendamento cancelado', a.clientName+' cancelou o horário de '+formatDate(a.date)+' às '+a.time+'.', '❌');
+    }
+    if(prev.paymentStatus!=='aguardando' && a.paymentStatus==='aguardando'){
+      notify('barber', 'payment', 'Aviso de pagamento', a.clientName+' avisou que pagou via Pix — confirme o recebimento.', '💳');
+    }
+  });
+  const prevReviewIds = {};
+  (prevShop.reviews||[]).forEach(function(r){ prevReviewIds[r.id] = true; });
+  (newShop.reviews||[]).forEach(function(r){
+    if(!prevReviewIds[r.id]){
+      notify('barber', 'review', 'Nova avaliação', (r.clientName||'Cliente')+' avaliou com '+r.rating+'★.', '⭐');
+    }
+  });
+  const prevClients = {};
+  (prevShop.clients||[]).forEach(function(c){ prevClients[c.id] = c; });
+  (newShop.clients||[]).forEach(function(c){
+    const prev = prevClients[c.id];
+    if(prev && c.banAppeal && c.banAppeal.status==='pending' && (!prev.banAppeal || prev.banAppeal.sentAt!==c.banAppeal.sentAt)){
+      notify('barber', 'banAppeal', 'Pedido de desbanimento', (c.name||'Cliente')+' pediu para ser desbanido(a).', '📩');
+    }
+  });
+}
+// Compara o estado anterior da barbearia com o novo e dispara as notificações do cliente
+// (agendamento aceito/recusado, atendimento concluído, pagamento confirmado)
+function detectClientEvents(prevShop, newShop){
+  if(!prevShop || !newShop || !session || !session.clientId) return;
+  const prevAppts = {};
+  (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
+  (newShop.appointments||[]).filter(function(a){ return a.clientId===session.clientId; }).forEach(function(a){
+    const prev = prevAppts[a.id];
+    if(!prev) return;
+    if(prev.status==='pending' && a.status==='accepted'){
+      notify('client', 'accepted', 'Agendamento confirmado!', 'Seu horário em '+formatDate(a.date)+' às '+a.time+' foi confirmado pelo barbeiro.', '✅');
+    }
+    if(prev.status==='pending' && a.status==='rejected'){
+      notify('client', 'rejected', 'Agendamento recusado', 'Seu pedido para '+formatDate(a.date)+' às '+a.time+' foi recusado pelo barbeiro.', '❌');
+    }
+    if(prev.status!=='done' && a.status==='done'){
+      notify('client', 'done', 'Atendimento concluído', 'Esperamos que tenha gostado do seu corte! Que tal deixar uma avaliação?', '💈');
+    }
+    if(prev.paymentStatus!=='pago' && a.paymentStatus==='pago'){
+      notify('client', 'paymentConfirmed', 'Pagamento confirmado', 'Seu pagamento de R$ '+Number(a.total).toFixed(2).replace('.',',')+' foi confirmado.', '💳');
+    }
+  });
+}
+// Roteia as mudanças para o detector certo, conforme o papel da sessão atual
+function detectShopChanges(scope, prevShop, newShop){
+  if(scope==='barber') detectBarberEvents(prevShop, newShop);
+  else detectClientEvents(prevShop, newShop);
+}
+
 let shops = loadShops();
 let session = loadSession();
 let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
 let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
 let currentUserDoc = null;   // documento barberflow_users/{uid} em cache
+// Fica "true" durante o processo de cadastro (entre criar o login no Firebase
+// Auth e terminar de gravar os documentos no Firestore). Evita que o listener
+// onAuthStateChanged, que dispara assim que o login é criado, trate a conta
+// como "não encontrada" só porque a gravação ainda não terminou.
+let signupInProgress = false;
 
 /* ============================================================
    SINCRONIZAÇÃO EM TEMPO REAL COM A NUVEM
@@ -1052,7 +1544,7 @@ function listenToUser(uid){
     if(session && session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
       updateTrialBanner(currentUserDoc);
     }
-    if(document.getElementById('screen-trial-expired').classList.contains('active') && !isTrialExpiredForUser(currentUserDoc)){
+    if(document.getElementById('screen-trial-expired').classList.contains('active') && !isAccessExpiredForUser(currentUserDoc)){
       const shop = currentShop();
       if(shop) enterBarberArea(shop);
     }
@@ -1072,14 +1564,16 @@ function listenToShop(code, onFirstLoad){
       if(first){ first=false; onFirstLoad && onFirstLoad(null); }
       return;
     }
+    const prevShop = shops[code];
     shops[code] = normalizeShop(doc.data());
     try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
     if(first){
       first = false;
       onFirstLoad && onFirstLoad(shops[code]);
     } else if(session && session.code===code){
+      detectShopChanges(session.role==='client' ? 'client' : 'barber', prevShop, shops[code]);
       if(session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
-        if(isTrialExpiredForUser(currentUserDoc)){
+        if(isAccessExpiredForUser(currentUserDoc)){
           showScreen('screen-trial-expired');
         } else {
           renderBarberDashboard();
@@ -1101,6 +1595,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  if(id==='screen-plans') renderPlans();
 }
 function toast(msg){
   const t=document.getElementById('toast');
@@ -1193,8 +1688,29 @@ function init(){
 function loadBarberAccount(user){
   db.collection(USERS_COLLECTION).doc(user.uid).get().then(function(doc){
     if(!doc.exists){
-      toast('Não encontramos sua conta. Fale com o suporte.');
-      logoutBarber();
+      if(signupInProgress){
+        // Ainda estamos no meio do cadastro (o documento está sendo gravado
+        // agora mesmo) — não faz nada aqui. A própria função signupBarber()
+        // vai concluir e entrar no painel quando a gravação terminar.
+        return;
+      }
+      // Login existe no Firebase Auth mas o cadastro da barbearia nunca foi
+      // gravado no Firestore (ex.: conexão caiu durante o cadastro, ou as
+      // regras do Firestore não estavam publicadas naquele momento). Como
+      // não há como recuperar os dados que nunca foram salvos, removemos
+      // esse login quebrado para a pessoa poder criar a conta do zero.
+      toast('Sua conta não foi concluída da última vez. Crie sua conta novamente, por favor.');
+      user.delete().catch(function(delErr){
+        // Se o Firebase exigir login recente para apagar, apenas desloga —
+        // a pessoa cria a conta de novo (com outro e-mail, se preferir).
+        console.error('Não foi possível remover login órfão, saindo mesmo assim:', delErr);
+        auth.signOut();
+      });
+      clearSession();
+      session = null;
+      currentUser = null;
+      currentUserDoc = null;
+      showScreen('screen-welcome');
       return;
     }
     currentUserDoc = doc.data();
@@ -1283,13 +1799,17 @@ function signupBarber(){
   btn.disabled = true; btn.textContent = 'Criando conta...';
   const deviceId = getDeviceId();
 
+  let createdCred = null; // guardamos a credencial para poder desfazer o Auth se o Firestore falhar
+  signupInProgress = true;
+
   auth.createUserWithEmailAndPassword(email, password).then(function(cred){
+    createdCred = cred;
     const uid = cred.user.uid;
     // Verifica se este aparelho já usou o teste grátis com outra conta.
     return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).get().then(function(devDoc){
       let trialStartedAt;
       if(devDoc.exists){
-        // Aparelho já tem um teste iniciado — herda a mesma data (não reinicia os 30 dias).
+        // Aparelho já tem um teste iniciado — herda a mesma data (não reinicia os 14 dias).
         trialStartedAt = devDoc.data().firstTrialStartedAt;
         return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).set({
           firstTrialStartedAt: trialStartedAt,
@@ -1323,12 +1843,34 @@ function signupBarber(){
         shops[code] = shop;
         try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
         toast('Conta criada! Bem-vindo(a) ao BarberFlow.');
+        // Entra no painel diretamente agora que os documentos existem de
+        // verdade — não dependemos do onAuthStateChanged disparar de novo,
+        // porque ele já disparou (e foi ignorado) lá no início do cadastro.
+        currentUser = createdCred.user;
+        currentUserDoc = userDoc;
+        listenToUser(uid);
+        session = {role:'barber', code:code, uid:uid};
+        saveSession(session);
+        listenToShop(code, function(shopData){
+          enterBarberArea(shopData || shop);
+        });
       });
     });
   }).catch(function(err){
     console.error('Erro ao criar conta:', err);
-    showFieldError('signup-error', authErrorMessage(err));
+    // Se o login já tinha sido criado no Firebase Auth mas algum passo seguinte
+    // (gravar no Firestore) falhou, a conta ficaria "órfã": com login, mas sem
+    // documento em barberflow_users — e o barbeiro veria "Não encontramos sua
+    // conta" para sempre. Para evitar isso, desfazemos o login criado.
+    if(createdCred && createdCred.user){
+      createdCred.user.delete().catch(function(delErr){
+        console.error('Não foi possível desfazer o login após falha no cadastro:', delErr);
+      });
+      auth.signOut();
+    }
+    showFieldError('signup-error', authErrorMessage(err) + ' Tente novamente — se o problema continuar, verifique sua conexão.');
   }).finally(function(){
+    signupInProgress = false;
     btn.disabled = false; btn.textContent = 'Criar conta e começar teste grátis';
   });
 }
@@ -1362,30 +1904,49 @@ function finishOnboarding(){
     if(shop) enterBarberArea(shop);
   });
 }
-function redeemGoldCode(){
-  const raw = document.getElementById('gold-redeem-code').value.trim().toUpperCase();
-  const errEl = document.getElementById('gold-redeem-error');
+function redeemGoldCode(inputId, errorId){
+  const raw = document.getElementById(inputId||'gold-redeem-code').value.trim().toUpperCase();
+  const errEl = document.getElementById(errorId||'gold-redeem-error');
   errEl.classList.remove('show');
   if(!raw){ errEl.textContent='Digite o código de ativação'; errEl.classList.add('show'); return; }
   if(!currentUser){ return; }
   const codeRef = db.collection(GIFTCODES_COLLECTION).doc(raw);
-  codeRef.get().then(function(doc){
-    if(!doc.exists){ errEl.textContent='Código não encontrado. Confira com quem te vendeu.'; errEl.classList.add('show'); return; }
-    if(doc.data().used){ errEl.textContent='Esse código já foi usado.'; errEl.classList.add('show'); return; }
-    // Ordem importa: primeiro marcamos o código como usado por esta conta,
-    // só depois atualizamos o plano — as regras do Firestore conferem essa ordem.
-    return codeRef.update({used:true, usedBy:currentUser.uid, usedByEmail:currentUser.email, usedAt:new Date().toISOString()})
-    .then(function(){
-      return db.collection(USERS_COLLECTION).doc(currentUser.uid).update({plan:'gold', goldCode:raw});
-    }).then(function(){
-      currentUserDoc.plan = 'gold';
-      toast('Versão Gold ativada! Aproveite 🎉');
-      const shop = currentShop();
-      if(shop) enterBarberArea(shop);
+  const userRef = db.collection(USERS_COLLECTION).doc(currentUser.uid);
+  let planoId, expiresAt, activatedAt;
+  // Transação: marcar o código como usado e atualizar o plano do usuário
+  // acontecem como UMA ÚNICA operação atômica. Se qualquer uma das duas
+  // partes falhar, o Firestore desfaz tudo — assim o código nunca fica
+  // "queimado" (marcado como usado) sem o usuário realmente virar Gold.
+  db.runTransaction(function(transaction){
+    return transaction.get(codeRef).then(function(doc){
+      if(!doc.exists){ return Promise.reject({code:'not-found'}); }
+      const codeData = doc.data();
+      if(codeData.used){ return Promise.reject({code:'used'}); }
+      // planoId vem do código (mensal/semestral/anual/vitalicio); se não vier,
+      // trata como vitalício por segurança (evita expirar sem querer).
+      planoId = codeData.plano || 'vitalicio';
+      const durationDays = Object.prototype.hasOwnProperty.call(PLAN_DURATIONS, planoId) ? PLAN_DURATIONS[planoId] : null;
+      activatedAt = new Date();
+      expiresAt = durationDays ? new Date(activatedAt.getTime() + durationDays*86400000).toISOString() : null;
+      transaction.update(codeRef, {used:true, usedBy:currentUser.uid, usedByEmail:currentUser.email, usedAt:activatedAt.toISOString()});
+      transaction.update(userRef, {
+        plan:'gold', goldCode:raw, goldPlano:planoId,
+        goldActivatedAt:activatedAt.toISOString(), goldExpiresAt:expiresAt
+      });
     });
+  }).then(function(){
+    currentUserDoc.plan = 'gold';
+    currentUserDoc.goldPlano = planoId;
+    currentUserDoc.goldExpiresAt = expiresAt;
+    toast('Versão Gold ativada! Aproveite 🎉');
+    const shop = currentShop();
+    if(shop) enterBarberArea(shop);
   }).catch(function(err){
     console.error('Erro ao ativar código:', err);
-    errEl.textContent='Erro de conexão. Tente novamente.'; errEl.classList.add('show');
+    if(err && err.code==='not-found'){ errEl.textContent='Código não encontrado. Confira com quem te vendeu.'; }
+    else if(err && err.code==='used'){ errEl.textContent='Esse código já foi usado.'; }
+    else { errEl.textContent='Erro de conexão. Tente novamente.'; }
+    errEl.classList.add('show');
   });
 }
 function deleteShopConfirm(){
@@ -1471,26 +2032,75 @@ function renderBarberDashboard(){
   }
 
   if(currentTab==='clientes'){
-    document.getElementById('stat-total-clients').textContent = shop.clients.length;
-    document.getElementById('stat-in').textContent = shop.clients.filter(c=>c.status==='dentro').length;
+    if(checkExpiredBanAppeals(shop)) saveShops(shops);
+    const activeClients = shop.clients.filter(c=>!c.banned);
+    const bannedClients = shop.clients.filter(c=>c.banned);
+    document.getElementById('stat-total-clients').textContent = activeClients.length;
+    document.getElementById('stat-in').textContent = activeClients.filter(c=>c.status==='dentro').length;
+    const bannedChip = document.getElementById('banned-count-chip');
+    if(bannedChip) bannedChip.textContent = bannedClients.length>0 ? ' ('+bannedClients.length+')' : '';
+    const titleEl = document.getElementById('clients-list-title');
+    if(titleEl) titleEl.textContent = clientsSubView==='ativos' ? 'Lista de clientes' : 'Clientes banidos';
     const cWrap = document.getElementById('list-clients');
-    cWrap.innerHTML = shop.clients.length===0
-      ? `<div class="empty-state" style="padding:24px;"><div class="em">👥</div>Nenhum cliente cadastrado ainda</div>`
-      : shop.clients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`
-        <div class="client-item">
-          <div class="client-row">
-            <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
-            <div class="client-info">
-              <b>${escapeHtml(c.name)}</b>
-              <span>${escapeHtml(c.phone||'sem telefone')}</span>
+
+    if(clientsSubView==='ativos'){
+      cWrap.innerHTML = activeClients.length===0
+        ? `<div class="empty-state" style="padding:24px;"><div class="em">👥</div>Nenhum cliente cadastrado ainda</div>`
+        : activeClients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`
+          <div class="client-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="client-row">
+                <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                <div class="client-info">
+                  <b>${escapeHtml(c.name)}</b>
+                  <span>${escapeHtml(c.phone||'sem telefone')}</span>
+                </div>
+              </div>
+              <span class="dot-status ${c.status==='dentro'?'dentro':'fora'}"></span>
+            </div>
+            <div class="row" style="gap:6px;">
+              <button class="btn btn-sm btn-ghost" style="flex:1;" onclick="toggleClientStatus('${c.id}')">${c.status==='dentro'?'Marcar saída':'Marcar entrada'}</button>
+              <button class="btn btn-sm btn-ghost" style="flex:none;" title="Banir" onclick="openBanModal('${c.id}')">🚫</button>
+              <button class="btn btn-sm btn-ghost" style="flex:none;color:var(--danger);" title="Excluir" onclick="deleteClient('${c.id}')">🗑️</button>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="dot-status ${c.status==='dentro'?'dentro':'fora'}"></span>
-            <button class="btn btn-sm btn-ghost" onclick="toggleClientStatus('${c.id}')">${c.status==='dentro'?'Marcar saída':'Marcar entrada'}</button>
+        `).join('');
+    } else {
+      cWrap.innerHTML = bannedClients.length===0
+        ? `<div class="empty-state" style="padding:24px;"><div class="em">🚫</div>Nenhum cliente banido</div>`
+        : bannedClients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>{
+          let appealHtml = '';
+          if(c.banAppeal && c.banAppeal.status==='pending'){
+            appealHtml = `<div style="background:var(--surface3);border-radius:12px;padding:11px 13px;">
+              <b style="font-size:12.5px;">📩 Pedido de desbanimento</b>
+              <div style="font-size:13px;margin-top:4px;">"${escapeHtml(c.banAppeal.message)}"</div>
+              <div class="helper-text" style="margin:4px 0 0;">Aguardando sua resposta — recusa automática em 1 dia sem resposta.</div>
+            </div>`;
+          } else if(c.banAppeal && c.banAppeal.status==='rejected'){
+            appealHtml = `<div class="helper-text" style="margin:0;">Último pedido de desbanimento ("${escapeHtml(c.banAppeal.message)}") foi recusado${c.banAppeal.autoRejected?' automaticamente (sem resposta em 1 dia)':''}.</div>`;
+          }
+          return `
+          <div class="client-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+            <div class="client-row">
+              <div class="avatar" style="opacity:.55;">${(c.name||'?').charAt(0).toUpperCase()}</div>
+              <div class="client-info">
+                <b>${escapeHtml(c.name)}</b>
+                <span>${escapeHtml(c.phone||'sem telefone')}</span>
+              </div>
+            </div>
+            <div class="helper-text" style="margin:0;">
+              Banido em ${c.bannedAt?formatDate(c.bannedAt.slice(0,10)):'-'}<br>
+              ${c.banReason ? 'Motivo: '+escapeHtml(c.banReason) : 'Nenhum motivo informado'}
+            </div>
+            ${appealHtml}
+            <div class="row" style="gap:6px;">
+              <button class="btn btn-sm btn-success" style="flex:1;" onclick="unbanClient('${c.id}')">Desbanir</button>
+              ${c.banAppeal && c.banAppeal.status==='pending' ? `<button class="btn btn-sm btn-danger" style="flex:1;" onclick="rejectBanAppeal('${c.id}')">Recusar pedido</button>` : ''}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+        }).join('');
+    }
   }
 
   if(currentTab==='servicos'){
@@ -1744,6 +2354,88 @@ function toggleClientStatus(clientId){
   renderBarberDashboard();
 }
 
+/* ---------- Clientes: banir / desbanir / excluir / pedidos de desbanimento ---------- */
+let clientsSubView = 'ativos';
+function setClientsSubView(view){
+  clientsSubView = view;
+  document.querySelectorAll('#tab-clientes .chip').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.csub===view);
+  });
+  renderBarberDashboard();
+}
+let banTargetClientId = null;
+function openBanModal(clientId){
+  banTargetClientId = clientId;
+  document.getElementById('ban-reason-input').value = '';
+  document.getElementById('modal-ban').classList.add('active');
+}
+function confirmBanClient(){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===banTargetClientId);
+  if(!c) return;
+  c.banned = true;
+  c.banReason = document.getElementById('ban-reason-input').value.trim();
+  c.bannedAt = new Date().toISOString();
+  c.banAppeal = null;
+  saveShops(shops);
+  closeModal('modal-ban');
+  toast('Cliente banido');
+  renderBarberDashboard();
+}
+function unbanClient(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c) return;
+  if(!confirm('Desbanir '+c.name+'? Ele volta a aparecer na lista de clientes e pode agendar de novo.')) return;
+  c.banned = false;
+  c.banReason = '';
+  c.bannedAt = null;
+  c.banAppeal = null;
+  saveShops(shops);
+  toast('Cliente desbanido');
+  renderBarberDashboard();
+}
+function rejectBanAppeal(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c || !c.banAppeal) return;
+  c.banAppeal.status = 'rejected';
+  c.banAppeal.resolvedAt = new Date().toISOString();
+  c.banAppeal.autoRejected = false;
+  saveShops(shops);
+  toast('Pedido de desbanimento recusado');
+  renderBarberDashboard();
+}
+function deleteClient(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c) return;
+  if(!confirm('Excluir '+c.name+' definitivamente? Essa ação não pode ser desfeita — ele só volta a usar o app se fizer um novo cadastro pelo link enviado por você.')) return;
+  shop.clients = shop.clients.filter(x=>x.id!==clientId);
+  saveShops(shops);
+  toast('Cliente excluído');
+  renderBarberDashboard();
+}
+// Se um pedido de desbanimento ficar mais de 1 dia sem resposta do barbeiro,
+// é recusado automaticamente e o cliente é avisado no app dele.
+function checkExpiredBanAppeals(shop){
+  if(!shop || !shop.clients) return false;
+  const now = Date.now();
+  let changed = false;
+  shop.clients.forEach(function(c){
+    if(c.banned && c.banAppeal && c.banAppeal.status==='pending'){
+      const sentAt = new Date(c.banAppeal.sentAt).getTime();
+      if(now - sentAt > 24*60*60*1000){
+        c.banAppeal.status = 'rejected';
+        c.banAppeal.resolvedAt = new Date().toISOString();
+        c.banAppeal.autoRejected = true;
+        changed = true;
+      }
+    }
+  });
+  return changed;
+}
+
 /* ---------- Ícones de serviço ---------- */
 const SERVICE_ICON_KEYS = ['tesoura','degrade','social','undercut','barba','sobrancelha','navalha','infantil','platinado'];
 function serviceIconPaths(key){
@@ -1978,12 +2670,18 @@ function openConfigScreen(){
   const trialText = document.getElementById('config-trial-text');
   if(currentUserDoc && currentUserDoc.plan==='gold'){
     badge.style.display = 'inline-flex';
-    trialText.textContent = 'Você tem a versão Gold ilimitada. Obrigado!';
+    if(currentUserDoc.goldExpiresAt){
+      const days = goldDaysLeftForUser(currentUserDoc);
+      trialText.textContent = 'Plano Gold ('+(currentUserDoc.goldPlano||'')+'): '+days+' dia(s) restante(s).';
+    } else {
+      trialText.textContent = 'Você tem a versão Gold vitalícia. Obrigado!';
+    }
   } else {
     badge.style.display = 'none';
     const days = currentUserDoc ? trialDaysLeftForUser(currentUserDoc) : 0;
     trialText.textContent = 'Teste grátis: '+days+' dia(s) restante(s).';
   }
+  renderNotifSettingsUI('barber');
 }
 document.getElementById('screen-barber-config').addEventListener('transitionend',()=>{});
 function saveShopConfig(){
@@ -2078,7 +2776,7 @@ function registerClient(){
   const phone = document.getElementById('reg-phone').value.trim();
   if(!name){ toast('Digite seu nome'); return; }
   const shop = shops[session.code];
-  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString()};
+  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
   shop.clients.push(client);
   saveShops(shops);
   localStorage.setItem('barberflow_client_'+session.code, client.id);
@@ -2102,7 +2800,7 @@ function renderClientHome(){
   document.getElementById('client-welcome-msg').textContent = shop.welcomeMsg;
 
   // pessoas cortando cabelo agora, na barbearia
-  const inShopCount = shop.clients.filter(c=>c.status==='dentro').length;
+  const inShopCount = shop.clients.filter(c=>c.status==='dentro' && !c.banned).length;
   const inShopTag = document.getElementById('client-inshop-count');
   if(inShopCount>0){
     inShopTag.style.display='inline-block';
@@ -2420,6 +3118,7 @@ function openClientSettings(){
   if(!c) return;
   document.getElementById('client-edit-name').value = c.name;
   document.getElementById('client-edit-phone').value = c.phone || '';
+  renderNotifSettingsUI('client');
 }
 
 /* ============================================================
