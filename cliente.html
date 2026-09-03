@@ -316,9 +316,10 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
     <div class="container stack">
       <label>Cole aqui o código enviado pelo seu barbeiro</label>
       <input type="text" id="input-join-code" placeholder="Ex: AB12CD" maxlength="10" style="text-transform:uppercase">
-      <button class="btn btn-primary" onclick="joinAsClient()">Entrar</button>
+      <button class="btn btn-primary" id="btn-entrar" onclick="joinAsClient()" disabled>Entrar</button>
     </div>
     <div class="link-text"><b onclick="showScreen('screen-tutorial')">Como funciona o app?</b></div>
+    <div id="connecting-box" style="display:block;text-align:center;margin:18px 20px 0;color:var(--text-dim);font-size:13px;">Conectando...</div>
     <div id="conn-error-box" style="display:none;text-align:center;margin:18px 20px 0;">
       <div id="conn-error-msg" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Erro de conexão. Verifique sua internet.</div>
       <button class="btn btn-outline btn-sm" onclick="retryConnect()">Tentar novamente</button>
@@ -520,8 +521,16 @@ const AUTH_MAX_AUTO_RETRIES = 3; // tenta sozinho antes de pedir pro usuário to
 function hideConnError(){
   const box = document.getElementById('conn-error-box');
   if(box) box.style.display = 'none';
+  const connecting = document.getElementById('connecting-box');
+  if(connecting) connecting.style.display = 'none';
+}
+function showConnecting(){
+  const connecting = document.getElementById('connecting-box');
+  if(connecting) connecting.style.display = 'block';
 }
 function showConnError(msg){
+  const connecting = document.getElementById('connecting-box');
+  if(connecting) connecting.style.display = 'none';
   const box = document.getElementById('conn-error-msg');
   const wrap = document.getElementById('conn-error-box');
   if(box) box.textContent = msg;
@@ -560,7 +569,7 @@ function attemptAnonymousLogin(){
 function retryConnect(){
   hideConnError();
   authRetryCount = 0;
-  toast('Conectando...');
+  showConnecting();
   attemptAnonymousLogin();
 }
 // Se a internet voltar depois de um erro, tenta reconectar sozinho.
@@ -576,6 +585,11 @@ auth.onAuthStateChanged(function(user){
     init();
   }
 });
+// Mostra a tela inicial JÁ, com aviso de "Conectando...", em vez de
+// deixar a tela em branco/preta enquanto o login em segundo plano
+// (com suas tentativas automáticas) ainda não terminou.
+showScreen('screen-welcome');
+showConnecting();
 attemptAnonymousLogin();
 
 /* ============================================================
