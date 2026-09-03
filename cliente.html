@@ -823,6 +823,31 @@ function getAudioCtx(){
 ['pointerdown','touchstart','click'].forEach(evt=>{
   window.addEventListener(evt, function unlock(){ getAudioCtx(); }, {once:true, passive:true});
 });
+
+/* ---------- Som suave de toque nos botões (um único som para todo o app) ---------- */
+function playUiClickSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  // Duas camadas suaves e quentes, como um "toc" macio de madeira — calmo, nada estridente.
+  [[560, 0.05, 'sine'], [340, 0.032, 'sine']].forEach(function(layer){
+    const freq = layer[0], peak = layer[1], type = layer[2];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.86, now+0.11);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(peak, now+0.014);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now+0.24);
+  });
+}
+document.addEventListener('click', function(e){
+  const el = e.target.closest('button, .btn, .icon-btn, .chip, .navitem, .slot-btn, .day-toggle, .close-x, .icon-picker-item, .service-item, .service-card-h, .checkbox-dot');
+  if(el) playUiClickSound();
+}, true);
 function playNotifSound(soundKey, volume){
   const ctx = getAudioCtx();
   if(!ctx) return;
