@@ -1653,12 +1653,28 @@ showScreen = function(id){
   }
   btnClose && btnClose.addEventListener('click', closeBanner);
 
-  window.addEventListener('beforeinstallprompt', function(e){
+  window.addEventListener('beforeinstallprompt', async function(e){
     e.preventDefault();
     deferredPrompt = e;
     banterText.textContent = 'Adicione à tela inicial para acesso rápido';
     btnAction.textContent = 'Instalar';
     banner.style.display = 'block';
+
+    // Instalação automática: assim que o navegador libera o prompt nativo
+    // de instalação, disparamos ele sozinhos (sem esperar o cliente tocar
+    // em nada). O navegador ainda mostra sua própria caixinha de confirmação
+    // (isso é uma trava de segurança do próprio Chrome/Android — nenhum site
+    // pode instalar um app no celular da pessoa sem essa confirmação final),
+    // mas a gente não fica esperando o cliente procurar o botão.
+    try{
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+    }catch(err){
+      // Alguns navegadores recusam o prompt automático (ex.: pouco
+      // "engajamento" ainda na página). Nesse caso o banner e o botão
+      // fixo continuam visíveis para instalação manual, normalmente.
+    }
+    deferredPrompt = null;
   });
 
   window.addEventListener('appinstalled', function(){
