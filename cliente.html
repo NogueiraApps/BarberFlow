@@ -505,8 +505,24 @@ const SHOPS_COLLECTION = 'barberflow_shops';
 // Login anônimo: garante que as regras de segurança do Firestore
 // consigam identificar que a escrita veio de dentro do app (cliente real),
 // sem exigir e-mail/senha do cliente — é só o barbeiro que faz login.
+// IMPORTANTE: só chamamos init() depois que esse login realmente terminar
+// (via onAuthStateChanged) — senão, se o app tentar ler o Firestore antes
+// do login anônimo estar pronto, as regras de segurança recusam a leitura
+// e o cliente vê "erro de conexão" mesmo com internet normal.
+let authReadyFired = false;
+auth.onAuthStateChanged(function(user){
+  if(user && !authReadyFired){
+    authReadyFired = true;
+    init();
+  }
+});
 auth.signInAnonymously().catch(function(err){
   console.error('Erro no login anônimo:', err);
+  if(!authReadyFired){
+    authReadyFired = true;
+    toast('Erro de conexão. Verifique sua internet e recarregue a página.');
+    showScreen('screen-welcome');
+  }
 });
 
 /* ============================================================
@@ -592,6 +608,9 @@ function listenToShop(code, onFirstLoad){
   }, function(err){
     console.error('Erro de sincronização com o Firebase:', err);
     toast('Falha de conexão com a internet');
+    // Se o erro aconteceu logo na primeira tentativa de carregar, nunca deixa
+    // a tela travada em branco — volta pra tela inicial pra pessoa tentar de novo.
+    if(first){ first=false; showScreen('screen-welcome'); }
   });
 }
 
@@ -741,7 +760,7 @@ function joinAsClient(){
   if(!raw){ toast('Cole o código enviado pelo barbeiro'); return; }
   toast('Procurando barbearia...');
   db.collection(SHOPS_COLLECTION).doc(raw).get().then(function(doc){
-    if(!doc.exists){ toast('Código não encontrado. Confira com seu barbeiro.'); return; }
+    if(!doc.exists){ toast('Código não encontrado. Confira com seu barbeiro.'); showScreen('screen-welcome'); return; }
     shops[raw] = normalizeShop(doc.data());
     try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
     const shop = shops[raw];
@@ -765,7 +784,11 @@ function joinAsClient(){
     }
   }).catch(function(err){
     console.error('Erro ao buscar barbearia:', err);
+    // Nunca deixa a tela travada em branco: mostra a tela inicial com o
+    // código já preenchido, para a pessoa poder tentar de novo com um toque.
+    document.getElementById('input-join-code').value = raw;
     toast('Erro de conexão. Verifique sua internet e tente de novo.');
+    showScreen('screen-welcome');
   });
 }
 function registerClient(){
@@ -1085,7 +1108,9 @@ showScreen = function(id){
 /* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
    então o polling antigo baseado em localStorage não é mais necessário. */
 
-init();
+// init() agora é chamado lá em cima, assim que o login anônimo termina
+// (auth.onAuthStateChanged) — não aqui, para não tentar ler o Firestore
+// antes do login estar pronto.
 
 /* ============================================================
    PWA — instalação (banner + botão fixo sempre visível)
