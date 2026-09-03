@@ -283,6 +283,25 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
 .shop-banner p{margin:0;font-size:13px;opacity:.85;}
 .shop-banner .badge-line{margin-top:12px;font-size:12.5px;font-weight:700;background:rgba(0,0,0,.15);
   display:inline-block;padding:5px 12px;border-radius:20px;}
+.location-bar{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:16px;
+  border-radius:16px;cursor:pointer;text-decoration:none;
+  background:var(--surface);border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 4px 16px rgba(0,0,0,.25);
+  transition:transform .12s ease, background .15s ease;
+}
+.location-bar:active{transform:scale(.98);background:var(--surface2);}
+.location-bar .loc-icon{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 8px 18px -7px rgba(201,162,77,.6);
+}
+.location-bar .loc-text{flex:1;min-width:0;}
+.location-bar .loc-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-dim);}
+.location-bar .loc-address{font-size:13px;font-weight:700;color:var(--text);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.location-bar .loc-arrow{font-size:19px;color:var(--primary);flex-shrink:0;font-weight:700;}
 .list-select-item{
   display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
   border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;
@@ -442,6 +461,14 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="icon-btn" onclick="showScreen('screen-client-settings')">⚙️</div>
     </div>
     <div class="container">
+      <a class="location-bar" id="client-location-bar" style="display:none;" href="#" onclick="return openShopLocation();">
+        <div class="loc-icon">📍</div>
+        <div class="loc-text">
+          <div class="loc-label">Localização</div>
+          <div class="loc-address" id="client-location-address"></div>
+        </div>
+        <div class="loc-arrow">›</div>
+      </a>
       <div class="shop-banner" id="client-banner">
         <h2 id="client-banner-title">Bem-vindo!</h2>
         <p id="client-welcome-msg">Marque seu horário</p>
@@ -1324,6 +1351,15 @@ function renderClientHome(){
   document.getElementById('client-banner-title').textContent = shop.shopName;
   document.getElementById('client-welcome-msg').textContent = shop.welcomeMsg;
 
+  // localização da barbearia
+  const locBar = document.getElementById('client-location-bar');
+  if(shop.address){
+    locBar.style.display = 'flex';
+    document.getElementById('client-location-address').textContent = shop.address;
+  } else {
+    locBar.style.display = 'none';
+  }
+
   // pessoas cortando cabelo agora, na barbearia
   const inShopCount = shop.clients.filter(c=>c.status==='dentro' && !c.banned).length;
   const inShopTag = document.getElementById('client-inshop-count');
@@ -1485,6 +1521,13 @@ function clearClientHistory(){
   }
 }
 
+function openShopLocation(){
+  const shop = shops[session.code];
+  if(!shop || !shop.address) return false;
+  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(shop.address);
+  window.open(url, '_blank');
+  return false;
+}
 function toggleClientService(id){
   const el = document.getElementById('csvc-'+id);
   if(selectedServiceIds.includes(id)){
