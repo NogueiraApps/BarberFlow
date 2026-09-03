@@ -319,6 +319,10 @@ input[type=color]{width:52px;height:44px;border:none;border-radius:10px;backgrou
       <button class="btn btn-primary" onclick="joinAsClient()">Entrar</button>
     </div>
     <div class="link-text"><b onclick="showScreen('screen-tutorial')">Como funciona o app?</b></div>
+    <div id="conn-error-box" style="display:none;text-align:center;margin:18px 20px 0;">
+      <div id="conn-error-msg" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Erro de conexão. Verifique sua internet.</div>
+      <button class="btn btn-outline btn-sm" onclick="retryConnect()">Tentar novamente</button>
+    </div>
     <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:20px;letter-spacing:.3px;">app by Daniel Nogueira</div>
   </div>
 
@@ -510,20 +514,69 @@ const SHOPS_COLLECTION = 'barberflow_shops';
 // do login anônimo estar pronto, as regras de segurança recusam a leitura
 // e o cliente vê "erro de conexão" mesmo com internet normal.
 let authReadyFired = false;
+let authRetryCount = 0;
+const AUTH_MAX_AUTO_RETRIES = 3; // tenta sozinho antes de pedir pro usuário tocar em "Tentar novamente"
+
+function hideConnError(){
+  const box = document.getElementById('conn-error-box');
+  if(box) box.style.display = 'none';
+}
+function showConnError(msg){
+  const box = document.getElementById('conn-error-msg');
+  const wrap = document.getElementById('conn-error-box');
+  if(box) box.textContent = msg;
+  if(wrap) wrap.style.display = 'block';
+  showScreen('screen-welcome');
+  toast(msg);
+}
+function attemptAnonymousLogin(){
+  auth.signInAnonymously().catch(function(err){
+    console.error('Erro no login anônimo (tentativa '+(authRetryCount+1)+'):', err);
+    if(authReadyFired) return;
+
+    // Sem internet no aparelho: não adianta tentar de novo sozinho, avisa na hora.
+    if(typeof navigator!=='undefined' && navigator.onLine===false){
+      showConnError('Sem internet. Verifique sua conexão e toque em "Tentar novamente".');
+      return;
+    }
+
+    if(authRetryCount < AUTH_MAX_AUTO_RETRIES){
+      authRetryCount++;
+      setTimeout(attemptAnonymousLogin, 1200 * authRetryCount); // 1.2s, 2.4s, 3.6s
+      return;
+    }
+
+    let msg = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    if(err && err.code === 'auth/network-request-failed'){
+      msg = 'Sem internet. Verifique sua conexão e tente novamente.';
+    } else if(err && err.code === 'auth/admin-restricted-operation'){
+      msg = 'Login anônimo desativado no servidor. Avise o desenvolvedor do app.';
+    } else if(err && err.code === 'auth/unauthorized-domain'){
+      msg = 'Este endereço não está autorizado no servidor. Avise o desenvolvedor do app.';
+    }
+    showConnError(msg);
+  });
+}
+function retryConnect(){
+  hideConnError();
+  authRetryCount = 0;
+  toast('Conectando...');
+  attemptAnonymousLogin();
+}
+// Se a internet voltar depois de um erro, tenta reconectar sozinho.
+if(typeof window!=='undefined'){
+  window.addEventListener('online', function(){
+    if(!authReadyFired){ authRetryCount = 0; attemptAnonymousLogin(); }
+  });
+}
 auth.onAuthStateChanged(function(user){
   if(user && !authReadyFired){
     authReadyFired = true;
+    hideConnError();
     init();
   }
 });
-auth.signInAnonymously().catch(function(err){
-  console.error('Erro no login anônimo:', err);
-  if(!authReadyFired){
-    authReadyFired = true;
-    toast('Erro de conexão. Verifique sua internet e recarregue a página.');
-    showScreen('screen-welcome');
-  }
-});
+attemptAnonymousLogin();
 
 /* ============================================================
    DATA LAYER
