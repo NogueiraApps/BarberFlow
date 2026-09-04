@@ -824,6 +824,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <input type="color" id="config-card-color">
         <label>Cor dos nomes (Próximos agendamentos)</label>
         <input type="color" id="config-appt-name-color">
+        <label>Cor dos avisos e títulos (textos apagados)</label>
+        <input type="color" id="config-dim-text-color">
+        <div class="helper-text" style="margin-top:0;">Controla textos como "Nenhum agendamento", títulos de seção e avisos — que por padrão são mais claros/apagados e podem ficar difíceis de ler dependendo da imagem de fundo.</div>
         <label>Estilo das letras</label>
         <div class="chip-row" style="margin-bottom:4px;">
           <div class="chip" data-font="padrao" onclick="setFontStyle('padrao')">Padrão</div>
@@ -1794,6 +1797,7 @@ function applyTheme(color){
 }
 const DEFAULT_BG_COLOR = '#0a0a0d';
 const DEFAULT_TEXT_COLOR = '#f5f1e9';
+const DEFAULT_DIM_TEXT_COLOR = '#9d98a6';
 const DEFAULT_CARD_COLOR = '#15151a';
 const FONT_OPTIONS = {
   padrao:    {label:'Padrão',    css:"'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif"},
@@ -1825,6 +1829,10 @@ function applyAppearance(shop){
   // Cor dos nomes nos agendamentos (Próximos agendamentos etc.)
   const apptNameColor = (shop && shop.apptNameColor) || textColor;
   document.documentElement.style.setProperty('--appt-name-color', apptNameColor);
+  // Cor dos avisos e títulos de seção (textos apagados: "Nenhum...", títulos em maiúsculo, chips)
+  const dimTextColor = (shop && shop.dimTextColor) || DEFAULT_DIM_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text-dim', dimTextColor);
+  document.documentElement.style.setProperty('--text-faint', dimTextColor);
   // Cor dos quadrados (cards)
   const cardColor = (shop && shop.cardColor) || DEFAULT_CARD_COLOR;
   document.documentElement.style.setProperty('--surface', cardColor);
@@ -2951,6 +2959,7 @@ function openConfigScreen(){
   document.getElementById('config-text-color').value = shop.textColor || '#f5f1e9';
   document.getElementById('config-card-color').value = shop.cardColor || '#15151a';
   document.getElementById('config-appt-name-color').value = shop.apptNameColor || shop.textColor || '#f5f1e9';
+  document.getElementById('config-dim-text-color').value = shop.dimTextColor || '#9d98a6';
   renderBgTypeChips();
   renderBgImagePicker();
   renderFontChips();
@@ -3084,6 +3093,7 @@ function saveBackgroundConfig(){
   shop.textColor = document.getElementById('config-text-color').value;
   shop.cardColor = document.getElementById('config-card-color').value;
   shop.apptNameColor = document.getElementById('config-appt-name-color').value;
+  shop.dimTextColor = document.getElementById('config-dim-text-color').value;
   shop.fontKey = editingFontKey;
   saveShops(shops);
   applyAppearance(shop);
