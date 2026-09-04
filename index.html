@@ -384,6 +384,21 @@ textarea{resize:vertical;font-family:var(--font);}
 }
 .slot-btn.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);box-shadow:var(--shadow-sm);}
 .slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+.period-row{display:flex;gap:10px;margin:9px 0 14px;}
+.period-banner{
+  flex:1;padding:14px 6px 12px;border-radius:14px;background:var(--surface2);
+  border:1.5px solid var(--border);text-align:center;cursor:pointer;
+  transition:all .15s ease;
+}
+.period-banner .picon{font-size:20px;display:block;margin-bottom:4px;filter:grayscale(.4);opacity:.7;transition:all .15s ease;}
+.period-banner .plabel{font-size:12px;font-weight:800;color:var(--text-dim);letter-spacing:.2px;}
+.period-banner.active{
+  border-color:var(--primary);
+  background:color-mix(in srgb, var(--primary) 16%, var(--surface2));
+  box-shadow:0 0 0 1px var(--primary), 0 0 16px 2px color-mix(in srgb, var(--primary) 55%, transparent);
+}
+.period-banner.active .picon{filter:none;opacity:1;}
+.period-banner.active .plabel{color:var(--primary);}
 
 /* ---------- Auth / onboarding / gold ---------- */
 .auth-link{text-align:center;font-size:13px;color:var(--text-dim);margin-top:18px;}
@@ -901,6 +916,20 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="card" id="client-dayoff-banner" style="display:none;margin-top:10px;border-left:4px solid var(--danger);background:rgba(229,72,77,.1);color:var(--danger);"></div>
 
       <div class="section-title" style="margin-bottom:4px;">Horários disponíveis</div>
+      <div class="period-row" id="client-period-row">
+        <div class="period-banner" id="period-manha" onclick="selectPeriod('manha')">
+          <span class="picon">🌅</span>
+          <span class="plabel">Manhã</span>
+        </div>
+        <div class="period-banner" id="period-tarde" onclick="selectPeriod('tarde')">
+          <span class="picon">☀️</span>
+          <span class="plabel">Tarde</span>
+        </div>
+        <div class="period-banner" id="period-noite" onclick="selectPeriod('noite')">
+          <span class="picon">🌙</span>
+          <span class="plabel">Noite</span>
+        </div>
+      </div>
       <div class="slot-grid" id="client-slots"></div>
 
       <div style="height:16px"></div>
@@ -2960,6 +2989,7 @@ function registerClient(){
 
 let selectedServiceIds = [];
 let selectedSlot = null;
+let selectedPeriod = 'manha'; // 'manha' | 'tarde' | 'noite'
 
 function renderClientHome(){
   const shop = shops[session.code];
@@ -3215,8 +3245,26 @@ function updateClientTotal(){
 function timeToMinutes(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
 function minutesToTime(m){ const h=Math.floor(m/60); const mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
 
+// Faixas de horário: manhã até 12:00, tarde de 12:30 até 17:30, noite de 18:00 em diante.
+function periodOfTime(t){
+  const m = timeToMinutes(t);
+  if(m <= 12*60) return 'manha';
+  if(m <= 17*60+30) return 'tarde';
+  return 'noite';
+}
+function selectPeriod(period){
+  selectedPeriod = period;
+  renderSlots();
+}
+function updatePeriodBanners(){
+  ['manha','tarde','noite'].forEach(p=>{
+    const el = document.getElementById('period-'+p);
+    if(el) el.classList.toggle('active', selectedPeriod===p);
+  });
+}
 function renderSlots(){
   selectedSlot = null;
+  updatePeriodBanners();
   const shop = shops[session.code];
   const dateStr = document.getElementById('client-date').value;
   const wrap = document.getElementById('client-slots');
@@ -3241,11 +3289,11 @@ function renderSlots(){
     return;
   }
   const acceptedTimes = shop.appointments.filter(a=>a.date===dateStr && a.status==='accepted').map(a=>a.time);
-  const slots = (shop.workTimes||[]).slice().sort();
+  const slots = (shop.workTimes||[]).slice().sort().filter(t=>periodOfTime(t)===selectedPeriod);
   wrap.innerHTML = slots.map(t=>{
     const taken = acceptedTimes.includes(t);
     return `<div class="slot-btn ${taken?'taken':''}" onclick="${taken?'':`selectSlot('${t}')`}">${t}</div>`;
-  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários configurados</div>`;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários nesse período</div>`;
   updateScheduleButton();
 }
 function selectSlot(t){
