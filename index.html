@@ -21,7 +21,7 @@ if('serviceWorker' in navigator){
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --primary:#c9a24d;
@@ -799,8 +799,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar personalização</button>
       </div>
       <div class="card">
-        <h3>🖼️ Fundo do app</h3>
-        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Escolha uma cor sólida ou uma imagem para o fundo do app. Seus clientes veem o mesmo fundo assim que você salvar.</div>
+        <h3>🎨 Fundo e aparência</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Personalize as cores e a fonte do app. Seus clientes veem a mesma aparência assim que você salvar.</div>
+        <label>Fundo do app</label>
         <div class="chip-row" style="margin-bottom:12px;">
           <div class="chip" data-bgtype="default" onclick="setBgType('default')">Padrão</div>
           <div class="chip" data-bgtype="color" onclick="setBgType('color')">Cor</div>
@@ -815,8 +816,20 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
           <div id="config-bg-image-preview-wrap"></div>
           <input type="file" id="config-bg-image-input" accept="image/*" style="display:none" onchange="onBgImageSelected(event)">
         </div>
+        <div class="divider"></div>
+        <label>Cor das letras</label>
+        <input type="color" id="config-text-color">
+        <label>Cor dos quadrados</label>
+        <input type="color" id="config-card-color">
+        <label>Estilo das letras</label>
+        <div class="chip-row" style="margin-bottom:4px;">
+          <div class="chip" data-font="padrao" onclick="setFontStyle('padrao')">Padrão</div>
+          <div class="chip" data-font="moderna" onclick="setFontStyle('moderna')">Moderna</div>
+          <div class="chip" data-font="elegante" onclick="setFontStyle('elegante')">Elegante</div>
+          <div class="chip" data-font="divertida" onclick="setFontStyle('divertida')">Divertida</div>
+        </div>
         <div style="height:10px"></div>
-        <button class="btn btn-primary" onclick="saveBackgroundConfig()">Salvar fundo</button>
+        <button class="btn btn-primary" onclick="saveBackgroundConfig()">Salvar aparência</button>
       </div>
       <div class="card">
         <h3>📍 Localização</h3>
@@ -1372,7 +1385,7 @@ function enterBarberArea(shop){
     return;
   }
   applyTheme(shop.color);
-  applyBackground(shop);
+  applyAppearance(shop);
   renderBarberDashboard();
   updateTrialBanner(currentUserDoc);
   showScreen('screen-barber-dashboard');
@@ -1428,6 +1441,9 @@ function normalizeShop(shop){
   if(shop.bgType===undefined) shop.bgType = 'default';
   if(shop.bgColor===undefined) shop.bgColor = '#0a0a0d';
   if(shop.bgImage===undefined) shop.bgImage = '';
+  if(shop.textColor===undefined) shop.textColor = '';
+  if(shop.cardColor===undefined) shop.cardColor = '';
+  if(shop.fontKey===undefined) shop.fontKey = 'padrao';
   return shop;
 }
 
@@ -1774,7 +1790,15 @@ function applyTheme(color){
   document.documentElement.style.setProperty('--primary-dark', dark);
 }
 const DEFAULT_BG_COLOR = '#0a0a0d';
-function applyBackground(shop){
+const DEFAULT_TEXT_COLOR = '#f5f1e9';
+const DEFAULT_CARD_COLOR = '#15151a';
+const FONT_OPTIONS = {
+  padrao:    {label:'Padrão',    css:"'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif"},
+  moderna:   {label:'Moderna',   css:"'Poppins','Segoe UI',system-ui,-apple-system,sans-serif"},
+  elegante:  {label:'Elegante',  css:"'Playfair Display',Georgia,serif"},
+  divertida: {label:'Divertida', css:"'Fredoka','Segoe UI',system-ui,-apple-system,sans-serif"}
+};
+function applyAppearance(shop){
   const body = document.body;
   if(shop && shop.bgType==='image' && shop.bgImage){
     body.style.backgroundImage = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url('${shop.bgImage}')`;
@@ -1792,6 +1816,18 @@ function applyBackground(shop){
     const color = (shop && shop.bgType==='color' && shop.bgColor) ? shop.bgColor : DEFAULT_BG_COLOR;
     document.documentElement.style.setProperty('--bg', color);
   }
+  // Cor das letras
+  const textColor = (shop && shop.textColor) || DEFAULT_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text', textColor);
+  // Cor dos quadrados (cards)
+  const cardColor = (shop && shop.cardColor) || DEFAULT_CARD_COLOR;
+  document.documentElement.style.setProperty('--surface', cardColor);
+  document.documentElement.style.setProperty('--surface2', shadeColor(cardColor, 8));
+  document.documentElement.style.setProperty('--surface3', shadeColor(cardColor, 16));
+  // Estilo das letras (fonte)
+  const fontKey = (shop && shop.fontKey) || 'padrao';
+  const fontCss = (FONT_OPTIONS[fontKey] || FONT_OPTIONS.padrao).css;
+  document.documentElement.style.setProperty('--font', fontCss);
 }
 function shadeColor(hex, percent){
   hex = hex.replace('#','');
@@ -2707,6 +2743,7 @@ let editingServiceIcon = 'tesoura';
 let editingServiceImage = null;
 let editingBgType = 'default';
 let editingBgImage = '';
+let editingFontKey = 'padrao';
 function renderIconPicker(){
   const wrap = document.getElementById('svc-icon-picker');
   wrap.innerHTML = SERVICE_ICON_KEYS.map(k=>`
@@ -2903,9 +2940,13 @@ function openConfigScreen(){
   document.getElementById('config-color').value = shop.color;
   editingBgType = shop.bgType || 'default';
   editingBgImage = shop.bgImage || '';
+  editingFontKey = shop.fontKey || 'padrao';
   document.getElementById('config-bg-color').value = shop.bgColor || '#0a0a0d';
+  document.getElementById('config-text-color').value = shop.textColor || '#f5f1e9';
+  document.getElementById('config-card-color').value = shop.cardColor || '#15151a';
   renderBgTypeChips();
   renderBgImagePicker();
+  renderFontChips();
   const addr = shop.addressDetails || {};
   // Compatibilidade: barbearias antigas tinham só um campo de texto livre (shop.address).
   // Se isso existir e os campos novos ainda estiverem vazios, jogamos o texto antigo
@@ -2955,7 +2996,7 @@ function saveShopConfig(){
   shop.clientAppUrl = document.getElementById('config-client-url').value.trim();
   saveShops(shops);
   applyTheme(shop.color);
-  applyBackground(shop);
+  applyAppearance(shop);
   toast('Personalização salva! O app do cliente já atualiza sozinho.');
   renderBarberDashboard();
 }
@@ -2970,6 +3011,15 @@ function renderBgTypeChips(){
   });
   document.getElementById('config-bg-color-row').style.display = editingBgType==='color' ? 'block' : 'none';
   document.getElementById('config-bg-image-row').style.display = editingBgType==='image' ? 'block' : 'none';
+}
+function setFontStyle(key){
+  editingFontKey = key;
+  renderFontChips();
+}
+function renderFontChips(){
+  document.querySelectorAll('[data-font]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-font')===editingFontKey);
+  });
 }
 function renderBgImagePicker(){
   const wrap = document.getElementById('config-bg-image-preview-wrap');
@@ -3024,9 +3074,12 @@ function saveBackgroundConfig(){
   shop.bgType = editingBgType;
   shop.bgColor = document.getElementById('config-bg-color').value;
   shop.bgImage = editingBgImage;
+  shop.textColor = document.getElementById('config-text-color').value;
+  shop.cardColor = document.getElementById('config-card-color').value;
+  shop.fontKey = editingFontKey;
   saveShops(shops);
-  applyBackground(shop);
-  toast('Fundo salvo! O app do cliente já atualiza sozinho.');
+  applyAppearance(shop);
+  toast('Aparência salva! O app do cliente já atualiza sozinho.');
 }
 function copyCode(){
   const shop = currentShop();
@@ -3147,7 +3200,7 @@ function renderClientHome(){
   const shop = shops[session.code];
   if(!shop) return;
   applyTheme(shop.color);
-  applyBackground(shop);
+  applyAppearance(shop);
   document.getElementById('client-shop-name').textContent = shop.shopName;
   document.getElementById('client-barber-name').textContent = shop.barberName;
   document.getElementById('client-banner-title').textContent = shop.shopName;
