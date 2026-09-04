@@ -435,6 +435,14 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 <div id="app">
 
   <!-- ============ WELCOME ============ -->
+  <div class="screen" id="screen-client-loading">
+    <div class="hero">
+      <div class="logo-circle">✂️</div>
+      <h1>BarberFlow</h1>
+      <p>Entrando...</p>
+    </div>
+  </div>
+
   <div class="screen" id="screen-welcome">
     <div class="hero">
       <div class="logo-circle">✂️</div>
@@ -831,11 +839,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
     </div>
     <div class="container stack">
-      <div class="helper-text" style="margin-bottom:6px;">Complete seu cadastro para agendar nesta barbearia.</div>
+      <div class="helper-text" style="margin-bottom:6px;">Digite seu nome para agendar nesta barbearia.</div>
       <label>Seu nome</label>
       <input type="text" id="reg-name" placeholder="Nome completo">
-      <label>Seu telefone</label>
-      <input type="tel" id="reg-phone" placeholder="(00) 00000-0000">
       <div style="height:8px"></div>
       <button class="btn btn-primary" onclick="registerClient()">Continuar</button>
     </div>
@@ -846,6 +852,10 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div id="preview-banner" style="display:none;background:var(--surface2);padding:12px 20px;align-items:center;justify-content:space-between;gap:10px;">
       <span style="font-size:12.5px;color:var(--text-dim);">👁️ <b style="color:var(--text);">Modo prévia</b> — assim seus clientes veem o app</span>
       <button class="btn btn-sm btn-primary" style="flex:none;" onclick="exitClientPreview()">Voltar ao painel</button>
+    </div>
+    <div id="install-banner" style="display:none;background:var(--surface2);padding:12px 20px;align-items:center;justify-content:space-between;gap:10px;">
+      <span style="font-size:12.5px;color:var(--text-dim);">📲 <b style="color:var(--text);">Instale o app</b> — acesso rápido, sem navegador</span>
+      <span class="install-btn-wrap"></span>
     </div>
     <div class="topbar">
       <div>
@@ -1568,6 +1578,7 @@ function detectShopChanges(scope, prevShop, newShop){
 
 let shops = loadShops();
 let session = loadSession();
+let deferredInstallPrompt = null; // evento de instalação do PWA, guardado até o cliente pedir
 let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
 let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
 let currentUserDoc = null;   // documento barberflow_users/{uid} em cache
@@ -1712,6 +1723,14 @@ function toggleClientPreview(){
    Firebase Authentication (login por e-mail e senha)
    ============================================================ */
 function init(){
+  // Se o link tem ?code=XXXXX, é um link de cliente — entra direto no app do
+  // cliente dessa barbearia, mesmo que este navegador tenha um login de
+  // barbeiro salvo. É assim que o cliente chega no app pelo link enviado.
+  const urlCode = getUrlCode();
+  if(urlCode){
+    enterViaCode(urlCode);
+    return;
+  }
   auth.onAuthStateChanged(function(user){
     if(user){
       currentUser = user;
@@ -1730,6 +1749,49 @@ function init(){
         showScreen('screen-welcome');
       }
     }
+  });
+}
+// Lê o parâmetro ?code= da URL do link que o barbeiro compartilha com o cliente.
+function getUrlCode(){
+  const params = new URLSearchParams(window.location.search);
+  const c = (params.get('code')||'').trim().toUpperCase();
+  return c || null;
+}
+// Entra automaticamente como cliente na barbearia do código da URL.
+// Se o cliente já é conhecido neste aparelho, pula direto pro agendamento.
+// Se é a primeira vez, pede só o nome antes de ir pro agendamento.
+function enterViaCode(code){
+  showScreen('screen-client-loading');
+  db.collection(SHOPS_COLLECTION).doc(code).get().then(function(doc){
+    if(!doc.exists){
+      toast('Código não encontrado. Confira o link com seu barbeiro.');
+      showScreen('screen-welcome');
+      return;
+    }
+    shops[code] = normalizeShop(doc.data());
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    const shop = shops[code];
+    applyTheme(shop.color);
+
+    const existingLocalId = localStorage.getItem('barberflow_client_'+code);
+    if(existingLocalId && shop.clients.find(c=>c.id===existingLocalId)){
+      session = {role:'client', code:code, clientId:existingLocalId};
+      saveSession(session);
+      listenToShop(code, function(){
+        renderClientHome();
+        showScreen('screen-client-home');
+      });
+    } else {
+      session = {role:'client', code:code, clientId:null};
+      saveSession(session);
+      listenToShop(code, function(){
+        showScreen('screen-client-register');
+      });
+    }
+  }).catch(function(err){
+    console.error('Erro ao entrar pelo código da URL:', err);
+    toast('Erro de conexão. Verifique sua internet e tente de novo.');
+    showScreen('screen-welcome');
   });
 }
 // Carrega os dados da conta do barbeiro (barberflow_users/{uid}) e, a partir
@@ -2824,10 +2886,9 @@ function joinAsClient(){
 }
 function registerClient(){
   const name = document.getElementById('reg-name').value.trim();
-  const phone = document.getElementById('reg-phone').value.trim();
   if(!name){ toast('Digite seu nome'); return; }
   const shop = shops[session.code];
-  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
+  const client = {id:uid('cli'), name, phone:'', status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
   shop.clients.push(client);
   saveShops(shops);
   localStorage.setItem('barberflow_client_'+session.code, client.id);
@@ -3196,10 +3257,61 @@ showScreen = function(id){
   originalShowScreen(id);
   if(id==='screen-barber-config') openConfigScreen();
   if(id==='screen-client-settings') openClientSettings();
+  if(id==='screen-client-home') maybeShowInstallBanner();
 };
 
 /* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
    então o polling antigo baseado em localStorage não é mais necessário. */
+
+/* ============================================================
+   INSTALAR APP (PWA / "vira APK" no Android)
+   ============================================================ */
+// O Chrome/Android dispara esse evento quando o app pode ser instalado.
+// Guardamos o evento e mostramos um botão pro cliente instalar com 1 toque —
+// isso é o que faz o app virar um ícone de verdade no celular, como um APK.
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  maybeShowInstallBanner();
+});
+window.addEventListener('appinstalled', function(){
+  deferredInstallPrompt = null;
+  const b = document.getElementById('install-banner');
+  if(b) b.style.display = 'none';
+});
+function isStandaloneApp(){
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+function isIOSDevice(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function maybeShowInstallBanner(){
+  const banner = document.getElementById('install-banner');
+  if(!banner) return;
+  if(isStandaloneApp()){ banner.style.display = 'none'; return; }
+  const wrap = banner.querySelector('.install-btn-wrap');
+  if(deferredInstallPrompt){
+    wrap.innerHTML = '<button class="btn btn-sm btn-primary" style="flex:none;" onclick="triggerInstallPrompt()">Instalar</button>';
+    banner.style.display = 'flex';
+  } else if(isIOSDevice()){
+    wrap.innerHTML = '<button class="btn btn-sm btn-outline" style="flex:none;" onclick="showIosInstallTip()">Como instalar</button>';
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+function triggerInstallPrompt(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(function(){
+    deferredInstallPrompt = null;
+    const b = document.getElementById('install-banner');
+    if(b) b.style.display = 'none';
+  });
+}
+function showIosInstallTip(){
+  alert('No iPhone: toque no ícone de compartilhar (□↑) na barra do navegador e escolha "Adicionar à Tela de Início".');
+}
 
 init();
 </script>
