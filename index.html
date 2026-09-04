@@ -843,6 +843,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="helper-text" style="margin-bottom:6px;">Digite seu nome para agendar nesta barbearia.</div>
       <label>Seu nome</label>
       <input type="text" id="reg-name" placeholder="Nome completo">
+      <div id="reg-phone-wrap" style="display:none;">
+        <label>Celular (WhatsApp)</label>
+        <input type="tel" id="reg-phone" placeholder="(00) 00000-0000" maxlength="16" oninput="maskPhoneInput(this)">
+        <div class="helper-text" id="reg-phone-error" style="margin-top:6px;color:var(--danger);display:none;"></div>
+        <div class="helper-text" style="margin-top:6px;">Necessário no app instalado, para impedir múltiplos cadastros.</div>
+      </div>
       <div style="height:8px"></div>
       <button class="btn btn-primary" onclick="registerClient()">Continuar</button>
     </div>
@@ -1098,6 +1104,33 @@ function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+// DDDs válidos no Brasil (todos os códigos de área em uso)
+const VALID_DDDS = ['11','12','13','14','15','16','17','18','19','21','22','24','27','28',
+  '31','32','33','34','35','37','38','41','42','43','44','45','46','47','48','49',
+  '51','53','54','55','61','62','63','64','65','66','67','68','69','71','73','74','75','77',
+  '79','81','82','83','84','85','86','87','88','89','91','92','93','94','95','96','97','98','99'];
+
+function maskPhoneInput(el){
+  let d = el.value.replace(/\D/g,'').slice(0,11);
+  let out = d;
+  if(d.length>0) out = '('+d.slice(0,2);
+  if(d.length>=3) out += ') '+d.slice(2, d.length>=11 ? 7 : 6);
+  if(d.length>=7) out += '-'+d.slice(d.length>=11 ? 7 : 6);
+  el.value = out;
+  const errEl = document.getElementById('reg-phone-error');
+  if(errEl) errEl.style.display = 'none';
+}
+function validateBRPhone(digits){
+  if(digits.length!==10 && digits.length!==11) return 'Celular incompleto. Digite DDD + número.';
+  const ddd = digits.slice(0,2);
+  if(!VALID_DDDS.includes(ddd)) return 'DDD inválido. Confira o número digitado.';
+  if(digits.length===11 && digits[2]!=='9') return 'Celular inválido. Números com 9 dígitos começam com 9 após o DDD.';
+  // bloqueia números repetidos óbvios tipo (11) 00000-0000
+  const num = digits.slice(2);
+  if(/^(\d)\1+$/.test(num)) return 'Digite um celular válido.';
+  return null;
+}
 function genCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out=''; for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
@@ -1657,6 +1690,10 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
   if(id==='screen-plans') renderPlans();
+  if(id==='screen-client-register'){
+    const wrap = document.getElementById('reg-phone-wrap');
+    if(wrap) wrap.style.display = isStandaloneApp() ? 'block' : 'none';
+  }
 }
 function toast(msg){
   const t=document.getElementById('toast');
@@ -2868,8 +2905,30 @@ function registerClient(){
   const name = document.getElementById('reg-name').value.trim();
   if(!name){ toast('Digite seu nome'); return; }
   const shop = shops[session.code];
-  const client = {id:uid('cli'), name, phone:'', status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
-  shop.clients.push(client);
+  const installed = isStandaloneApp();
+  let phoneDigits = '';
+  if(installed){
+    const phoneRaw = document.getElementById('reg-phone').value.trim();
+    phoneDigits = phoneRaw.replace(/\D/g,'');
+    const errMsg = validateBRPhone(phoneDigits);
+    const errEl = document.getElementById('reg-phone-error');
+    if(errMsg){
+      if(errEl){ errEl.textContent = errMsg; errEl.style.display = 'block'; }
+      toast(errMsg);
+      return;
+    }
+    if(errEl) errEl.style.display = 'none';
+  }
+  // Se o app está instalado, o celular identifica o cliente de forma estável
+  // (sobrevive a reinstalação / limpeza de dados), evitando burlar o limite
+  // de 1 solicitação ativa por pessoa.
+  let client = installed ? shop.clients.find(c=>c.phone && c.phone===phoneDigits) : null;
+  if(client){
+    client.name = name;
+  } else {
+    client = {id:uid('cli'), name, phone:phoneDigits, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
+    shop.clients.push(client);
+  }
   saveShops(shops);
   localStorage.setItem('barberflow_client_'+session.code, client.id);
   session.clientId = client.id;
@@ -3186,6 +3245,13 @@ function submitAppointment(){
   const dateStr = document.getElementById('client-date').value;
   if((shop.daysOff||[]).find(d=>d.date===dateStr)){ toast('O barbeiro não atende nesse dia'); return; }
   if(!dateStr || !selectedSlot || selectedServiceIds.length===0){ toast('Escolha serviço, dia e horário'); return; }
+  const jaTemSolicitacao = shop.appointments.find(a=>a.clientId===session.clientId && (a.status==='pending' || a.status==='accepted'));
+  if(jaTemSolicitacao){
+    toast(jaTemSolicitacao.status==='pending'
+      ? 'Você já tem uma solicitação aguardando confirmação'
+      : 'Você já tem um agendamento confirmado. Cancele para solicitar outro.');
+    return;
+  }
   const client = shop.clients.find(c=>c.id===session.clientId);
   const total = selectedServiceIds.reduce((sum,id)=>{
     const s = shop.services.find(x=>x.id===id); return sum + (s?Number(s.price):0);
