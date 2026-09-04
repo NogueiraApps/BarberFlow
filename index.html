@@ -209,6 +209,10 @@ textarea{resize:vertical;font-family:var(--font);}
 .review-card .rname{font-weight:700;font-size:14px;}
 .review-card .rdate{font-size:11px;color:var(--text-faint);white-space:nowrap;}
 .review-card .rcomment{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:5px;}
+.reviews-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -1px;scrollbar-width:thin;}
+.reviews-carousel .review-card{flex:0 0 84%;scroll-snap-align:start;margin-bottom:0;}
+.reviews-carousel::-webkit-scrollbar{height:5px;}
+.reviews-carousel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px;}
 .service-icon-wrap{
   width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--primary) 13%,transparent);color:var(--primary);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;font-size:19px;
@@ -2356,6 +2360,7 @@ function renderReviewsTab(){
   document.getElementById('barber-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
   const listWrap = document.getElementById('list-reviews');
   const sorted = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  listWrap.classList.toggle('reviews-carousel', sorted.length>1);
   listWrap.innerHTML = sorted.length===0
     ? `<div class="empty-state" style="padding:24px;"><div class="em">⭐</div>Nenhuma avaliação recebida ainda</div>`
     : sorted.map(r=>renderReviewCard(r)).join('');
@@ -3095,6 +3100,7 @@ function renderClientHome(){
   document.getElementById('client-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
   const reviewsWrap = document.getElementById('client-reviews-list');
   const sortedReviews = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  reviewsWrap.classList.toggle('reviews-carousel', sortedReviews.length>1);
   reviewsWrap.innerHTML = sortedReviews.length===0
     ? `<div class="empty-state" style="padding:16px;"><div class="em">⭐</div>Seja o primeiro a avaliar!</div>`
     : sortedReviews.map(r=>renderReviewCard(r)).join('');
