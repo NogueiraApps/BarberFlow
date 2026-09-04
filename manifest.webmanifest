@@ -1,7 +1,7 @@
 {
   "name": "BarberFlow Cliente",
   "short_name": "Cliente",
-  "start_url": "./cliente.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
