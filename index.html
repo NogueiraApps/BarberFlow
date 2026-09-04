@@ -1178,6 +1178,7 @@ function renderPlans(){
 async function payWithMercadoPago(planId){
   const btn = document.getElementById('plan-btn-'+planId);
   const uidToCharge = currentUser ? currentUser.uid : null;
+  const emailToCharge = currentUser ? currentUser.email : null;
   if(!uidToCharge){
     openWhatsAppPurchase(planId);
     return;
@@ -1188,7 +1189,7 @@ async function payWithMercadoPago(planId){
     const res = await fetch(CREATE_PREFERENCE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid: uidToCharge, planoId: planId })
+      body: JSON.stringify({ uid: uidToCharge, planoId: planId, email: emailToCharge })
     });
     const data = await res.json();
     if(!res.ok || !data.init_point) throw new Error('sem init_point');
