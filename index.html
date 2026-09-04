@@ -33,7 +33,6 @@ if('serviceWorker' in navigator){
   --border:rgba(255,255,255,.07);
   --border-strong:rgba(255,255,255,.14);
   --text:#f5f1e9;
-  --appt-name-color:#f5f1e9;
   --text-dim:#9d98a6;
   --text-faint:#6d6976;
   --danger:#f2565b;
@@ -275,7 +274,7 @@ textarea{resize:vertical;font-family:var(--font);}
 .appt-card.cancelled{border-left-color:var(--text-dim);opacity:.55;}
 .appt-card.done{border-left-color:#6a8fd8;opacity:.7;}
 .appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:8px;}
-.appt-top b{font-size:15px;font-weight:800;color:var(--appt-name-color);}
+.appt-top b{font-size:15px;font-weight:800;}
 .status-tag{font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
 .status-tag.pending{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning);}
 .status-tag.accepted{background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);}
@@ -822,8 +821,6 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <input type="color" id="config-text-color">
         <label>Cor dos quadrados</label>
         <input type="color" id="config-card-color">
-        <label>Cor dos nomes (Próximos agendamentos)</label>
-        <input type="color" id="config-appt-name-color">
         <label>Cor dos avisos e títulos (textos apagados)</label>
         <input type="color" id="config-dim-text-color">
         <div class="helper-text" style="margin-top:0;">Controla textos como "Nenhum agendamento", títulos de seção e avisos — que por padrão são mais claros/apagados e podem ficar difíceis de ler dependendo da imagem de fundo.</div>
@@ -1797,7 +1794,7 @@ function applyTheme(color){
 }
 const DEFAULT_BG_COLOR = '#0a0a0d';
 const DEFAULT_TEXT_COLOR = '#f5f1e9';
-const DEFAULT_DIM_TEXT_COLOR = '#9d98a6';
+const DEFAULT_DIM_TEXT_COLOR = '#ffffff';
 const DEFAULT_CARD_COLOR = '#15151a';
 const FONT_OPTIONS = {
   padrao:    {label:'Padrão',    css:"'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif"},
@@ -1826,9 +1823,6 @@ function applyAppearance(shop){
   // Cor das letras
   const textColor = (shop && shop.textColor) || DEFAULT_TEXT_COLOR;
   document.documentElement.style.setProperty('--text', textColor);
-  // Cor dos nomes nos agendamentos (Próximos agendamentos etc.)
-  const apptNameColor = (shop && shop.apptNameColor) || textColor;
-  document.documentElement.style.setProperty('--appt-name-color', apptNameColor);
   // Cor dos avisos e títulos de seção (textos apagados: "Nenhum...", títulos em maiúsculo, chips)
   const dimTextColor = (shop && shop.dimTextColor) || DEFAULT_DIM_TEXT_COLOR;
   document.documentElement.style.setProperty('--text-dim', dimTextColor);
@@ -2958,8 +2952,7 @@ function openConfigScreen(){
   document.getElementById('config-bg-color').value = shop.bgColor || '#0a0a0d';
   document.getElementById('config-text-color').value = shop.textColor || '#f5f1e9';
   document.getElementById('config-card-color').value = shop.cardColor || '#15151a';
-  document.getElementById('config-appt-name-color').value = shop.apptNameColor || shop.textColor || '#f5f1e9';
-  document.getElementById('config-dim-text-color').value = shop.dimTextColor || '#9d98a6';
+  document.getElementById('config-dim-text-color').value = shop.dimTextColor || '#ffffff';
   renderBgTypeChips();
   renderBgImagePicker();
   renderFontChips();
@@ -3092,7 +3085,6 @@ function saveBackgroundConfig(){
   shop.bgImage = editingBgImage;
   shop.textColor = document.getElementById('config-text-color').value;
   shop.cardColor = document.getElementById('config-card-color').value;
-  shop.apptNameColor = document.getElementById('config-appt-name-color').value;
   shop.dimTextColor = document.getElementById('config-dim-text-color').value;
   shop.fontKey = editingFontKey;
   saveShops(shops);
