@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>BarberFlow — Painel do Barbeiro</title> <link rel="manifest" href="manifest.webmanifest">
+<title>BarberFlow — Cliente</title>
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#0f0f12">
@@ -17,7 +18,7 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
-                          </script>
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -1577,8 +1578,8 @@ function detectShopChanges(scope, prevShop, newShop){
 }
 
 let shops = loadShops();
-let session = loadSession();
 let deferredInstallPrompt = null; // evento de instalação do PWA, guardado até o cliente pedir
+let session = loadSession();
 let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
 let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
 let currentUserDoc = null;   // documento barberflow_users/{uid} em cache
@@ -1722,44 +1723,23 @@ function toggleClientPreview(){
    INIT / ROUTER — a sessão do barbeiro agora é controlada pelo
    Firebase Authentication (login por e-mail e senha)
    ============================================================ */
+// Código da barbearia usado quando o link não traz ?code= (ex: link "puro"
+// salvo no Instagram/Google). Assim o app sempre abre direto no cliente.
+const DEFAULT_SHOP_CODE = '6V5QB7';
+
 function init(){
-  // Se o link tem ?code=XXXXX, é um link de cliente — entra direto no app do
-  // cliente dessa barbearia, mesmo que este navegador tenha um login de
-  // barbeiro salvo. É assim que o cliente chega no app pelo link enviado.
   const urlCode = getUrlCode();
-  if(urlCode){
-    enterViaCode(urlCode);
-    return;
-  }
-  auth.onAuthStateChanged(function(user){
-    if(user){
-      currentUser = user;
-      loadBarberAccount(user);
-    } else {
-      currentUser = null;
-      currentUserDoc = null;
-      if(session && session.role==='client' && session.code){
-        listenToShop(session.code, function(shopData){
-          if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
-          applyTheme(shopData.color);
-          renderClientHome();
-          showScreen('screen-client-home');
-        });
-      } else {
-        showScreen('screen-welcome');
-      }
-    }
-  });
+  enterViaCode(urlCode);
 }
-// Lê o parâmetro ?code= da URL do link que o barbeiro compartilha com o cliente.
+// Lê o parâmetro ?code= da URL; se não tiver, usa o código padrão da barbearia.
 function getUrlCode(){
   const params = new URLSearchParams(window.location.search);
   const c = (params.get('code')||'').trim().toUpperCase();
-  return c || null;
+  return c || DEFAULT_SHOP_CODE;
 }
-// Entra automaticamente como cliente na barbearia do código da URL.
+// Entra automaticamente como cliente na barbearia do código (da URL ou padrão).
 // Se o cliente já é conhecido neste aparelho, pula direto pro agendamento.
-// Se é a primeira vez, pede só o nome antes de ir pro agendamento.
+// Se é novo, pede só o nome e já cai na tela de agendamento.
 function enterViaCode(code){
   showScreen('screen-client-loading');
   db.collection(SHOPS_COLLECTION).doc(code).get().then(function(doc){
@@ -1789,7 +1769,7 @@ function enterViaCode(code){
       });
     }
   }).catch(function(err){
-    console.error('Erro ao entrar pelo código da URL:', err);
+    console.error('Erro ao entrar pelo código:', err);
     toast('Erro de conexão. Verifique sua internet e tente de novo.');
     showScreen('screen-welcome');
   });
