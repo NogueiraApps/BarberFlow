@@ -1813,7 +1813,7 @@ function listenToShop(code, onFirstLoad){
           updateTrialBanner(currentUserDoc);
         }
       }
-      if((session.role==='client' || previewMode) && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
+      if((session.role==='client' || previewMode) && (document.getElementById('screen-client-home').classList.contains('active') || document.getElementById('screen-client-banned').classList.contains('active'))) enterClientHome();
     }
   }, function(err){
     console.error('Erro de sincronização com o Firebase:', err);
