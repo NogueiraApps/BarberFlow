@@ -364,8 +364,11 @@ textarea{resize:vertical;font-family:var(--font);}
 }
 .location-bar .loc-text{flex:1;min-width:0;}
 .location-bar .loc-label{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-faint);}
-.location-bar .loc-address{font-size:13.5px;font-weight:700;color:var(--text);margin-top:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.location-bar .loc-address{margin-top:4px;}
+.location-bar .loc-address .addr-row{display:flex;gap:6px;font-size:13px;line-height:1.5;}
+.location-bar .loc-address .addr-row+.addr-row{margin-top:1px;}
+.location-bar .loc-address .addr-row .addr-k{color:var(--text-faint);font-weight:700;flex-shrink:0;}
+.location-bar .loc-address .addr-row .addr-v{color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .location-bar .loc-arrow{font-size:20px;color:var(--primary);flex-shrink:0;font-weight:700;}
 .list-select-item{
   display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
@@ -793,9 +796,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </div>
       <div class="card">
         <h3>📍 Localização</h3>
-        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa.</div>
-        <label>Endereço da barbearia</label>
-        <input type="text" id="config-address" placeholder="Ex: Rua das Flores, 123 - Centro, São Paulo - SP">
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa. Preencha só os campos que quiser — todos são opcionais.</div>
+        <label>Cidade</label>
+        <input type="text" id="config-addr-cidade" placeholder="Ex: São Paulo - SP">
+        <label>Rua</label>
+        <input type="text" id="config-addr-rua" placeholder="Ex: Rua das Flores">
+        <label>Bairro</label>
+        <input type="text" id="config-addr-bairro" placeholder="Ex: Centro">
+        <label>Número</label>
+        <input type="text" id="config-addr-numero" placeholder="Ex: 123">
         <div style="height:10px"></div>
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar localização</button>
       </div>
@@ -1368,6 +1377,7 @@ function normalizeShop(shop){
   if(!shop) return shop;
   if(!shop.daysOff) shop.daysOff = [];
   if(shop.pixCode===undefined) shop.pixCode = '';
+  if(!shop.addressDetails) shop.addressDetails = {cidade:'', rua:'', bairro:'', numero:''};
   if(!shop.clientAppUrl || shop.clientAppUrl === 'https://nox-games.github.io/BarberFlow/cliente.html' || shop.clientAppUrl === 'https://sl1nk.com/rvz58ye') shop.clientAppUrl = DEFAULT_CLIENT_APP_URL;
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
@@ -2840,7 +2850,17 @@ function openConfigScreen(){
   document.getElementById('config-barber-name').value = shop.barberName;
   document.getElementById('config-welcome-msg').value = shop.welcomeMsg;
   document.getElementById('config-color').value = shop.color;
-  document.getElementById('config-address').value = shop.address || '';
+  const addr = shop.addressDetails || {};
+  // Compatibilidade: barbearias antigas tinham só um campo de texto livre (shop.address).
+  // Se isso existir e os campos novos ainda estiverem vazios, jogamos o texto antigo
+  // dentro de "Rua" pra ninguém perder o que já tinha preenchido.
+  if(shop.address && !addr.cidade && !addr.rua && !addr.bairro && !addr.numero){
+    addr.rua = shop.address;
+  }
+  document.getElementById('config-addr-cidade').value = addr.cidade || '';
+  document.getElementById('config-addr-rua').value = addr.rua || '';
+  document.getElementById('config-addr-bairro').value = addr.bairro || '';
+  document.getElementById('config-addr-numero').value = addr.numero || '';
   document.getElementById('config-pix-code').value = shop.pixCode || '';
   document.getElementById('config-client-url').value = shop.clientAppUrl || '';
   document.getElementById('config-account-email').textContent = (currentUser && currentUser.email) || '-';
@@ -2868,7 +2888,13 @@ function saveShopConfig(){
   shop.barberName = document.getElementById('config-barber-name').value.trim() || shop.barberName;
   shop.welcomeMsg = document.getElementById('config-welcome-msg').value.trim() || shop.welcomeMsg;
   shop.color = document.getElementById('config-color').value;
-  shop.address = document.getElementById('config-address').value.trim();
+  shop.addressDetails = {
+    cidade: document.getElementById('config-addr-cidade').value.trim(),
+    rua: document.getElementById('config-addr-rua').value.trim(),
+    bairro: document.getElementById('config-addr-bairro').value.trim(),
+    numero: document.getElementById('config-addr-numero').value.trim()
+  };
+  shop.address = ''; // formato antigo não é mais usado como fonte de verdade
   shop.pixCode = document.getElementById('config-pix-code').value.trim();
   shop.clientAppUrl = document.getElementById('config-client-url').value.trim();
   saveShops(shops);
@@ -3002,9 +3028,12 @@ function renderClientHome(){
 
   // localização da barbearia
   const locBar = document.getElementById('client-location-bar');
-  if(shop.address){
+  const addrParts = shopAddressParts(shop);
+  if(addrParts.length>0){
     locBar.style.display = 'flex';
-    document.getElementById('client-location-address').textContent = shop.address;
+    document.getElementById('client-location-address').innerHTML = addrParts.map(p=>
+      `<div class="addr-row"><span class="addr-k">${escapeHtml(p.k)}:</span><span class="addr-v">${escapeHtml(p.v)}</span></div>`
+    ).join('');
   } else {
     locBar.style.display = 'none';
   }
@@ -3223,10 +3252,33 @@ function clearClientHistory(){
 
 function openShopLocation(){
   const shop = shops[session.code];
-  if(!shop || !shop.address) return false;
-  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(shop.address);
+  if(!shop) return false;
+  const query = shopAddressQuery(shop);
+  if(!query) return false;
+  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
   window.open(url, '_blank');
   return false;
+}
+// Monta as linhas de exibição na ordem Cidade / Rua / Bairro / Número,
+// mostrando só os campos que o barbeiro realmente preencheu.
+function shopAddressParts(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const order = [['Cidade',addr.cidade], ['Rua',addr.rua], ['Bairro',addr.bairro], ['Número',addr.numero]];
+  const parts = order.filter(([k,v])=>v).map(([k,v])=>({k,v}));
+  if(parts.length===0 && shop && shop.address) parts.push({k:'Endereço', v: shop.address});
+  return parts;
+}
+// Monta uma string única (rua+número, bairro, cidade) pra busca no mapa.
+function shopAddressQuery(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const bits = [];
+  let ruaLine = addr.rua || '';
+  if(addr.numero) ruaLine = ruaLine ? (ruaLine+', '+addr.numero) : addr.numero;
+  if(ruaLine) bits.push(ruaLine);
+  if(addr.bairro) bits.push(addr.bairro);
+  if(addr.cidade) bits.push(addr.cidade);
+  if(bits.length===0 && shop && shop.address) return shop.address;
+  return bits.join(' - ');
 }
 function toggleClientService(id){
   const el = document.getElementById('csvc-'+id);
