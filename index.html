@@ -1813,8 +1813,23 @@ function enterViaCode(code){
 }
 // Carrega os dados da conta do barbeiro (barberflow_users/{uid}) e, a partir
 // dela, a barbearia vinculada, aplicando as regras de teste grátis / Gold.
-function loadBarberAccount(user){
-  db.collection(USERS_COLLECTION).doc(user.uid).get().then(function(doc){
+//
+// IMPORTANTE: esta função NUNCA apaga a conta do Firebase Auth automaticamente.
+// Uma falha temporária de conexão (celular recém-aberto, cache local vazio,
+// app aberto no modo avião por um instante etc.) pode fazer o Firestore
+// responder "documento não existe" mesmo quando a conta é válida. Se
+// apagássemos o login nesse momento, a pessoa perderia a conta de verdade e,
+// ao tentar de novo, criaria uma conta nova com o teste reiniciado do zero —
+// foi exatamente esse o bug que fazia o contador de dias nunca diminuir.
+// Por isso, antes de desistir, tentamos de novo direto do servidor (sem
+// cache) algumas vezes, e mesmo se realmente não encontrarmos o documento,
+// apenas deslogamos — nunca apagamos a conta.
+function loadBarberAccount(user, attempt){
+  attempt = attempt || 0;
+  // 1ª tentativa: padrão (usa cache se offline). Da 2ª em diante: força
+  // busca no servidor, ignorando qualquer cache local desatualizado.
+  const opts = attempt === 0 ? {} : {source:'server'};
+  db.collection(USERS_COLLECTION).doc(user.uid).get(opts).then(function(doc){
     if(!doc.exists){
       if(signupInProgress){
         // Ainda estamos no meio do cadastro (o documento está sendo gravado
@@ -1822,18 +1837,19 @@ function loadBarberAccount(user){
         // vai concluir e entrar no painel quando a gravação terminar.
         return;
       }
-      // Login existe no Firebase Auth mas o cadastro da barbearia nunca foi
-      // gravado no Firestore (ex.: conexão caiu durante o cadastro, ou as
-      // regras do Firestore não estavam publicadas naquele momento). Como
-      // não há como recuperar os dados que nunca foram salvos, removemos
-      // esse login quebrado para a pessoa poder criar a conta do zero.
-      toast('Sua conta não foi concluída da última vez. Crie sua conta novamente, por favor.');
-      user.delete().catch(function(delErr){
-        // Se o Firebase exigir login recente para apagar, apenas desloga —
-        // a pessoa cria a conta de novo (com outro e-mail, se preferir).
-        console.error('Não foi possível remover login órfão, saindo mesmo assim:', delErr);
-        auth.signOut();
-      });
+      if(attempt < 3){
+        // Pode ser só uma instabilidade momentânea — tenta de novo direto
+        // do servidor antes de concluir que a conta está mesmo quebrada.
+        setTimeout(function(){ loadBarberAccount(user, attempt + 1); }, 1200);
+        return;
+      }
+      // Mesmo depois de confirmar direto no servidor (sem cache), o
+      // documento realmente não existe. Isso é raro (ex.: conexão caiu no
+      // exato meio do cadastro, antes de gravar barberflow_users). Aqui só
+      // deslogamos — o login no Firebase Auth continua existindo, e a
+      // pessoa (ou o suporte) pode investigar/recuperar sem perder a conta.
+      toast('Não conseguimos carregar sua conta agora. Verifique sua internet e tente entrar de novo em instantes.');
+      auth.signOut();
       clearSession();
       session = null;
       currentUser = null;
@@ -1851,6 +1867,10 @@ function loadBarberAccount(user){
     });
   }).catch(function(err){
     console.error('Erro ao carregar conta:', err);
+    if(attempt < 3){
+      setTimeout(function(){ loadBarberAccount(user, attempt + 1); }, 1200);
+      return;
+    }
     toast('Erro de conexão. Verifique sua internet.');
   });
 }
