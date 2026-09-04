@@ -799,6 +799,26 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar personalização</button>
       </div>
       <div class="card">
+        <h3>🖼️ Fundo do app</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Escolha uma cor sólida ou uma imagem para o fundo do app. Seus clientes veem o mesmo fundo assim que você salvar.</div>
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip" data-bgtype="default" onclick="setBgType('default')">Padrão</div>
+          <div class="chip" data-bgtype="color" onclick="setBgType('color')">Cor</div>
+          <div class="chip" data-bgtype="image" onclick="setBgType('image')">Imagem</div>
+        </div>
+        <div id="config-bg-color-row" style="display:none;">
+          <label>Cor de fundo</label>
+          <input type="color" id="config-bg-color">
+        </div>
+        <div id="config-bg-image-row" style="display:none;">
+          <label>Imagem de fundo</label>
+          <div id="config-bg-image-preview-wrap"></div>
+          <input type="file" id="config-bg-image-input" accept="image/*" style="display:none" onchange="onBgImageSelected(event)">
+        </div>
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveBackgroundConfig()">Salvar fundo</button>
+      </div>
+      <div class="card">
         <h3>📍 Localização</h3>
         <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa. Preencha só os campos que quiser — todos são opcionais.</div>
         <label>Cidade</label>
@@ -1352,6 +1372,7 @@ function enterBarberArea(shop){
     return;
   }
   applyTheme(shop.color);
+  applyBackground(shop);
   renderBarberDashboard();
   updateTrialBanner(currentUserDoc);
   showScreen('screen-barber-dashboard');
@@ -1404,6 +1425,9 @@ function normalizeShop(shop){
       }
     }
   }
+  if(shop.bgType===undefined) shop.bgType = 'default';
+  if(shop.bgColor===undefined) shop.bgColor = '#0a0a0d';
+  if(shop.bgImage===undefined) shop.bgImage = '';
   return shop;
 }
 
@@ -1748,6 +1772,26 @@ function applyTheme(color){
   const dark = shadeColor(color,-18);
   document.documentElement.style.setProperty('--primary', color);
   document.documentElement.style.setProperty('--primary-dark', dark);
+}
+const DEFAULT_BG_COLOR = '#0a0a0d';
+function applyBackground(shop){
+  const body = document.body;
+  if(shop && shop.bgType==='image' && shop.bgImage){
+    body.style.backgroundImage = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url('${shop.bgImage}')`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundRepeat = 'no-repeat';
+    body.style.backgroundAttachment = 'fixed';
+    document.documentElement.style.setProperty('--bg', DEFAULT_BG_COLOR);
+  } else {
+    body.style.backgroundImage = '';
+    body.style.backgroundSize = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundRepeat = '';
+    body.style.backgroundAttachment = '';
+    const color = (shop && shop.bgType==='color' && shop.bgColor) ? shop.bgColor : DEFAULT_BG_COLOR;
+    document.documentElement.style.setProperty('--bg', color);
+  }
 }
 function shadeColor(hex, percent){
   hex = hex.replace('#','');
@@ -2661,6 +2705,8 @@ function svcVisualHtml(s, size){
 let editingServiceId = null;
 let editingServiceIcon = 'tesoura';
 let editingServiceImage = null;
+let editingBgType = 'default';
+let editingBgImage = '';
 function renderIconPicker(){
   const wrap = document.getElementById('svc-icon-picker');
   wrap.innerHTML = SERVICE_ICON_KEYS.map(k=>`
@@ -2855,6 +2901,11 @@ function openConfigScreen(){
   document.getElementById('config-barber-name').value = shop.barberName;
   document.getElementById('config-welcome-msg').value = shop.welcomeMsg;
   document.getElementById('config-color').value = shop.color;
+  editingBgType = shop.bgType || 'default';
+  editingBgImage = shop.bgImage || '';
+  document.getElementById('config-bg-color').value = shop.bgColor || '#0a0a0d';
+  renderBgTypeChips();
+  renderBgImagePicker();
   const addr = shop.addressDetails || {};
   // Compatibilidade: barbearias antigas tinham só um campo de texto livre (shop.address).
   // Se isso existir e os campos novos ainda estiverem vazios, jogamos o texto antigo
@@ -2904,8 +2955,78 @@ function saveShopConfig(){
   shop.clientAppUrl = document.getElementById('config-client-url').value.trim();
   saveShops(shops);
   applyTheme(shop.color);
+  applyBackground(shop);
   toast('Personalização salva! O app do cliente já atualiza sozinho.');
   renderBarberDashboard();
+}
+/* ---------- Fundo do app (cor sólida ou imagem) ---------- */
+function setBgType(type){
+  editingBgType = type;
+  renderBgTypeChips();
+}
+function renderBgTypeChips(){
+  document.querySelectorAll('[data-bgtype]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-bgtype')===editingBgType);
+  });
+  document.getElementById('config-bg-color-row').style.display = editingBgType==='color' ? 'block' : 'none';
+  document.getElementById('config-bg-image-row').style.display = editingBgType==='image' ? 'block' : 'none';
+}
+function renderBgImagePicker(){
+  const wrap = document.getElementById('config-bg-image-preview-wrap');
+  if(editingBgImage){
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <img class="thumb" src="${editingBgImage}">
+        <div class="txt"><b>Imagem enviada</b>Toque para trocar</div>
+        <button type="button" class="img-remove-btn" onclick="event.stopPropagation();removeBgImage()">Remover</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <div class="placeholder">🖼️</div>
+        <div class="txt"><b>Nenhuma imagem</b>Toque para enviar uma foto para o fundo do app</div>
+      </div>`;
+  }
+}
+function onBgImageSelected(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona pra não pesar no armazenamento
+      const maxSize = 1080;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h >= w && h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      editingBgImage = canvas.toDataURL('image/jpeg', 0.75);
+      renderBgImagePicker();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function removeBgImage(){
+  editingBgImage = '';
+  renderBgImagePicker();
+}
+function saveBackgroundConfig(){
+  const shop = currentShop();
+  if(editingBgType==='image' && !editingBgImage){
+    toast('Envie uma imagem ou escolha outro tipo de fundo');
+    return;
+  }
+  shop.bgType = editingBgType;
+  shop.bgColor = document.getElementById('config-bg-color').value;
+  shop.bgImage = editingBgImage;
+  saveShops(shops);
+  applyBackground(shop);
+  toast('Fundo salvo! O app do cliente já atualiza sozinho.');
 }
 function copyCode(){
   const shop = currentShop();
@@ -3026,6 +3147,7 @@ function renderClientHome(){
   const shop = shops[session.code];
   if(!shop) return;
   applyTheme(shop.color);
+  applyBackground(shop);
   document.getElementById('client-shop-name').textContent = shop.shopName;
   document.getElementById('client-barber-name').textContent = shop.barberName;
   document.getElementById('client-banner-title').textContent = shop.shopName;
