@@ -304,6 +304,21 @@ textarea{resize:vertical;font-family:var(--font);}
 .dot-status{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .dot-status.dentro{background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 20%,transparent);}
 .dot-status.fora{background:var(--text-faint);}
+.hscroll{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;}
+.hscroll::-webkit-scrollbar{height:6px;}
+.hscroll::-webkit-scrollbar-track{background:transparent;}
+.hscroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:10px;}
+.hscroll>*{flex:0 0 auto;scroll-snap-align:start;margin-bottom:0 !important;}
+.hscroll .empty-state{flex:0 0 88%;}
+.hscroll .appt-card{width:82vw;max-width:320px;padding:22px;}
+.hscroll .appt-top b{font-size:16.5px;}
+.hscroll .appt-meta{font-size:14px;}
+.hscroll .appt-services{font-size:13.5px;}
+.hscroll .appt-total{font-size:16px;}
+.hscroll .client-item{width:72vw;max-width:270px;padding:20px;}
+.hscroll .client-item .avatar{width:48px;height:48px;font-size:17px;}
+.hscroll .client-info b{font-size:15.5px;}
+.hscroll .client-info span{font-size:12.5px;}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
 .stat-box{background:var(--surface);border-radius:var(--radius-lg);padding:17px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
 .stat-box .num{font-size:25px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
@@ -608,7 +623,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <div class="section-title">Próximos agendamentos</div>
         <div id="list-accepted"></div>
         <div class="section-title">Histórico</div>
-        <div id="list-history"></div>
+        <div id="list-history" class="hscroll"></div>
         <button class="btn btn-outline" onclick="clearBarberHistory()" style="margin-top:4px;">Apagar histórico</button>
       </div>
 
@@ -623,7 +638,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
           <div class="chip" data-csub="banidos" onclick="setClientsSubView('banidos')">🚫 Banidos<span id="banned-count-chip"></span></div>
         </div>
         <div class="section-title" id="clients-list-title">Lista de clientes</div>
-        <div id="list-clients"></div>
+        <div id="list-clients" class="hscroll"></div>
       </div>
 
       <!-- TAB: SERVIÇOS -->
@@ -663,7 +678,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         </div>
 
         <div class="section-title">Atendimentos do período</div>
-        <div id="finance-period-list"></div>
+        <div id="finance-period-list" class="hscroll"></div>
       </div>
 
       <!-- TAB: AVALIAÇÕES -->
