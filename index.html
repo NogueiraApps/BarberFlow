@@ -3020,7 +3020,7 @@ function renderClientHome(){
   }
 
   // next appointment banner
-  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId);
+  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId && !a.hiddenFromClient);
   const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=new Date().toISOString().slice(0,10))
     .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
   const bannerTag = document.getElementById('client-next-appt');
@@ -3203,10 +3203,18 @@ function submitReview(){
 function clearClientHistory(){
   if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
   const shop = shops[session.code];
-  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
+  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && !a.hiddenFromClient && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
   if(!hasHistory){ toast('Não há histórico para apagar'); return; }
   if(confirm('Apagar seu histórico de agendamentos concluídos, recusados e cancelados?')){
-    shop.appointments = shop.appointments.filter(a=>!(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')));
+    // Importante: NUNCA remover o registro em si — atendimentos concluídos ('done')
+    // contam para o faturamento do barbeiro. Apenas marcamos como "escondido do
+    // cliente", assim ele some da tela do cliente mas continua intacto no painel
+    // do barbeiro (faturamento, relatórios etc.).
+    shop.appointments.forEach(a=>{
+      if(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')){
+        a.hiddenFromClient = true;
+      }
+    });
     saveShops(shops);
     renderClientHome();
     toast('Histórico apagado');
