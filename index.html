@@ -1064,6 +1064,44 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
   </div>
 
+  <!-- ============ CLIENT BANNED ============ -->
+  <div class="screen" id="screen-client-banned">
+    <div class="topbar">
+      <div>
+        <h1>Acesso bloqueado</h1>
+        <div class="sub" id="banned-shop-name">Barbearia</div>
+      </div>
+    </div>
+    <div class="container stack">
+      <div class="card" style="border-left:4px solid var(--danger);background:rgba(229,72,77,.1);">
+        <h3 style="color:var(--danger);margin-bottom:8px;">🚫 Você foi banido(a) desta barbearia</h3>
+        <div class="helper-text" style="margin:0 0 8px;">Banido em <b id="banned-date" style="color:var(--text);"></b></div>
+        <div class="helper-text" style="margin:0;color:var(--text);" id="banned-reason"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-form-card">
+        <h3>📩 Pedir para ser desbanido(a)</h3>
+        <div class="helper-text" style="margin-top:0;">Explique o motivo para o barbeiro reconsiderar o seu caso.</div>
+        <textarea id="banned-appeal-input" rows="4" maxlength="300" placeholder="Escreva sua mensagem..."></textarea>
+        <div style="height:8px"></div>
+        <button class="btn btn-primary" onclick="submitBanAppeal()">Enviar pedido</button>
+      </div>
+
+      <div class="card" id="banned-appeal-pending-card" style="display:none;">
+        <h3>📩 Pedido enviado</h3>
+        <div class="helper-text" style="margin:0 0 6px;">Aguardando resposta do barbeiro:</div>
+        <div class="helper-text" style="color:var(--text);margin:0;" id="banned-appeal-pending-msg"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-rejected-card" style="display:none;">
+        <h3>📩 Pedido recusado</h3>
+        <div class="helper-text" style="margin:0;" id="banned-appeal-rejected-info"></div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Sair</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="notif-banner" id="notif-banner">
@@ -1941,8 +1979,7 @@ function enterViaCode(code){
       session = {role:'client', code:code, clientId:existingLocalId};
       saveSession(session);
       listenToShop(code, function(){
-        renderClientHome();
-        showScreen('screen-client-home');
+        enterClientHome();
       });
     } else {
       session = {role:'client', code:code, clientId:null};
@@ -3165,8 +3202,7 @@ function joinAsClient(){
       session = {role:'client', code:raw, clientId:existingLocalId};
       saveSession(session);
       listenToShop(raw, function(){
-        renderClientHome();
-        showScreen('screen-client-home');
+        enterClientHome();
       });
     } else {
       session = {role:'client', code:raw, clientId:null};
@@ -3212,18 +3248,83 @@ function registerClient(){
   localStorage.setItem('barberflow_client_'+session.code, client.id);
   session.clientId = client.id;
   saveSession(session);
-  renderClientHome();
-  showScreen('screen-client-home');
-  toast('Cadastro concluído! Bem-vindo(a), '+name);
+  if(client.banned){
+    showClientBannedScreen();
+  } else {
+    renderClientHome();
+    showScreen('screen-client-home');
+    toast('Cadastro concluído! Bem-vindo(a), '+name);
+  }
 }
 
 let selectedServiceIds = [];
 let selectedSlot = null;
 let selectedPeriod = 'manha'; // 'manha' | 'tarde' | 'noite'
 
+// Pega o registro do cliente logado na barbearia atual (ou null).
+function getClientRecord(){
+  const shop = shops[session.code];
+  if(!shop || !session || !session.clientId) return null;
+  return shop.clients.find(c=>c.id===session.clientId) || null;
+}
+// Ponto único de entrada pra tela inicial do cliente: se ele está banido,
+// manda pra tela de banido em vez da home. Substitui o antigo par
+// "renderClientHome(); showScreen('screen-client-home');" nos pontos de entrada.
+function enterClientHome(){
+  const c = getClientRecord();
+  if(c && c.banned){ showClientBannedScreen(); return; }
+  renderClientHome();
+  showScreen('screen-client-home');
+}
+// Monta e mostra a tela de "banido" com o motivo e o estado do pedido de desbanimento.
+function showClientBannedScreen(){
+  const shop = shops[session.code];
+  const c = getClientRecord();
+  if(!shop || !c) return;
+  applyTheme(shop.color);
+  document.getElementById('banned-shop-name').textContent = shop.shopName || '';
+  document.getElementById('banned-date').textContent = c.bannedAt ? formatDate(c.bannedAt.slice(0,10)) : '-';
+  document.getElementById('banned-reason').textContent = c.banReason ? ('Motivo: '+c.banReason) : 'Nenhum motivo foi informado pelo barbeiro.';
+
+  const formCard = document.getElementById('banned-appeal-form-card');
+  const pendingCard = document.getElementById('banned-appeal-pending-card');
+  const rejectedCard = document.getElementById('banned-appeal-rejected-card');
+  formCard.style.display = 'none';
+  pendingCard.style.display = 'none';
+  rejectedCard.style.display = 'none';
+
+  if(c.banAppeal && c.banAppeal.status==='pending'){
+    pendingCard.style.display = 'block';
+    document.getElementById('banned-appeal-pending-msg').textContent = '"'+c.banAppeal.message+'"';
+  } else {
+    if(c.banAppeal && c.banAppeal.status==='rejected'){
+      rejectedCard.style.display = 'block';
+      document.getElementById('banned-appeal-rejected-info').textContent =
+        'Seu último pedido ("'+c.banAppeal.message+'") foi recusado'+(c.banAppeal.autoRejected?' automaticamente (sem resposta em 1 dia).':' pelo barbeiro.');
+    }
+    formCard.style.display = 'block';
+    document.getElementById('banned-appeal-input').value = '';
+  }
+  showScreen('screen-client-banned');
+}
+// Cliente banido envia uma mensagem pedindo pra ser desbanido; o barbeiro
+// já recebe notificação disso automaticamente (ver notify('barber','banAppeal',...)).
+function submitBanAppeal(){
+  const c = getClientRecord();
+  if(!c) return;
+  const msg = document.getElementById('banned-appeal-input').value.trim();
+  if(!msg){ toast('Escreva uma mensagem para o barbeiro'); return; }
+  c.banAppeal = {status:'pending', message: msg, sentAt: new Date().toISOString()};
+  saveShops(shops);
+  toast('Pedido enviado ao barbeiro');
+  showClientBannedScreen();
+}
+
 function renderClientHome(){
   const shop = shops[session.code];
   if(!shop) return;
+  const __clientRec = getClientRecord();
+  if(__clientRec && __clientRec.banned){ showClientBannedScreen(); return; }
   applyTheme(shop.color);
   applyAppearance(shop);
   document.getElementById('client-shop-name').textContent = shop.shopName;
