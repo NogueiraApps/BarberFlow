@@ -1949,8 +1949,18 @@ function toggleClientPreview(){
 const DEFAULT_SHOP_CODE = '6V5QB7';
 
 function init(){
-  const urlCode = getUrlCode();
-  enterViaCode(urlCode);
+  // Se um barbeiro logado (Firebase Auth) cair nesta página — por exemplo,
+  // ao voltar/cancelar o pagamento no Mercado Pago e o link de retorno
+  // apontar pra cá — manda ele direto de volta pro painel do barbeiro,
+  // em vez de entrar como cliente.
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      window.location.replace('barbeiro.html');
+      return;
+    }
+    const urlCode = getUrlCode();
+    enterViaCode(urlCode);
+  });
 }
 // Lê o parâmetro ?code= da URL; se não tiver, usa o código padrão da barbearia.
 function getUrlCode(){
