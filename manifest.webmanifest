@@ -2,7 +2,7 @@
   "name": "BarberFlow Cliente",
   "short_name": "Cliente",
   "start_url": "./index.html",
-  "scope": "./",
+  "scope": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0f12",
