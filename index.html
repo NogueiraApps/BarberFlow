@@ -3275,8 +3275,11 @@ function registerClient(){
   const shop = shops[session.code];
   const installed = isStandaloneApp();
   let phoneDigits = '';
-  if(installed){
-    const phoneRaw = document.getElementById('reg-phone').value.trim();
+  // Celular é sempre opcional — só valida o formato se a pessoa realmente
+  // digitou algo (em qualquer versão do app, inclusive no apk instalado).
+  const phoneEl = document.getElementById('reg-phone');
+  const phoneRaw = phoneEl ? phoneEl.value.trim() : '';
+  if(phoneRaw){
     phoneDigits = phoneRaw.replace(/\D/g,'');
     const errMsg = validateBRPhone(phoneDigits);
     const errEl = document.getElementById('reg-phone-error');
@@ -3287,10 +3290,10 @@ function registerClient(){
     }
     if(errEl) errEl.style.display = 'none';
   }
-  // Se o app está instalado, o celular identifica o cliente de forma estável
-  // (sobrevive a reinstalação / limpeza de dados), evitando burlar o limite
-  // de 1 solicitação ativa por pessoa.
-  let client = installed ? shop.clients.find(c=>c.phone && c.phone===phoneDigits) : null;
+  // Se o celular foi informado, ele identifica o cliente de forma estável
+  // (sobrevive a reinstalação / limpeza de dados no app instalado). Sem
+  // celular, cada acesso é tratado como um cadastro novo neste aparelho.
+  let client = phoneDigits ? shop.clients.find(c=>c.phone && c.phone===phoneDigits) : null;
   if(client){
     client.name = name;
   } else {
