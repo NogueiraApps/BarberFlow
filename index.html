@@ -1060,7 +1060,6 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         </div>
       </div>
 
-      <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
     </div>
   </div>
 
@@ -1915,6 +1914,13 @@ function goHomeMenu(){
   if(previewMode){ exitClientPreview(); return; }
   if(session && session.role==='barber'){
     if(currentShop()) enterBarberArea(currentShop());
+    return;
+  }
+  if(session && session.role==='client'){
+    // Um cliente JAMAIS deve cair na tela de login/cadastro do barbeiro.
+    // Volta para a home do próprio cliente (ou tela de banido, se for o
+    // caso — já tratado dentro de enterClientHome()).
+    enterClientHome();
     return;
   }
   clearSession();
