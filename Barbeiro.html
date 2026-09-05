@@ -3,25 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>BarberFlow — Cliente</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icon-180.png">
-<meta name="theme-color" content="#0f0f12">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BarberFlow">
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
-</script>
+<title>BarberFlow — Painel do Barbeiro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --primary:#c9a24d;
@@ -209,6 +194,10 @@ textarea{resize:vertical;font-family:var(--font);}
 .review-card .rname{font-weight:700;font-size:14px;}
 .review-card .rdate{font-size:11px;color:var(--text-faint);white-space:nowrap;}
 .review-card .rcomment{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:5px;}
+.reviews-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -1px;scrollbar-width:thin;}
+.reviews-carousel .review-card{flex:0 0 84%;scroll-snap-align:start;margin-bottom:0;}
+.reviews-carousel::-webkit-scrollbar{height:5px;}
+.reviews-carousel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px;}
 .service-icon-wrap{
   width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--primary) 13%,transparent);color:var(--primary);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;font-size:19px;
@@ -300,6 +289,21 @@ textarea{resize:vertical;font-family:var(--font);}
 .dot-status{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .dot-status.dentro{background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 20%,transparent);}
 .dot-status.fora{background:var(--text-faint);}
+.hscroll{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;}
+.hscroll::-webkit-scrollbar{height:6px;}
+.hscroll::-webkit-scrollbar-track{background:transparent;}
+.hscroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:10px;}
+.hscroll>*{flex:0 0 auto;scroll-snap-align:start;margin-bottom:0 !important;}
+.hscroll .empty-state{flex:0 0 88%;}
+.hscroll .appt-card{width:82vw;max-width:320px;padding:22px;}
+.hscroll .appt-top b{font-size:16.5px;}
+.hscroll .appt-meta{font-size:14px;}
+.hscroll .appt-services{font-size:13.5px;}
+.hscroll .appt-total{font-size:16px;}
+.hscroll .client-item{width:72vw;max-width:270px;padding:20px;}
+.hscroll .client-item .avatar{width:48px;height:48px;font-size:17px;}
+.hscroll .client-info b{font-size:15.5px;}
+.hscroll .client-info span{font-size:12.5px;}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
 .stat-box{background:var(--surface);border-radius:var(--radius-lg);padding:17px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
 .stat-box .num{font-size:25px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
@@ -364,8 +368,11 @@ textarea{resize:vertical;font-family:var(--font);}
 }
 .location-bar .loc-text{flex:1;min-width:0;}
 .location-bar .loc-label{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-faint);}
-.location-bar .loc-address{font-size:13.5px;font-weight:700;color:var(--text);margin-top:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.location-bar .loc-address{margin-top:4px;}
+.location-bar .loc-address .addr-row{display:flex;gap:6px;font-size:13px;line-height:1.5;}
+.location-bar .loc-address .addr-row+.addr-row{margin-top:1px;}
+.location-bar .loc-address .addr-row .addr-k{color:var(--text-faint);font-weight:700;flex-shrink:0;}
+.location-bar .loc-address .addr-row .addr-v{color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .location-bar .loc-arrow{font-size:20px;color:var(--primary);flex-shrink:0;font-weight:700;}
 .list-select-item{
   display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
@@ -384,6 +391,21 @@ textarea{resize:vertical;font-family:var(--font);}
 }
 .slot-btn.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);box-shadow:var(--shadow-sm);}
 .slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+.period-row{display:flex;gap:10px;margin:9px 0 14px;}
+.period-banner{
+  flex:1;padding:14px 6px 12px;border-radius:14px;background:var(--surface2);
+  border:1.5px solid var(--border);text-align:center;cursor:pointer;
+  transition:all .15s ease;
+}
+.period-banner .picon{font-size:20px;display:block;margin-bottom:4px;filter:grayscale(.4);opacity:.7;transition:all .15s ease;}
+.period-banner .plabel{font-size:12px;font-weight:800;color:var(--text-dim);letter-spacing:.2px;}
+.period-banner.active{
+  border-color:var(--primary);
+  background:color-mix(in srgb, var(--primary) 16%, var(--surface2));
+  box-shadow:0 0 0 1px var(--primary), 0 0 16px 2px color-mix(in srgb, var(--primary) 55%, transparent);
+}
+.period-banner.active .picon{filter:none;opacity:1;}
+.period-banner.active .plabel{color:var(--primary);}
 
 /* ---------- Auth / onboarding / gold ---------- */
 .auth-link{text-align:center;font-size:13px;color:var(--text-dim);margin-top:18px;}
@@ -436,14 +458,6 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 <div id="app">
 
   <!-- ============ WELCOME ============ -->
-  <div class="screen" id="screen-client-loading">
-    <div class="hero">
-      <div class="logo-circle">✂️</div>
-      <h1>BarberFlow</h1>
-      <p>Entrando...</p>
-    </div>
-  </div>
-
   <div class="screen" id="screen-welcome">
     <div class="hero">
       <div class="logo-circle">✂️</div>
@@ -586,7 +600,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <div class="section-title">Próximos agendamentos</div>
         <div id="list-accepted"></div>
         <div class="section-title">Histórico</div>
-        <div id="list-history"></div>
+        <div id="list-history" class="hscroll"></div>
         <button class="btn btn-outline" onclick="clearBarberHistory()" style="margin-top:4px;">Apagar histórico</button>
       </div>
 
@@ -601,7 +615,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
           <div class="chip" data-csub="banidos" onclick="setClientsSubView('banidos')">🚫 Banidos<span id="banned-count-chip"></span></div>
         </div>
         <div class="section-title" id="clients-list-title">Lista de clientes</div>
-        <div id="list-clients"></div>
+        <div id="list-clients" class="hscroll"></div>
       </div>
 
       <!-- TAB: SERVIÇOS -->
@@ -641,7 +655,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         </div>
 
         <div class="section-title">Atendimentos do período</div>
-        <div id="finance-period-list"></div>
+        <div id="finance-period-list" class="hscroll"></div>
       </div>
 
       <!-- TAB: AVALIAÇÕES -->
@@ -777,10 +791,52 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar personalização</button>
       </div>
       <div class="card">
+        <h3>🎨 Fundo e aparência</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Personalize as cores e a fonte do app. Seus clientes veem a mesma aparência assim que você salvar.</div>
+        <label>Fundo do app</label>
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip" data-bgtype="default" onclick="setBgType('default')">Padrão</div>
+          <div class="chip" data-bgtype="color" onclick="setBgType('color')">Cor</div>
+          <div class="chip" data-bgtype="image" onclick="setBgType('image')">Imagem</div>
+        </div>
+        <div id="config-bg-color-row" style="display:none;">
+          <label>Cor de fundo</label>
+          <input type="color" id="config-bg-color">
+        </div>
+        <div id="config-bg-image-row" style="display:none;">
+          <label>Imagem de fundo</label>
+          <div id="config-bg-image-preview-wrap"></div>
+          <input type="file" id="config-bg-image-input" accept="image/*" style="display:none" onchange="onBgImageSelected(event)">
+        </div>
+        <div class="divider"></div>
+        <label>Cor das letras</label>
+        <input type="color" id="config-text-color">
+        <label>Cor dos quadrados</label>
+        <input type="color" id="config-card-color">
+        <label>Cor dos avisos e títulos (textos apagados)</label>
+        <input type="color" id="config-dim-text-color">
+        <div class="helper-text" style="margin-top:0;">Controla textos como "Nenhum agendamento", títulos de seção e avisos — que por padrão são mais claros/apagados e podem ficar difíceis de ler dependendo da imagem de fundo.</div>
+        <label>Estilo das letras</label>
+        <div class="chip-row" style="margin-bottom:4px;">
+          <div class="chip" data-font="padrao" onclick="setFontStyle('padrao')">Padrão</div>
+          <div class="chip" data-font="moderna" onclick="setFontStyle('moderna')">Moderna</div>
+          <div class="chip" data-font="elegante" onclick="setFontStyle('elegante')">Elegante</div>
+          <div class="chip" data-font="divertida" onclick="setFontStyle('divertida')">Divertida</div>
+        </div>
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveBackgroundConfig()">Salvar aparência</button>
+      </div>
+      <div class="card">
         <h3>📍 Localização</h3>
-        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa.</div>
-        <label>Endereço da barbearia</label>
-        <input type="text" id="config-address" placeholder="Ex: Rua das Flores, 123 - Centro, São Paulo - SP">
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa. Preencha só os campos que quiser — todos são opcionais.</div>
+        <label>Cidade</label>
+        <input type="text" id="config-addr-cidade" placeholder="Ex: São Paulo - SP">
+        <label>Rua</label>
+        <input type="text" id="config-addr-rua" placeholder="Ex: Rua das Flores">
+        <label>Bairro</label>
+        <input type="text" id="config-addr-bairro" placeholder="Ex: Centro">
+        <label>Número</label>
+        <input type="text" id="config-addr-numero" placeholder="Ex: 123">
         <div style="height:10px"></div>
         <button class="btn btn-primary" onclick="saveShopConfig()">Salvar localização</button>
       </div>
@@ -840,15 +896,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
     </div>
     <div class="container stack">
-      <div class="helper-text" style="margin-bottom:6px;">Digite seu nome para agendar nesta barbearia.</div>
+      <div class="helper-text" style="margin-bottom:6px;">Complete seu cadastro para agendar nesta barbearia.</div>
       <label>Seu nome</label>
       <input type="text" id="reg-name" placeholder="Nome completo">
-      <div id="reg-phone-wrap" style="display:none;">
-        <label>Celular (WhatsApp)</label>
-        <input type="tel" id="reg-phone" placeholder="(00) 00000-0000" maxlength="16" oninput="maskPhoneInput(this)">
-        <div class="helper-text" id="reg-phone-error" style="margin-top:6px;color:var(--danger);display:none;"></div>
-        <div class="helper-text" style="margin-top:6px;">Necessário no app instalado, para impedir múltiplos cadastros.</div>
-      </div>
+      <label>Seu telefone</label>
+      <input type="tel" id="reg-phone" placeholder="(00) 00000-0000">
       <div style="height:8px"></div>
       <button class="btn btn-primary" onclick="registerClient()">Continuar</button>
     </div>
@@ -859,10 +911,6 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div id="preview-banner" style="display:none;background:var(--surface2);padding:12px 20px;align-items:center;justify-content:space-between;gap:10px;">
       <span style="font-size:12.5px;color:var(--text-dim);">👁️ <b style="color:var(--text);">Modo prévia</b> — assim seus clientes veem o app</span>
       <button class="btn btn-sm btn-primary" style="flex:none;" onclick="exitClientPreview()">Voltar ao painel</button>
-    </div>
-    <div id="install-banner" style="display:none;background:var(--surface2);padding:12px 20px;align-items:center;justify-content:space-between;gap:10px;">
-      <span style="font-size:12.5px;color:var(--text-dim);">📲 <b style="color:var(--text);">Instale o app</b> — acesso rápido, sem navegador</span>
-      <span class="install-btn-wrap"></span>
     </div>
     <div class="topbar">
       <div>
@@ -902,6 +950,20 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="card" id="client-dayoff-banner" style="display:none;margin-top:10px;border-left:4px solid var(--danger);background:rgba(229,72,77,.1);color:var(--danger);"></div>
 
       <div class="section-title" style="margin-bottom:4px;">Horários disponíveis</div>
+      <div class="period-row" id="client-period-row">
+        <div class="period-banner" id="period-manha" onclick="selectPeriod('manha')">
+          <span class="picon">🌅</span>
+          <span class="plabel">Manhã</span>
+        </div>
+        <div class="period-banner" id="period-tarde" onclick="selectPeriod('tarde')">
+          <span class="picon">☀️</span>
+          <span class="plabel">Tarde</span>
+        </div>
+        <div class="period-banner" id="period-noite" onclick="selectPeriod('noite')">
+          <span class="picon">🌙</span>
+          <span class="plabel">Noite</span>
+        </div>
+      </div>
       <div class="slot-grid" id="client-slots"></div>
 
       <div style="height:16px"></div>
@@ -969,6 +1031,44 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </div>
 
       <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT BANNED ============ -->
+  <div class="screen" id="screen-client-banned">
+    <div class="topbar">
+      <div>
+        <h1>Acesso bloqueado</h1>
+        <div class="sub" id="banned-shop-name">Barbearia</div>
+      </div>
+    </div>
+    <div class="container stack">
+      <div class="card" style="border-left:4px solid var(--danger);background:rgba(229,72,77,.1);">
+        <h3 style="color:var(--danger);margin-bottom:8px;">🚫 Você foi banido(a) desta barbearia</h3>
+        <div class="helper-text" style="margin:0 0 8px;">Banido em <b id="banned-date" style="color:var(--text);"></b></div>
+        <div class="helper-text" style="margin:0;color:var(--text);" id="banned-reason"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-form-card">
+        <h3>📩 Pedir para ser desbanido(a)</h3>
+        <div class="helper-text" style="margin-top:0;">Explique o motivo para o barbeiro reconsiderar o seu caso.</div>
+        <textarea id="banned-appeal-input" rows="4" maxlength="300" placeholder="Escreva sua mensagem..."></textarea>
+        <div style="height:8px"></div>
+        <button class="btn btn-primary" onclick="submitBanAppeal()">Enviar pedido</button>
+      </div>
+
+      <div class="card" id="banned-appeal-pending-card" style="display:none;">
+        <h3>📩 Pedido enviado</h3>
+        <div class="helper-text" style="margin:0 0 6px;">Aguardando resposta do barbeiro:</div>
+        <div class="helper-text" style="color:var(--text);margin:0;" id="banned-appeal-pending-msg"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-rejected-card" style="display:none;">
+        <h3>📩 Pedido recusado</h3>
+        <div class="helper-text" style="margin:0;" id="banned-appeal-rejected-info"></div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Sair</button>
     </div>
   </div>
 
@@ -1104,33 +1204,6 @@ function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
-
-// DDDs válidos no Brasil (todos os códigos de área em uso)
-const VALID_DDDS = ['11','12','13','14','15','16','17','18','19','21','22','24','27','28',
-  '31','32','33','34','35','37','38','41','42','43','44','45','46','47','48','49',
-  '51','53','54','55','61','62','63','64','65','66','67','68','69','71','73','74','75','77',
-  '79','81','82','83','84','85','86','87','88','89','91','92','93','94','95','96','97','98','99'];
-
-function maskPhoneInput(el){
-  let d = el.value.replace(/\D/g,'').slice(0,11);
-  let out = d;
-  if(d.length>0) out = '('+d.slice(0,2);
-  if(d.length>=3) out += ') '+d.slice(2, d.length>=11 ? 7 : 6);
-  if(d.length>=7) out += '-'+d.slice(d.length>=11 ? 7 : 6);
-  el.value = out;
-  const errEl = document.getElementById('reg-phone-error');
-  if(errEl) errEl.style.display = 'none';
-}
-function validateBRPhone(digits){
-  if(digits.length!==10 && digits.length!==11) return 'Celular incompleto. Digite DDD + número.';
-  const ddd = digits.slice(0,2);
-  if(!VALID_DDDS.includes(ddd)) return 'DDD inválido. Confira o número digitado.';
-  if(digits.length===11 && digits[2]!=='9') return 'Celular inválido. Números com 9 dígitos começam com 9 após o DDD.';
-  // bloqueia números repetidos óbvios tipo (11) 00000-0000
-  const num = digits.slice(2);
-  if(/^(\d)\1+$/.test(num)) return 'Digite um celular válido.';
-  return null;
-}
 function genCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out=''; for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
@@ -1193,14 +1266,7 @@ async function payWithMercadoPago(planId){
     });
     const data = await res.json();
     if(!res.ok || !data.init_point) throw new Error('sem init_point');
-    // Usa window.open (em vez de location.href) porque wrappers de
-    // WebView->APK (App Mint, GoNative etc.) costumam só detectar e
-    // mandar pro navegador externo esse tipo de chamada — via
-    // location.href a navegação às vezes fica presa dentro do
-    // próprio WebView do app, e aí o checkout do Mercado Pago trava
-    // o Pix por detectar ambiente embutido.
-    const opened = window.open(data.init_point, '_blank');
-    if(!opened){ window.location.href = data.init_point; }
+    window.location.href = data.init_point;
   }catch(err){
     console.error('Falha ao criar pagamento:', err);
     if(btn){ btn.disabled = false; btn.textContent = originalText; }
@@ -1318,6 +1384,7 @@ function enterBarberArea(shop){
     return;
   }
   applyTheme(shop.color);
+  applyAppearance(shop);
   renderBarberDashboard();
   updateTrialBanner(currentUserDoc);
   showScreen('screen-barber-dashboard');
@@ -1347,6 +1414,7 @@ function normalizeShop(shop){
   if(!shop) return shop;
   if(!shop.daysOff) shop.daysOff = [];
   if(shop.pixCode===undefined) shop.pixCode = '';
+  if(!shop.addressDetails) shop.addressDetails = {cidade:'', rua:'', bairro:'', numero:''};
   if(!shop.clientAppUrl || shop.clientAppUrl === 'https://nox-games.github.io/BarberFlow/cliente.html' || shop.clientAppUrl === 'https://sl1nk.com/rvz58ye') shop.clientAppUrl = DEFAULT_CLIENT_APP_URL;
   if(!shop.services) shop.services = [];
   if(!shop.clients) shop.clients = [];
@@ -1369,6 +1437,12 @@ function normalizeShop(shop){
       }
     }
   }
+  if(shop.bgType===undefined) shop.bgType = 'default';
+  if(shop.bgColor===undefined) shop.bgColor = '#0a0a0d';
+  if(shop.bgImage===undefined) shop.bgImage = '';
+  if(shop.textColor===undefined) shop.textColor = '';
+  if(shop.cardColor===undefined) shop.cardColor = '';
+  if(shop.fontKey===undefined) shop.fontKey = 'padrao';
   return shop;
 }
 
@@ -1619,7 +1693,6 @@ function detectShopChanges(scope, prevShop, newShop){
 }
 
 let shops = loadShops();
-let deferredInstallPrompt = null; // evento de instalação do PWA, guardado até o cliente pedir
 let session = loadSession();
 let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
 let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
@@ -1682,7 +1755,7 @@ function listenToShop(code, onFirstLoad){
           updateTrialBanner(currentUserDoc);
         }
       }
-      if((session.role==='client' || previewMode) && document.getElementById('screen-client-home').classList.contains('active')) renderClientHome();
+      if((session.role==='client' || previewMode) && (document.getElementById('screen-client-home').classList.contains('active') || document.getElementById('screen-client-banned').classList.contains('active'))) enterClientHome();
     }
   }, function(err){
     console.error('Erro de sincronização com o Firebase:', err);
@@ -1698,10 +1771,6 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
   if(id==='screen-plans') renderPlans();
-  if(id==='screen-client-register'){
-    const wrap = document.getElementById('reg-phone-wrap');
-    if(wrap) wrap.style.display = isStandaloneApp() ? 'block' : 'none';
-  }
 }
 function toast(msg){
   const t=document.getElementById('toast');
@@ -1713,6 +1782,51 @@ function applyTheme(color){
   const dark = shadeColor(color,-18);
   document.documentElement.style.setProperty('--primary', color);
   document.documentElement.style.setProperty('--primary-dark', dark);
+}
+const DEFAULT_BG_COLOR = '#0a0a0d';
+const DEFAULT_TEXT_COLOR = '#f5f1e9';
+const DEFAULT_DIM_TEXT_COLOR = '#ffffff';
+const DEFAULT_CARD_COLOR = '#15151a';
+const FONT_OPTIONS = {
+  padrao:    {label:'Padrão',    css:"'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif"},
+  moderna:   {label:'Moderna',   css:"'Poppins','Segoe UI',system-ui,-apple-system,sans-serif"},
+  elegante:  {label:'Elegante',  css:"'Playfair Display',Georgia,serif"},
+  divertida: {label:'Divertida', css:"'Fredoka','Segoe UI',system-ui,-apple-system,sans-serif"}
+};
+function applyAppearance(shop){
+  const body = document.body;
+  if(shop && shop.bgType==='image' && shop.bgImage){
+    body.style.backgroundImage = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url('${shop.bgImage}')`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundRepeat = 'no-repeat';
+    body.style.backgroundAttachment = 'fixed';
+    document.documentElement.style.setProperty('--bg', DEFAULT_BG_COLOR);
+  } else {
+    body.style.backgroundImage = '';
+    body.style.backgroundSize = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundRepeat = '';
+    body.style.backgroundAttachment = '';
+    const color = (shop && shop.bgType==='color' && shop.bgColor) ? shop.bgColor : DEFAULT_BG_COLOR;
+    document.documentElement.style.setProperty('--bg', color);
+  }
+  // Cor das letras
+  const textColor = (shop && shop.textColor) || DEFAULT_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text', textColor);
+  // Cor dos avisos e títulos de seção (textos apagados: "Nenhum...", títulos em maiúsculo, chips)
+  const dimTextColor = (shop && shop.dimTextColor) || DEFAULT_DIM_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text-dim', dimTextColor);
+  document.documentElement.style.setProperty('--text-faint', dimTextColor);
+  // Cor dos quadrados (cards)
+  const cardColor = (shop && shop.cardColor) || DEFAULT_CARD_COLOR;
+  document.documentElement.style.setProperty('--surface', cardColor);
+  document.documentElement.style.setProperty('--surface2', shadeColor(cardColor, 8));
+  document.documentElement.style.setProperty('--surface3', shadeColor(cardColor, 16));
+  // Estilo das letras (fonte)
+  const fontKey = (shop && shop.fontKey) || 'padrao';
+  const fontCss = (FONT_OPTIONS[fontKey] || FONT_OPTIONS.padrao).css;
+  document.documentElement.style.setProperty('--font', fontCss);
 }
 function shadeColor(hex, percent){
   hex = hex.replace('#','');
@@ -1768,76 +1882,30 @@ function toggleClientPreview(){
    INIT / ROUTER — a sessão do barbeiro agora é controlada pelo
    Firebase Authentication (login por e-mail e senha)
    ============================================================ */
-// Código da barbearia usado quando o link não traz ?code= (ex: link "puro"
-// salvo no Instagram/Google). Assim o app sempre abre direto no cliente.
-const DEFAULT_SHOP_CODE = '6V5QB7';
-
 function init(){
-  const urlCode = getUrlCode();
-  enterViaCode(urlCode);
-}
-// Lê o parâmetro ?code= da URL; se não tiver, usa o código padrão da barbearia.
-function getUrlCode(){
-  const params = new URLSearchParams(window.location.search);
-  const c = (params.get('code')||'').trim().toUpperCase();
-  return c || DEFAULT_SHOP_CODE;
-}
-// Entra automaticamente como cliente na barbearia do código (da URL ou padrão).
-// Se o cliente já é conhecido neste aparelho, pula direto pro agendamento.
-// Se é novo, pede só o nome e já cai na tela de agendamento.
-function enterViaCode(code){
-  showScreen('screen-client-loading');
-  db.collection(SHOPS_COLLECTION).doc(code).get().then(function(doc){
-    if(!doc.exists){
-      toast('Código não encontrado. Confira o link com seu barbeiro.');
-      showScreen('screen-welcome');
-      return;
-    }
-    shops[code] = normalizeShop(doc.data());
-    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
-    const shop = shops[code];
-    applyTheme(shop.color);
-
-    const existingLocalId = localStorage.getItem('barberflow_client_'+code);
-    if(existingLocalId && shop.clients.find(c=>c.id===existingLocalId)){
-      session = {role:'client', code:code, clientId:existingLocalId};
-      saveSession(session);
-      listenToShop(code, function(){
-        renderClientHome();
-        showScreen('screen-client-home');
-      });
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      currentUser = user;
+      loadBarberAccount(user);
     } else {
-      session = {role:'client', code:code, clientId:null};
-      saveSession(session);
-      listenToShop(code, function(){
-        showScreen('screen-client-register');
-      });
+      currentUser = null;
+      currentUserDoc = null;
+      if(session && session.role==='client' && session.code){
+        listenToShop(session.code, function(shopData){
+          if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
+          applyTheme(shopData.color);
+          enterClientHome();
+        });
+      } else {
+        showScreen('screen-welcome');
+      }
     }
-  }).catch(function(err){
-    console.error('Erro ao entrar pelo código:', err);
-    toast('Erro de conexão. Verifique sua internet e tente de novo.');
-    showScreen('screen-welcome');
   });
 }
 // Carrega os dados da conta do barbeiro (barberflow_users/{uid}) e, a partir
 // dela, a barbearia vinculada, aplicando as regras de teste grátis / Gold.
-//
-// IMPORTANTE: esta função NUNCA apaga a conta do Firebase Auth automaticamente.
-// Uma falha temporária de conexão (celular recém-aberto, cache local vazio,
-// app aberto no modo avião por um instante etc.) pode fazer o Firestore
-// responder "documento não existe" mesmo quando a conta é válida. Se
-// apagássemos o login nesse momento, a pessoa perderia a conta de verdade e,
-// ao tentar de novo, criaria uma conta nova com o teste reiniciado do zero —
-// foi exatamente esse o bug que fazia o contador de dias nunca diminuir.
-// Por isso, antes de desistir, tentamos de novo direto do servidor (sem
-// cache) algumas vezes, e mesmo se realmente não encontrarmos o documento,
-// apenas deslogamos — nunca apagamos a conta.
-function loadBarberAccount(user, attempt){
-  attempt = attempt || 0;
-  // 1ª tentativa: padrão (usa cache se offline). Da 2ª em diante: força
-  // busca no servidor, ignorando qualquer cache local desatualizado.
-  const opts = attempt === 0 ? {} : {source:'server'};
-  db.collection(USERS_COLLECTION).doc(user.uid).get(opts).then(function(doc){
+function loadBarberAccount(user){
+  db.collection(USERS_COLLECTION).doc(user.uid).get().then(function(doc){
     if(!doc.exists){
       if(signupInProgress){
         // Ainda estamos no meio do cadastro (o documento está sendo gravado
@@ -1845,19 +1913,18 @@ function loadBarberAccount(user, attempt){
         // vai concluir e entrar no painel quando a gravação terminar.
         return;
       }
-      if(attempt < 3){
-        // Pode ser só uma instabilidade momentânea — tenta de novo direto
-        // do servidor antes de concluir que a conta está mesmo quebrada.
-        setTimeout(function(){ loadBarberAccount(user, attempt + 1); }, 1200);
-        return;
-      }
-      // Mesmo depois de confirmar direto no servidor (sem cache), o
-      // documento realmente não existe. Isso é raro (ex.: conexão caiu no
-      // exato meio do cadastro, antes de gravar barberflow_users). Aqui só
-      // deslogamos — o login no Firebase Auth continua existindo, e a
-      // pessoa (ou o suporte) pode investigar/recuperar sem perder a conta.
-      toast('Não conseguimos carregar sua conta agora. Verifique sua internet e tente entrar de novo em instantes.');
-      auth.signOut();
+      // Login existe no Firebase Auth mas o cadastro da barbearia nunca foi
+      // gravado no Firestore (ex.: conexão caiu durante o cadastro, ou as
+      // regras do Firestore não estavam publicadas naquele momento). Como
+      // não há como recuperar os dados que nunca foram salvos, removemos
+      // esse login quebrado para a pessoa poder criar a conta do zero.
+      toast('Sua conta não foi concluída da última vez. Crie sua conta novamente, por favor.');
+      user.delete().catch(function(delErr){
+        // Se o Firebase exigir login recente para apagar, apenas desloga —
+        // a pessoa cria a conta de novo (com outro e-mail, se preferir).
+        console.error('Não foi possível remover login órfão, saindo mesmo assim:', delErr);
+        auth.signOut();
+      });
       clearSession();
       session = null;
       currentUser = null;
@@ -1875,10 +1942,6 @@ function loadBarberAccount(user, attempt){
     });
   }).catch(function(err){
     console.error('Erro ao carregar conta:', err);
-    if(attempt < 3){
-      setTimeout(function(){ loadBarberAccount(user, attempt + 1); }, 1200);
-      return;
-    }
     toast('Erro de conexão. Verifique sua internet.');
   });
 }
@@ -2325,6 +2388,7 @@ function renderReviewsTab(){
   document.getElementById('barber-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
   const listWrap = document.getElementById('list-reviews');
   const sorted = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  listWrap.classList.toggle('reviews-carousel', sorted.length>1);
   listWrap.innerHTML = sorted.length===0
     ? `<div class="empty-state" style="padding:24px;"><div class="em">⭐</div>Nenhuma avaliação recebida ainda</div>`
     : sorted.map(r=>renderReviewCard(r)).join('');
@@ -2625,6 +2689,9 @@ function svcVisualHtml(s, size){
 let editingServiceId = null;
 let editingServiceIcon = 'tesoura';
 let editingServiceImage = null;
+let editingBgType = 'default';
+let editingBgImage = '';
+let editingFontKey = 'padrao';
 function renderIconPicker(){
   const wrap = document.getElementById('svc-icon-picker');
   wrap.innerHTML = SERVICE_ICON_KEYS.map(k=>`
@@ -2819,7 +2886,24 @@ function openConfigScreen(){
   document.getElementById('config-barber-name').value = shop.barberName;
   document.getElementById('config-welcome-msg').value = shop.welcomeMsg;
   document.getElementById('config-color').value = shop.color;
-  document.getElementById('config-address').value = shop.address || '';
+  editingBgType = shop.bgType || 'default';
+  editingBgImage = shop.bgImage || '';
+  editingFontKey = shop.fontKey || 'padrao';
+  document.getElementById('config-bg-color').value = shop.bgColor || '#0a0a0d';
+  document.getElementById('config-text-color').value = shop.textColor || '#f5f1e9';
+  document.getElementById('config-card-color').value = shop.cardColor || '#15151a';
+  document.getElementById('config-dim-text-color').value = shop.dimTextColor || '#ffffff';
+  renderBgTypeChips();
+  renderBgImagePicker();
+  renderFontChips();
+  const addr = shop.addressDetails || {};
+  if(shop.address && !addr.cidade && !addr.rua && !addr.bairro && !addr.numero){
+    addr.rua = shop.address;
+  }
+  document.getElementById('config-addr-cidade').value = addr.cidade || '';
+  document.getElementById('config-addr-rua').value = addr.rua || '';
+  document.getElementById('config-addr-bairro').value = addr.bairro || '';
+  document.getElementById('config-addr-numero').value = addr.numero || '';
   document.getElementById('config-pix-code').value = shop.pixCode || '';
   document.getElementById('config-client-url').value = shop.clientAppUrl || '';
   document.getElementById('config-account-email').textContent = (currentUser && currentUser.email) || '-';
@@ -2847,13 +2931,102 @@ function saveShopConfig(){
   shop.barberName = document.getElementById('config-barber-name').value.trim() || shop.barberName;
   shop.welcomeMsg = document.getElementById('config-welcome-msg').value.trim() || shop.welcomeMsg;
   shop.color = document.getElementById('config-color').value;
-  shop.address = document.getElementById('config-address').value.trim();
+  shop.addressDetails = {
+    cidade: document.getElementById('config-addr-cidade').value.trim(),
+    rua: document.getElementById('config-addr-rua').value.trim(),
+    bairro: document.getElementById('config-addr-bairro').value.trim(),
+    numero: document.getElementById('config-addr-numero').value.trim()
+  };
+  shop.address = '';
   shop.pixCode = document.getElementById('config-pix-code').value.trim();
   shop.clientAppUrl = document.getElementById('config-client-url').value.trim();
   saveShops(shops);
   applyTheme(shop.color);
+  applyAppearance(shop);
   toast('Personalização salva! O app do cliente já atualiza sozinho.');
   renderBarberDashboard();
+}
+/* ---------- Fundo do app (cor sólida ou imagem) ---------- */
+function setBgType(type){
+  editingBgType = type;
+  renderBgTypeChips();
+}
+function renderBgTypeChips(){
+  document.querySelectorAll('[data-bgtype]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-bgtype')===editingBgType);
+  });
+  document.getElementById('config-bg-color-row').style.display = editingBgType==='color' ? 'block' : 'none';
+  document.getElementById('config-bg-image-row').style.display = editingBgType==='image' ? 'block' : 'none';
+}
+function setFontStyle(key){
+  editingFontKey = key;
+  renderFontChips();
+}
+function renderFontChips(){
+  document.querySelectorAll('[data-font]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-font')===editingFontKey);
+  });
+}
+function renderBgImagePicker(){
+  const wrap = document.getElementById('config-bg-image-preview-wrap');
+  if(editingBgImage){
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <img class="thumb" src="${editingBgImage}">
+        <div class="txt"><b>Imagem enviada</b>Toque para trocar</div>
+        <button type="button" class="img-remove-btn" onclick="event.stopPropagation();removeBgImage()">Remover</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <div class="placeholder">🖼️</div>
+        <div class="txt"><b>Nenhuma imagem</b>Toque para enviar uma foto para o fundo do app</div>
+      </div>`;
+  }
+}
+function onBgImageSelected(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona pra não pesar no armazenamento
+      const maxSize = 1080;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h >= w && h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      editingBgImage = canvas.toDataURL('image/jpeg', 0.75);
+      renderBgImagePicker();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function removeBgImage(){
+  editingBgImage = '';
+  renderBgImagePicker();
+}
+function saveBackgroundConfig(){
+  const shop = currentShop();
+  if(editingBgType==='image' && !editingBgImage){
+    toast('Envie uma imagem ou escolha outro tipo de fundo');
+    return;
+  }
+  shop.bgType = editingBgType;
+  shop.bgColor = document.getElementById('config-bg-color').value;
+  shop.bgImage = editingBgImage;
+  shop.textColor = document.getElementById('config-text-color').value;
+  shop.cardColor = document.getElementById('config-card-color').value;
+  shop.dimTextColor = document.getElementById('config-dim-text-color').value;
+  shop.fontKey = editingFontKey;
+  saveShops(shops);
+  applyAppearance(shop);
+  toast('Aparência salva! O app do cliente já atualiza sozinho.');
 }
 function copyCode(){
   const shop = currentShop();
@@ -2914,8 +3087,7 @@ function joinAsClient(){
       session = {role:'client', code:raw, clientId:existingLocalId};
       saveSession(session);
       listenToShop(raw, function(){
-        renderClientHome();
-        showScreen('screen-client-home');
+        enterClientHome();
       });
     } else {
       session = {role:'client', code:raw, clientId:null};
@@ -2931,32 +3103,11 @@ function joinAsClient(){
 }
 function registerClient(){
   const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
   if(!name){ toast('Digite seu nome'); return; }
   const shop = shops[session.code];
-  const installed = isStandaloneApp();
-  let phoneDigits = '';
-  if(installed){
-    const phoneRaw = document.getElementById('reg-phone').value.trim();
-    phoneDigits = phoneRaw.replace(/\D/g,'');
-    const errMsg = validateBRPhone(phoneDigits);
-    const errEl = document.getElementById('reg-phone-error');
-    if(errMsg){
-      if(errEl){ errEl.textContent = errMsg; errEl.style.display = 'block'; }
-      toast(errMsg);
-      return;
-    }
-    if(errEl) errEl.style.display = 'none';
-  }
-  // Se o app está instalado, o celular identifica o cliente de forma estável
-  // (sobrevive a reinstalação / limpeza de dados), evitando burlar o limite
-  // de 1 solicitação ativa por pessoa.
-  let client = installed ? shop.clients.find(c=>c.phone && c.phone===phoneDigits) : null;
-  if(client){
-    client.name = name;
-  } else {
-    client = {id:uid('cli'), name, phone:phoneDigits, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
-    shop.clients.push(client);
-  }
+  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
+  shop.clients.push(client);
   saveShops(shops);
   localStorage.setItem('barberflow_client_'+session.code, client.id);
   session.clientId = client.id;
@@ -2968,11 +3119,74 @@ function registerClient(){
 
 let selectedServiceIds = [];
 let selectedSlot = null;
+let selectedPeriod = 'manha'; // 'manha' | 'tarde' | 'noite'
+
+// Pega o registro do cliente logado na barbearia atual (ou null).
+function getClientRecord(){
+  const shop = shops[session.code];
+  if(!shop || !session || !session.clientId) return null;
+  return shop.clients.find(c=>c.id===session.clientId) || null;
+}
+// Ponto único de entrada pra tela inicial do cliente: se ele está banido,
+// manda pra tela de banido em vez da home. Substitui o antigo par
+// "renderClientHome(); showScreen('screen-client-home');" nos pontos de entrada.
+function enterClientHome(){
+  const c = getClientRecord();
+  if(c && c.banned){ showClientBannedScreen(); return; }
+  renderClientHome();
+  showScreen('screen-client-home');
+}
+// Monta e mostra a tela de "banido" com o motivo e o estado do pedido de desbanimento.
+function showClientBannedScreen(){
+  const shop = shops[session.code];
+  const c = getClientRecord();
+  if(!shop || !c) return;
+  applyTheme(shop.color);
+  document.getElementById('banned-shop-name').textContent = shop.shopName || '';
+  document.getElementById('banned-date').textContent = c.bannedAt ? formatDate(c.bannedAt.slice(0,10)) : '-';
+  document.getElementById('banned-reason').textContent = c.banReason ? ('Motivo: '+c.banReason) : 'Nenhum motivo foi informado pelo barbeiro.';
+
+  const formCard = document.getElementById('banned-appeal-form-card');
+  const pendingCard = document.getElementById('banned-appeal-pending-card');
+  const rejectedCard = document.getElementById('banned-appeal-rejected-card');
+  formCard.style.display = 'none';
+  pendingCard.style.display = 'none';
+  rejectedCard.style.display = 'none';
+
+  if(c.banAppeal && c.banAppeal.status==='pending'){
+    pendingCard.style.display = 'block';
+    document.getElementById('banned-appeal-pending-msg').textContent = '"'+c.banAppeal.message+'"';
+  } else {
+    if(c.banAppeal && c.banAppeal.status==='rejected'){
+      rejectedCard.style.display = 'block';
+      document.getElementById('banned-appeal-rejected-info').textContent =
+        'Seu último pedido ("'+c.banAppeal.message+'") foi recusado'+(c.banAppeal.autoRejected?' automaticamente (sem resposta em 1 dia).':' pelo barbeiro.');
+    }
+    formCard.style.display = 'block';
+    document.getElementById('banned-appeal-input').value = '';
+  }
+  showScreen('screen-client-banned');
+}
+// Cliente banido envia uma mensagem pedindo pra ser desbanido; o barbeiro
+// já recebe notificação disso automaticamente (ver notify('barber','banAppeal',...)).
+function submitBanAppeal(){
+  const c = getClientRecord();
+  if(!c) return;
+  const msg = document.getElementById('banned-appeal-input').value.trim();
+  if(!msg){ toast('Escreva uma mensagem para o barbeiro'); return; }
+  c.banAppeal = {status:'pending', message: msg, sentAt: new Date().toISOString()};
+  saveShops(shops);
+  toast('Pedido enviado ao barbeiro');
+  showClientBannedScreen();
+}
 
 function renderClientHome(){
   const shop = shops[session.code];
   if(!shop) return;
+  const __clientRec = getClientRecord();
+  if(__clientRec && __clientRec.banned){ showClientBannedScreen(); return; }
   applyTheme(shop.color);
+  applyAppearance(shop);
   document.getElementById('client-shop-name').textContent = shop.shopName;
   document.getElementById('client-barber-name').textContent = shop.barberName;
   document.getElementById('client-banner-title').textContent = shop.shopName;
@@ -2980,9 +3194,12 @@ function renderClientHome(){
 
   // localização da barbearia
   const locBar = document.getElementById('client-location-bar');
-  if(shop.address){
+  const addrParts = shopAddressParts(shop);
+  if(addrParts.length>0){
     locBar.style.display = 'flex';
-    document.getElementById('client-location-address').textContent = shop.address;
+    document.getElementById('client-location-address').innerHTML = addrParts.map(p=>
+      `<div class="addr-row"><span class="addr-k">${escapeHtml(p.k)}:</span><span class="addr-v">${escapeHtml(p.v)}</span></div>`
+    ).join('');
   } else {
     locBar.style.display = 'none';
   }
@@ -2998,7 +3215,7 @@ function renderClientHome(){
   }
 
   // next appointment banner
-  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId);
+  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId && !a.hiddenFromClient);
   const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=new Date().toISOString().slice(0,10))
     .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
   const bannerTag = document.getElementById('client-next-appt');
@@ -3044,6 +3261,7 @@ function renderClientHome(){
   document.getElementById('client-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
   const reviewsWrap = document.getElementById('client-reviews-list');
   const sortedReviews = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  reviewsWrap.classList.toggle('reviews-carousel', sortedReviews.length>1);
   reviewsWrap.innerHTML = sortedReviews.length===0
     ? `<div class="empty-state" style="padding:16px;"><div class="em">⭐</div>Seja o primeiro a avaliar!</div>`
     : sortedReviews.map(r=>renderReviewCard(r)).join('');
@@ -3181,10 +3399,18 @@ function submitReview(){
 function clearClientHistory(){
   if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
   const shop = shops[session.code];
-  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
+  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && !a.hiddenFromClient && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
   if(!hasHistory){ toast('Não há histórico para apagar'); return; }
   if(confirm('Apagar seu histórico de agendamentos concluídos, recusados e cancelados?')){
-    shop.appointments = shop.appointments.filter(a=>!(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')));
+    // Importante: NUNCA remover o registro em si — atendimentos concluídos ('done')
+    // contam para o faturamento do barbeiro. Apenas marcamos como "escondido do
+    // cliente", assim ele some da tela do cliente mas continua intacto no painel
+    // do barbeiro (faturamento, relatórios etc.).
+    shop.appointments.forEach(a=>{
+      if(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')){
+        a.hiddenFromClient = true;
+      }
+    });
     saveShops(shops);
     renderClientHome();
     toast('Histórico apagado');
@@ -3193,10 +3419,30 @@ function clearClientHistory(){
 
 function openShopLocation(){
   const shop = shops[session.code];
-  if(!shop || !shop.address) return false;
-  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(shop.address);
+  if(!shop) return false;
+  const query = shopAddressQuery(shop);
+  if(!query) return false;
+  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
   window.open(url, '_blank');
   return false;
+}
+function shopAddressParts(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const order = [['Cidade',addr.cidade], ['Rua',addr.rua], ['Bairro',addr.bairro], ['Número',addr.numero]];
+  const parts = order.filter(([k,v])=>v).map(([k,v])=>({k,v}));
+  if(parts.length===0 && shop && shop.address) parts.push({k:'Endereço', v: shop.address});
+  return parts;
+}
+function shopAddressQuery(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const bits = [];
+  let ruaLine = addr.rua || '';
+  if(addr.numero) ruaLine = ruaLine ? (ruaLine+', '+addr.numero) : addr.numero;
+  if(ruaLine) bits.push(ruaLine);
+  if(addr.bairro) bits.push(addr.bairro);
+  if(addr.cidade) bits.push(addr.cidade);
+  if(bits.length===0 && shop && shop.address) return shop.address;
+  return bits.join(' - ');
 }
 function toggleClientService(id){
   const el = document.getElementById('csvc-'+id);
@@ -3223,8 +3469,26 @@ function updateClientTotal(){
 function timeToMinutes(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
 function minutesToTime(m){ const h=Math.floor(m/60); const mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
 
+// Faixas de horário: manhã até 12:00, tarde de 12:30 até 17:30, noite de 18:00 em diante.
+function periodOfTime(t){
+  const m = timeToMinutes(t);
+  if(m <= 12*60) return 'manha';
+  if(m <= 17*60+30) return 'tarde';
+  return 'noite';
+}
+function selectPeriod(period){
+  selectedPeriod = period;
+  renderSlots();
+}
+function updatePeriodBanners(){
+  ['manha','tarde','noite'].forEach(p=>{
+    const el = document.getElementById('period-'+p);
+    if(el) el.classList.toggle('active', selectedPeriod===p);
+  });
+}
 function renderSlots(){
   selectedSlot = null;
+  updatePeriodBanners();
   const shop = shops[session.code];
   const dateStr = document.getElementById('client-date').value;
   const wrap = document.getElementById('client-slots');
@@ -3249,11 +3513,11 @@ function renderSlots(){
     return;
   }
   const acceptedTimes = shop.appointments.filter(a=>a.date===dateStr && a.status==='accepted').map(a=>a.time);
-  const slots = (shop.workTimes||[]).slice().sort();
+  const slots = (shop.workTimes||[]).slice().sort().filter(t=>periodOfTime(t)===selectedPeriod);
   wrap.innerHTML = slots.map(t=>{
     const taken = acceptedTimes.includes(t);
     return `<div class="slot-btn ${taken?'taken':''}" onclick="${taken?'':`selectSlot('${t}')`}">${t}</div>`;
-  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários configurados</div>`;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários nesse período</div>`;
   updateScheduleButton();
 }
 function selectSlot(t){
@@ -3273,13 +3537,6 @@ function submitAppointment(){
   const dateStr = document.getElementById('client-date').value;
   if((shop.daysOff||[]).find(d=>d.date===dateStr)){ toast('O barbeiro não atende nesse dia'); return; }
   if(!dateStr || !selectedSlot || selectedServiceIds.length===0){ toast('Escolha serviço, dia e horário'); return; }
-  const jaTemSolicitacao = shop.appointments.find(a=>a.clientId===session.clientId && (a.status==='pending' || a.status==='accepted'));
-  if(jaTemSolicitacao){
-    toast(jaTemSolicitacao.status==='pending'
-      ? 'Você já tem uma solicitação aguardando confirmação'
-      : 'Você já tem um agendamento confirmado. Cancele para solicitar outro.');
-    return;
-  }
   const client = shop.clients.find(c=>c.id===session.clientId);
   const total = selectedServiceIds.reduce((sum,id)=>{
     const s = shop.services.find(x=>x.id===id); return sum + (s?Number(s.price):0);
@@ -3331,61 +3588,10 @@ showScreen = function(id){
   originalShowScreen(id);
   if(id==='screen-barber-config') openConfigScreen();
   if(id==='screen-client-settings') openClientSettings();
-  if(id==='screen-client-home') maybeShowInstallBanner();
 };
 
 /* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
    então o polling antigo baseado em localStorage não é mais necessário. */
-
-/* ============================================================
-   INSTALAR APP (PWA / "vira APK" no Android)
-   ============================================================ */
-// O Chrome/Android dispara esse evento quando o app pode ser instalado.
-// Guardamos o evento e mostramos um botão pro cliente instalar com 1 toque —
-// isso é o que faz o app virar um ícone de verdade no celular, como um APK.
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  maybeShowInstallBanner();
-});
-window.addEventListener('appinstalled', function(){
-  deferredInstallPrompt = null;
-  const b = document.getElementById('install-banner');
-  if(b) b.style.display = 'none';
-});
-function isStandaloneApp(){
-  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-}
-function isIOSDevice(){
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-function maybeShowInstallBanner(){
-  const banner = document.getElementById('install-banner');
-  if(!banner) return;
-  if(isStandaloneApp()){ banner.style.display = 'none'; return; }
-  const wrap = banner.querySelector('.install-btn-wrap');
-  if(deferredInstallPrompt){
-    wrap.innerHTML = '<button class="btn btn-sm btn-primary" style="flex:none;" onclick="triggerInstallPrompt()">Instalar</button>';
-    banner.style.display = 'flex';
-  } else if(isIOSDevice()){
-    wrap.innerHTML = '<button class="btn btn-sm btn-outline" style="flex:none;" onclick="showIosInstallTip()">Como instalar</button>';
-    banner.style.display = 'flex';
-  } else {
-    banner.style.display = 'none';
-  }
-}
-function triggerInstallPrompt(){
-  if(!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  deferredInstallPrompt.userChoice.finally(function(){
-    deferredInstallPrompt = null;
-    const b = document.getElementById('install-banner');
-    if(b) b.style.display = 'none';
-  });
-}
-function showIosInstallTip(){
-  alert('No iPhone: toque no ícone de compartilhar (□↑) na barra do navegador e escolha "Adicionar à Tela de Início".');
-}
 
 init();
 </script>
