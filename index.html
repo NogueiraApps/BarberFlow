@@ -1217,10 +1217,20 @@ function loadShops(){
   try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }catch(e){ return {}; }
 }
 // Salva a barbearia ativa (session.code, ou codeOverride) na nuvem, e mantém uma cópia local como cache/fallback.
+// IMPORTANTE: o app do CLIENTE só tem permissão (nas Regras do Firestore)
+// para alterar os campos 'appointments', 'clients' e 'reviews' — nunca o
+// documento inteiro. Por isso aqui usamos update() enviando só esses 3
+// campos, em vez de set() com o objeto inteiro (que incluiria outros campos
+// e faria a gravação ser recusada pela regra de segurança).
 function saveShops(shopsObj, codeOverride){
   const code = codeOverride || (session && session.code);
   if(code && shopsObj[code]){
-    db.collection(SHOPS_COLLECTION).doc(code).set(shopsObj[code]).catch(function(err){
+    const shop = shopsObj[code];
+    db.collection(SHOPS_COLLECTION).doc(code).update({
+      appointments: shop.appointments || [],
+      clients: shop.clients || [],
+      reviews: shop.reviews || []
+    }).catch(function(err){
       console.error('Erro ao salvar na nuvem:', err);
       toast('Sem conexão com a internet — verifique e tente novamente');
     });
