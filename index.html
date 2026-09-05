@@ -1949,6 +1949,10 @@ function toggleClientPreview(){
 const DEFAULT_SHOP_CODE = '6V5QB7';
 
 function init(){
+  // Personaliza o manifesto do PWA para que o ícone instalado sempre abra
+  // com o código desta barbearia (evita cair sem código depois de instalado,
+  // o que faria o app entender que é um barbeiro logado voltando ao painel).
+  personalizeManifestForCode(getUrlCode());
   // Se um barbeiro logado (Firebase Auth) cair nesta página — por exemplo,
   // ao voltar/cancelar o pagamento no Mercado Pago e o link de retorno
   // apontar pra cá — manda ele direto de volta pro painel do barbeiro,
@@ -1962,6 +1966,19 @@ function init(){
     }
     enterViaCode(urlCode);
   });
+}
+// Busca o manifest.webmanifest original, troca só o start_url para incluir
+// o código desta barbearia, e troca o <link rel="manifest"> da página por
+// essa versão personalizada (via Blob). Assim, o ícone que o cliente
+// instalar na tela inicial sempre abre direto na barbearia certa.
+function personalizeManifestForCode(code){
+  const link = document.querySelector('link[rel="manifest"]');
+  if(!link) return;
+  fetch(link.getAttribute('href')).then(function(res){ return res.json(); }).then(function(manifest){
+    manifest.start_url = 'index.html?code=' + code;
+    const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+    link.setAttribute('href', URL.createObjectURL(blob));
+  }).catch(function(e){ console.error('Não foi possível personalizar o manifest:', e); });
 }
 // Lê o parâmetro ?code= da URL; se não tiver, usa o código padrão da barbearia.
 function getUrlCode(){
