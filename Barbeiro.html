@@ -1,0 +1,3628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>BarberFlow — Painel do Barbeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#c9a24d;
+  --primary-dark:#a9843a;
+  --bg:#0a0a0d;
+  --surface:#15151a;
+  --surface2:#1c1c23;
+  --surface3:#25252e;
+  --border:rgba(255,255,255,.07);
+  --border-strong:rgba(255,255,255,.14);
+  --text:#f5f1e9;
+  --text-dim:#9d98a6;
+  --text-faint:#6d6976;
+  --danger:#f2565b;
+  --success:#3ecf8e;
+  --warning:#e0a53a;
+  --radius-sm:12px;
+  --radius:16px;
+  --radius-lg:22px;
+  --shadow-sm:0 2px 14px rgba(0,0,0,.28);
+  --shadow-md:0 10px 32px -8px rgba(0,0,0,.55);
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7);
+  --font:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--primary) 15%, transparent), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--text);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:104px;}
+.screen{display:none;animation:fadeIn .3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 20px 16px;
+  position:sticky;top:0;
+  background:linear-gradient(180deg,color-mix(in srgb, var(--bg) 92%, transparent) 65%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  z-index:10;
+}
+.topbar h1{font-size:20px;margin:0;font-weight:800;letter-spacing:-.3px;}
+.topbar .sub{font-size:11.5px;color:var(--text-faint);margin-top:4px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+.icon-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;position:relative;box-shadow:var(--shadow-sm);
+  transition:transform .12s ease, background .15s ease;
+}
+.icon-btn:active{transform:scale(.92);background:var(--surface3);}
+.icon-btn.disabled{opacity:.3;pointer-events:none;}
+.icon-btn .badge{
+  position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;
+  font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;
+  box-shadow:0 0 0 2px var(--bg);
+}
+
+/* ---------- Layout helpers ---------- */
+.container{padding:0 20px;}
+.card{
+  background:linear-gradient(160deg,var(--surface),color-mix(in srgb,var(--surface) 80%,var(--surface2)) 130%);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);
+}
+.card h3{margin:0 0 13px;font-size:15px;font-weight:800;letter-spacing:.1px;color:var(--text);}
+.hero{text-align:center;padding:72px 26px 30px;}
+.hero .logo-circle{
+  width:90px;height:90px;border-radius:28px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;align-items:center;justify-content:center;font-size:37px;margin:0 auto 24px;
+  box-shadow:0 18px 42px -12px color-mix(in srgb,var(--primary) 65%,transparent);
+}
+.hero h1{font-size:29px;margin:0 0 9px;font-weight:800;letter-spacing:-.5px;}
+.hero p{color:var(--text-dim);font-size:14.5px;margin:0 0 38px;line-height:1.6;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:block;width:100%;padding:16px 18px;border-radius:var(--radius-sm);border:none;
+  font-size:15px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:.1px;
+  transition:transform .1s ease, opacity .15s ease, box-shadow .15s ease;
+  font-family:var(--font);
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  box-shadow:0 10px 26px -10px color-mix(in srgb,var(--primary) 70%,transparent);
+}
+.btn-outline{background:transparent;border:1.5px solid var(--border-strong);color:var(--text);}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger);}
+.btn-success{background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success);}
+.btn-sm{padding:10px 16px;font-size:13px;border-radius:10px;width:auto;display:inline-block;}
+.btn[disabled]{opacity:.35;pointer-events:none;box-shadow:none;}
+.stack{display:flex;flex-direction:column;gap:11px;}
+.row{display:flex;gap:10px;}
+.row .btn{flex:1;}
+
+/* ---------- Inputs ---------- */
+label{display:block;font-size:12px;color:var(--text-dim);margin:16px 0 7px;font-weight:700;letter-spacing:.15px;}
+label:first-child{margin-top:0;}
+input[type=text],input[type=tel],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;padding:14px 15px;border-radius:13px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:15px;outline:none;font-family:var(--font);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent);}
+input[type=color]{width:54px;height:46px;border:none;border-radius:12px;background:none;padding:0;cursor:pointer;}
+textarea{resize:vertical;font-family:var(--font);}
+
+/* ---------- Bottom nav ---------- */
+.bottomnav{
+  position:fixed;bottom:0;left:0;right:0;
+  max-width:480px;margin:0 auto;
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-top:1px solid var(--border);
+  display:flex;gap:2px;padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+  z-index:20;box-shadow:0 -10px 30px rgba(0,0,0,.35);
+}
+.navitem{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 2px;border-radius:14px;color:var(--text-faint);font-size:10px;font-weight:700;
+  cursor:pointer;position:relative;transition:background .15s ease, color .15s ease;
+}
+.navitem.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);}
+.navitem .navicon{font-size:19px;transition:transform .15s ease;display:block;}
+.navitem.active .navicon{transform:translateY(-1px);}
+.navitem .navbadge{
+  position:absolute;top:0;right:16%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--surface);
+}
+
+/* ---------- Misc components ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:12px;
+  background:var(--surface2);color:var(--text-dim);font-size:13px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);transition:all .15s ease;
+}
+.chip.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;background:var(--surface2);padding:5px;border-radius:15px;border:1px solid var(--border);}
+.chip-row .chip{flex:1;text-align:center;border:none;background:transparent;justify-content:center;}
+.chip-row .chip.selected{box-shadow:var(--shadow-sm);}
+.service-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);border-radius:var(--radius);padding:14px 15px;margin-bottom:9px;
+  border:1.5px solid var(--border);cursor:pointer;transition:border-color .15s ease, background .15s ease;
+}
+.service-item.selected{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--surface2));}
+.service-item .info b{display:block;font-size:14.5px;font-weight:700;}
+.service-item .info span{font-size:12px;color:var(--text-dim);}
+.service-item .price{font-weight:800;color:var(--primary);font-size:14.5px;}
+.checkbox-dot{
+  width:21px;height:21px;border-radius:7px;border:1.5px solid var(--border-strong);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;
+  transition:all .15s ease;
+}
+.service-item.selected .checkbox-dot{background:var(--primary);border-color:var(--primary);color:#1a1408;font-weight:800;font-size:13px;}
+.stars-display{display:inline-flex;gap:1px;}
+.stars-display .st{font-size:14px;color:var(--border-strong);}
+.stars-display .st.on{color:var(--primary);}
+.star-picker{display:flex;gap:10px;justify-content:center;margin:16px 0 4px;}
+.star-picker .st{font-size:36px;cursor:pointer;color:var(--border-strong);transition:transform .1s ease, color .15s ease;}
+.star-picker .st.on{color:var(--primary);}
+.star-picker .st:active{transform:scale(.88);}
+.rating-summary-card{display:flex;align-items:center;gap:16px;text-align:left;}
+.rating-summary-card .avg{font-size:32px;font-weight:800;color:var(--primary);line-height:1;}
+.rating-summary-card .avg-wrap{flex-shrink:0;text-align:center;}
+.rating-summary-card .count{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+.review-card{
+  background:var(--surface2);border-radius:var(--radius);padding:14px 15px;margin-bottom:9px;
+  border:1.5px solid var(--border);
+}
+.review-card .rtop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
+.review-card .rname{font-weight:700;font-size:14px;}
+.review-card .rdate{font-size:11px;color:var(--text-faint);white-space:nowrap;}
+.review-card .rcomment{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:5px;}
+.reviews-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -1px;scrollbar-width:thin;}
+.reviews-carousel .review-card{flex:0 0 84%;scroll-snap-align:start;margin-bottom:0;}
+.reviews-carousel::-webkit-scrollbar{height:5px;}
+.reviews-carousel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px;}
+.service-icon-wrap{
+  width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--primary) 13%,transparent);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:13px;font-size:19px;
+}
+/* ---------- Carrossel de serviços (cliente) ---------- */
+.services-carousel{
+  display:flex;gap:11px;overflow-x:auto;padding:4px 2px 14px;margin:0 -2px;
+  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+}
+.services-carousel::-webkit-scrollbar{display:none;}
+.service-card-h{
+  scroll-snap-align:start;flex-shrink:0;width:114px;position:relative;
+  background:var(--surface2);border-radius:var(--radius);padding:15px 11px;text-align:center;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s ease;
+}
+.service-card-h.selected{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--surface2));box-shadow:var(--shadow-sm);}
+.service-card-h .service-icon-wrap{margin:0 auto 10px;width:48px;height:48px;}
+.service-card-h b{display:block;font-size:12.5px;line-height:1.3;margin-bottom:4px;font-weight:700;}
+.service-card-h .price{display:block;font-size:12.5px;color:var(--primary);font-weight:800;}
+.service-card-h .check-dot{
+  position:absolute;top:8px;right:8px;width:19px;height:19px;border-radius:50%;
+  background:var(--primary);color:#1a1408;font-size:11px;font-weight:800;
+  display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);
+}
+.service-card-h.selected .check-dot{display:flex;}
+/* ---------- Seletor de ícone (modal serviço) ---------- */
+.icon-picker-grid{
+  display:flex;gap:9px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch;
+}
+.icon-picker-grid::-webkit-scrollbar{display:none;}
+.icon-picker-item{
+  width:48px;height:48px;border-radius:13px;background:var(--surface2);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s ease;
+}
+.icon-picker-item.selected{border-color:var(--primary);color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);}
+/* ---------- Upload de imagem do serviço ---------- */
+.img-upload-box{
+  display:flex;align-items:center;gap:13px;background:var(--surface2);border-radius:var(--radius);
+  padding:11px;border:1.5px dashed var(--border-strong);cursor:pointer;
+}
+.img-upload-box .thumb{
+  width:52px;height:52px;border-radius:11px;object-fit:cover;flex-shrink:0;background:var(--surface);
+}
+.img-upload-box .placeholder{
+  width:52px;height:52px;border-radius:11px;background:var(--surface);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:20px;
+}
+.img-upload-box .txt{flex:1;font-size:13px;color:var(--text-dim);}
+.img-upload-box .txt b{display:block;color:var(--text);font-size:13.5px;margin-bottom:2px;}
+.img-remove-btn{color:var(--danger);font-size:12.5px;font-weight:700;background:none;border:none;padding:6px 4px;cursor:pointer;}
+.appt-card{
+  background:var(--surface2);border-radius:var(--radius);padding:15px;margin-bottom:10px;
+  border:1px solid var(--border);border-left:4px solid var(--primary);
+}
+.appt-card.pending{border-left-color:var(--warning);}
+.appt-card.accepted{border-left-color:var(--success);}
+.appt-card.rejected{border-left-color:var(--danger);opacity:.55;}
+.appt-card.cancelled{border-left-color:var(--text-dim);opacity:.55;}
+.appt-card.done{border-left-color:#6a8fd8;opacity:.7;}
+.appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:8px;}
+.appt-top b{font-size:15px;font-weight:800;}
+.status-tag{font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.status-tag.pending{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning);}
+.status-tag.accepted{background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);}
+.status-tag.rejected{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger);}
+.status-tag.cancelled{background:color-mix(in srgb,var(--text-dim) 18%,transparent);color:var(--text-dim);}
+.payment-row{display:flex;gap:8px;margin-top:11px;}
+.payment-row .btn{flex:1;}
+.payment-tag{font-size:12px;color:var(--text-dim);margin-top:8px;}
+.status-tag.done{background:rgba(106,143,216,.18);color:#6a8fd8;}
+.appt-meta{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
+.appt-services{font-size:12.5px;color:var(--text-dim);}
+.appt-total{font-weight:800;color:var(--primary);font-size:14.5px;margin-top:7px;}
+.empty-state{text-align:center;padding:52px 20px;color:var(--text-dim);}
+.empty-state .em{font-size:40px;margin-bottom:12px;}
+.client-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);padding:13px 15px;border-radius:var(--radius);margin-bottom:9px;
+  border:1px solid var(--border);
+}
+.client-item .avatar{
+  width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  display:flex;align-items:center;justify-content:center;font-weight:800;margin-right:12px;flex-shrink:0;
+}
+.client-row{display:flex;align-items:center;flex:1;min-width:0;}
+.client-info b{display:block;font-size:14px;font-weight:700;}
+.client-info span{font-size:11.5px;color:var(--text-dim);}
+.dot-status{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-status.dentro{background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 20%,transparent);}
+.dot-status.fora{background:var(--text-faint);}
+.hscroll{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;}
+.hscroll::-webkit-scrollbar{height:6px;}
+.hscroll::-webkit-scrollbar-track{background:transparent;}
+.hscroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:10px;}
+.hscroll>*{flex:0 0 auto;scroll-snap-align:start;margin-bottom:0 !important;}
+.hscroll .empty-state{flex:0 0 88%;}
+.hscroll .appt-card{width:82vw;max-width:320px;padding:22px;}
+.hscroll .appt-top b{font-size:16.5px;}
+.hscroll .appt-meta{font-size:14px;}
+.hscroll .appt-services{font-size:13.5px;}
+.hscroll .appt-total{font-size:16px;}
+.hscroll .client-item{width:72vw;max-width:270px;padding:20px;}
+.hscroll .client-item .avatar{width:48px;height:48px;font-size:17px;}
+.hscroll .client-info b{font-size:15.5px;}
+.hscroll .client-info span{font-size:12.5px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
+.stat-box{background:var(--surface);border-radius:var(--radius-lg);padding:17px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.stat-box .num{font-size:25px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
+.stat-box .lbl{font-size:11.5px;color:var(--text-dim);margin-top:3px;font-weight:600;}
+.day-toggle-row{display:flex;gap:7px;flex-wrap:wrap;}
+.day-toggle{
+  width:43px;height:43px;border-radius:13px;background:var(--surface2);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;
+  border:1.5px solid var(--border);transition:all .15s ease;
+}
+.day-toggle.on{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;border-color:transparent;box-shadow:var(--shadow-sm);}
+.section-title{font-size:12.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin:26px 0 12px;}
+.section-title:first-child{margin-top:0;}
+.link-box{
+  display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:13px;padding:13px 15px;
+  border:1px solid var(--border);
+}
+.link-box code{flex:1;font-size:15px;font-weight:800;color:var(--primary);letter-spacing:1.5px;word-break:break-all;}
+.toast{
+  position:fixed;bottom:104px;left:50%;transform:translateX(-50%);
+  background:var(--surface3);color:var(--text);padding:13px 22px;border-radius:14px;
+  font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:100;opacity:0;transition:opacity .25s,bottom .25s;
+  pointer-events:none;max-width:90%;text-align:center;border:1px solid var(--border-strong);
+}
+.toast.show{opacity:1;bottom:120px;}
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(2px);display:none;align-items:flex-end;justify-content:center;z-index:50;
+}
+.modal-overlay.active{display:flex;}
+.modal-sheet{
+  background:var(--surface);border-radius:26px 26px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+  width:100%;max-width:480px;max-height:85vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.2,.9,.3,1);
+  border-top:1px solid var(--border-strong);box-shadow:var(--shadow-lg);
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:none;opacity:1;}}
+.modal-sheet h3{margin-top:0;font-weight:800;font-size:17px;}
+.close-x{position:absolute;top:18px;right:20px;font-size:18px;color:var(--text-dim);cursor:pointer;
+  width:32px;height:32px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;}
+.hero-mini{padding:18px 0 10px;}
+.shop-banner{
+  border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;
+  box-shadow:0 16px 36px -14px color-mix(in srgb,var(--primary) 60%,transparent);
+}
+.shop-banner h2{margin:0 0 3px;font-size:21px;font-weight:800;letter-spacing:-.3px;}
+.shop-banner p{margin:0;font-size:13px;opacity:.85;font-weight:600;}
+.shop-banner .badge-line{margin-top:13px;font-size:12.5px;font-weight:800;background:rgba(0,0,0,.16);
+  display:inline-block;padding:6px 13px;border-radius:20px;}
+.location-bar{
+  display:flex;align-items:center;gap:13px;padding:14px 15px;margin-bottom:16px;
+  border-radius:var(--radius-lg);cursor:pointer;text-decoration:none;
+  background:linear-gradient(160deg,var(--surface),color-mix(in srgb,var(--surface) 78%,var(--surface2)) 130%);
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);
+  transition:transform .12s ease, border-color .15s ease, background .15s ease;
+}
+.location-bar:active{transform:scale(.98);background:var(--surface2);}
+.location-bar .loc-icon{
+  width:42px;height:42px;border-radius:13px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  box-shadow:0 10px 22px -9px color-mix(in srgb,var(--primary) 65%,transparent);
+}
+.location-bar .loc-text{flex:1;min-width:0;}
+.location-bar .loc-label{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-faint);}
+.location-bar .loc-address{margin-top:4px;}
+.location-bar .loc-address .addr-row{display:flex;gap:6px;font-size:13px;line-height:1.5;}
+.location-bar .loc-address .addr-row+.addr-row{margin-top:1px;}
+.location-bar .loc-address .addr-row .addr-k{color:var(--text-faint);font-weight:700;flex-shrink:0;}
+.location-bar .loc-address .addr-row .addr-v{color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.location-bar .loc-arrow{font-size:20px;color:var(--primary);flex-shrink:0;font-weight:700;}
+.list-select-item{
+  display:flex;justify-content:space-between;align-items:center;background:var(--surface2);
+  border-radius:var(--radius);padding:15px;margin-bottom:9px;cursor:pointer;border:1px solid var(--border);
+  transition:border-color .15s ease;
+}
+.list-select-item b{font-size:14.5px;font-weight:700;}
+.list-select-item span{font-size:12px;color:var(--text-dim);}
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.helper-text{font-size:12px;color:var(--text-faint);margin-top:6px;line-height:1.6;}
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px;}
+.slot-btn{
+  padding:12px 4px;border-radius:12px;background:var(--surface2);color:var(--text);
+  text-align:center;font-size:13.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);
+  transition:all .15s ease;
+}
+.slot-btn.selected{border-color:var(--primary);color:#1a1408;background:var(--primary);box-shadow:var(--shadow-sm);}
+.slot-btn.taken{opacity:.3;pointer-events:none;text-decoration:line-through;}
+.period-row{display:flex;gap:10px;margin:9px 0 14px;}
+.period-banner{
+  flex:1;padding:14px 6px 12px;border-radius:14px;background:var(--surface2);
+  border:1.5px solid var(--border);text-align:center;cursor:pointer;
+  transition:all .15s ease;
+}
+.period-banner .picon{font-size:20px;display:block;margin-bottom:4px;filter:grayscale(.4);opacity:.7;transition:all .15s ease;}
+.period-banner .plabel{font-size:12px;font-weight:800;color:var(--text-dim);letter-spacing:.2px;}
+.period-banner.active{
+  border-color:var(--primary);
+  background:color-mix(in srgb, var(--primary) 16%, var(--surface2));
+  box-shadow:0 0 0 1px var(--primary), 0 0 16px 2px color-mix(in srgb, var(--primary) 55%, transparent);
+}
+.period-banner.active .picon{filter:none;opacity:1;}
+.period-banner.active .plabel{color:var(--primary);}
+
+/* ---------- Auth / onboarding / gold ---------- */
+.auth-link{text-align:center;font-size:13px;color:var(--text-dim);margin-top:18px;}
+.auth-link b{color:var(--primary);cursor:pointer;font-weight:800;}
+.error-text{color:var(--danger);font-size:12.5px;margin-top:8px;line-height:1.5;display:none;}
+.error-text.show{display:block;}
+.onb-step{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+.onb-num{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
+.onb-step h4{margin:2px 0 4px;font-size:14.5px;font-weight:800;}
+.onb-step p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+.gold-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#1a1408;font-size:11px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;}
+.trial-pill{display:flex;align-items:center;justify-content:space-between;background:#2a2210;color:#e0b84a;border-radius:14px;padding:11px 15px;margin-bottom:14px;font-size:12.5px;font-weight:700;gap:10px;}
+.trial-pill button{flex-shrink:0;}
+.spinner{width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--primary);animation:spin .7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- Notificações ---------- */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;position:absolute;}
+.switch .slider{position:absolute;inset:0;background:var(--surface3);border-radius:26px;cursor:pointer;border:1px solid var(--border-strong);transition:background .18s ease;}
+.switch .slider:before{content:'';position:absolute;height:19px;width:19px;left:2.5px;top:2.5px;background:#fff;border-radius:50%;transition:transform .18s ease;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.switch input:checked + .slider{background:var(--primary);border-color:transparent;}
+.switch input:checked + .slider:before{transform:translateX(20px);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row .label{font-size:13.5px;font-weight:700;}
+.settings-row .desc{font-size:11.5px;color:var(--text-faint);margin-top:2px;line-height:1.4;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--surface2);outline:none;margin:6px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);}
+.notif-banner{
+  position:fixed;top:-140px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 24px);max-width:456px;
+  background:linear-gradient(160deg,var(--surface2),var(--surface3));
+  border:1px solid var(--border-strong);border-radius:var(--radius-lg);
+  padding:14px;display:flex;align-items:flex-start;gap:12px;
+  box-shadow:var(--shadow-lg);
+  z-index:1200;transition:top .35s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+}
+.notif-banner.show{top:calc(12px + env(safe-area-inset-top));}
+.notif-banner .nb-icon{width:38px;height:38px;border-radius:12px;background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.notif-banner .nb-text{flex:1;min-width:0;}
+.notif-banner .nb-title{font-weight:800;font-size:14px;margin-bottom:2px;}
+.notif-banner .nb-body{font-size:12.5px;color:var(--text-dim);line-height:1.4;}
+.notif-banner .nb-close{color:var(--text-faint);font-size:13px;padding:2px;flex-shrink:0;}
+.sound-chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ WELCOME ============ -->
+  <div class="screen" id="screen-welcome">
+    <div class="hero">
+      <div class="logo-circle">✂️</div>
+      <h1>BarberFlow</h1>
+      <p>Painel profissional de gestão<br>para a sua barbearia</p>
+    </div>
+    <div class="container stack">
+      <button class="btn btn-primary" onclick="openLoginScreen()">Entrar</button>
+      <button class="btn btn-outline" onclick="openSignupScreen()">Criar minha conta grátis</button>
+    </div>
+    <div class="container">
+      <div class="helper-text" style="text-align:center;margin-top:22px;">Teste grátis por 14 dias. Depois, continue com a versão <b style="color:var(--primary);">Gold</b> ilimitada.</div>
+    </div>
+    <div style="text-align:center;color:var(--text-dim);font-size:11.5px;margin-top:24px;letter-spacing:.3px;">app by Daniel Nogueira</div>
+  </div>
+
+  <!-- ============ LOGIN ============ -->
+  <div class="screen" id="screen-login">
+    <div class="topbar">
+      <h1>Entrar</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+    </div>
+    <div class="container stack">
+      <label>E-mail</label>
+      <input type="text" id="login-email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <label>Senha</label>
+      <input type="text" id="login-password" placeholder="Sua senha" autocomplete="current-password" style="-webkit-text-security:disc;text-security:disc;">
+      <div class="error-text" id="login-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="loginBarber()">Entrar</button>
+      <div class="auth-link"><b onclick="openForgotScreen()">Esqueci minha senha</b></div>
+      <div class="auth-link">Ainda não tem conta? <b onclick="openSignupScreen()">Criar conta</b></div>
+    </div>
+  </div>
+
+  <!-- ============ SIGNUP ============ -->
+  <div class="screen" id="screen-signup">
+    <div class="topbar">
+      <h1>Criar conta</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="helper-text" style="margin-top:0;">Seus 14 dias de teste grátis começam assim que você criar a conta.</div>
+      <label>Nome da barbearia</label>
+      <input type="text" id="signup-shop-name" placeholder="Ex: Barbearia Estilo">
+      <label>Seu nome (barbeiro)</label>
+      <input type="text" id="signup-barber-name" placeholder="Ex: João Silva">
+      <label>Cor principal do seu app</label>
+      <input type="color" id="signup-color" value="#c9a24d">
+      <label>E-mail</label>
+      <input type="text" id="signup-email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <label>Senha</label>
+      <input type="text" id="signup-password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;">
+      <label>Confirmar senha</label>
+      <input type="text" id="signup-password2" placeholder="Repita a senha" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;">
+      <div class="error-text" id="signup-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" id="signup-btn" onclick="signupBarber()">Criar conta e começar teste grátis</button>
+      <div class="auth-link">Já tem conta? <b onclick="openLoginScreen()">Entrar</b></div>
+    </div>
+  </div>
+
+  <!-- ============ FORGOT PASSWORD ============ -->
+  <div class="screen" id="screen-forgot">
+    <div class="topbar">
+      <h1>Recuperar senha</h1>
+      <div class="icon-btn" onclick="showScreen('screen-login')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="helper-text" style="margin-top:0;">Digite seu e-mail. Vamos enviar um link para você redefinir sua senha.</div>
+      <label>E-mail</label>
+      <input type="text" id="forgot-email" placeholder="seuemail@exemplo.com">
+      <div class="error-text" id="forgot-error"></div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" onclick="sendPasswordReset()">Enviar link de recuperação</button>
+    </div>
+  </div>
+
+  <!-- ============ ONBOARDING (tutorial primeira vez do barbeiro) ============ -->
+  <div class="screen" id="screen-onboarding-barber">
+    <div class="topbar">
+      <div>
+        <h1>Bem-vindo(a)! 🎉</h1>
+        <div class="sub">Veja como usar o BarberFlow</div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="onb-step">
+        <div class="onb-num">1</div>
+        <div><h4>Cadastre seus serviços</h4><p>Vá na aba <b>Serviços</b> e adicione cada corte, barba ou combo que você oferece, com nome, preço e ícone.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">2</div>
+        <div><h4>Configure seus horários</h4><p>Na aba <b>Horários</b>, escolha os dias que você atende e cadastre os horários disponíveis para agendamento.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">3</div>
+        <div><h4>Compartilhe seu link</h4><p>Em <b>⚙️ Configurações</b>, copie seu código ou compartilhe o link direto no WhatsApp Status para seus clientes agendarem.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">4</div>
+        <div><h4>Gerencie seus agendamentos</h4><p>Toda solicitação de horário chega na aba <b>Agenda</b>. Você aceita, recusa e confirma pagamentos por lá.</p></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-num">5</div>
+        <div><h4>Teste grátis de 14 dias</h4><p>Use o app sem limites por 14 dias. Depois, para continuar, é só adquirir a versão <b style="color:var(--primary);">Gold</b> ilimitada.</p></div>
+      </div>
+      <div style="height:6px"></div>
+      <button class="btn btn-primary" onclick="finishOnboarding()">Entendi, vamos começar!</button>
+    </div>
+  </div>
+
+  <!-- ============ BARBER DASHBOARD ============ -->
+  <div class="screen" id="screen-barber-dashboard">
+    <div class="topbar">
+      <div>
+        <h1 id="dash-shop-name">Barbearia</h1>
+        <div class="sub" id="dash-barber-name">Barbeiro</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="icon-btn" onclick="showScreen('screen-barber-config')">⚙️</div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="trial-pill" id="trial-banner" style="display:none;">
+        <span id="trial-days-text">Teste grátis</span>
+        <button class="btn btn-sm btn-primary" onclick="showScreen('screen-plans')">Virar Gold</button>
+      </div>
+      <!-- TAB: AGENDA -->
+      <div id="tab-agenda">
+        <div class="stat-grid">
+          <div class="stat-box"><div class="num" id="stat-pending">0</div><div class="lbl">Pedidos pendentes</div></div>
+          <div class="stat-box"><div class="num" id="stat-today">0</div><div class="lbl">Agendados hoje</div></div>
+        </div>
+        <div class="section-title">Pagamentos aguardando confirmação</div>
+        <div id="list-pending-payments"></div>
+        <div class="section-title">Solicitações pendentes</div>
+        <div id="list-pending"></div>
+        <div class="section-title">Próximos agendamentos</div>
+        <div id="list-accepted"></div>
+        <div class="section-title">Histórico</div>
+        <div id="list-history" class="hscroll"></div>
+        <button class="btn btn-outline" onclick="clearBarberHistory()" style="margin-top:4px;">Apagar histórico</button>
+      </div>
+
+      <!-- TAB: CLIENTES -->
+      <div id="tab-clientes" style="display:none;">
+        <div class="stat-grid">
+          <div class="stat-box"><div class="num" id="stat-total-clients">0</div><div class="lbl">Clientes cadastrados</div></div>
+          <div class="stat-box"><div class="num" id="stat-in">0</div><div class="lbl">Na barbearia agora</div></div>
+        </div>
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip selected" data-csub="ativos" onclick="setClientsSubView('ativos')">Ativos</div>
+          <div class="chip" data-csub="banidos" onclick="setClientsSubView('banidos')">🚫 Banidos<span id="banned-count-chip"></span></div>
+        </div>
+        <div class="section-title" id="clients-list-title">Lista de clientes</div>
+        <div id="list-clients" class="hscroll"></div>
+      </div>
+
+      <!-- TAB: SERVIÇOS -->
+      <div id="tab-servicos" style="display:none;">
+        <div class="section-title">Seus serviços</div>
+        <div id="list-services"></div>
+        <button class="btn btn-outline" onclick="openServiceModal()">+ Adicionar serviço</button>
+      </div>
+
+      <!-- TAB: FATURAMENTO -->
+      <div id="tab-faturamento" style="display:none;">
+        <div class="card" style="text-align:center;">
+          <div class="lbl" style="color:var(--text-dim);font-size:12px;margin-bottom:4px;">Total já faturado (tudo)</div>
+          <div style="font-size:27px;font-weight:800;color:var(--primary);" id="finance-alltime-total">R$ 0,00</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px;" id="finance-alltime-count">0 atendimentos</div>
+        </div>
+
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip selected" data-view="dia" onclick="setFinanceView('dia')">Dia</div>
+          <div class="chip" data-view="semana" onclick="setFinanceView('semana')">Semana</div>
+          <div class="chip" data-view="mes" onclick="setFinanceView('mes')">Mês</div>
+          <div class="chip" data-view="ano" onclick="setFinanceView('ano')">Ano</div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;">
+            <div class="icon-btn" onclick="financeNav(-1)">‹</div>
+            <div style="text-align:center;flex:1;min-width:0;">
+              <div style="font-size:13.5px;font-weight:700;" id="finance-period-label">-</div>
+            </div>
+            <div class="icon-btn" id="finance-next-btn" onclick="financeNav(1)">›</div>
+          </div>
+          <div class="stat-grid" style="margin-bottom:0;">
+            <div class="stat-box"><div class="num" id="finance-period-total" style="font-size:19px;">R$ 0,00</div><div class="lbl">Faturado no período</div></div>
+            <div class="stat-box"><div class="num" id="finance-period-count">0</div><div class="lbl">Atendimentos</div></div>
+          </div>
+        </div>
+
+        <div class="section-title">Atendimentos do período</div>
+        <div id="finance-period-list" class="hscroll"></div>
+      </div>
+
+      <!-- TAB: AVALIAÇÕES -->
+      <div id="tab-avaliacoes" style="display:none;">
+        <div class="card rating-summary-card" id="barber-rating-summary">
+          <div class="avg-wrap">
+            <div class="avg" id="barber-rating-avg">–</div>
+            <div class="stars-display" id="barber-rating-stars"></div>
+          </div>
+          <div class="count" id="barber-rating-count">Ainda sem avaliações</div>
+        </div>
+        <div class="section-title">O que os clientes disseram</div>
+        <div id="list-reviews"></div>
+      </div>
+
+      <!-- TAB: HORÁRIOS -->
+      <div id="tab-horarios" style="display:none;">
+        <div class="card">
+          <h3>📅 Dias de atendimento</h3>
+          <div class="day-toggle-row" id="workdays-row"></div>
+        </div>
+        <div class="card">
+          <h3>🕒 Horários disponíveis</h3>
+          <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Adicione manualmente cada horário que você quer disponibilizar. Só esses horários vão aparecer para o cliente.</div>
+          <div id="worktimes-list"></div>
+          <div class="row" style="margin-top:12px;">
+            <input type="time" id="new-work-time" style="flex:1;">
+            <button class="btn btn-primary" style="flex:none;" onclick="addWorkTime()">+ Adicionar</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🚫 Dias sem atendimento</h3>
+          <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Marque um dia específico que você não vai trabalhar (feriado, folga, viagem...). Ele aparece em vermelho para o cliente.</div>
+          <div id="daysoff-list"></div>
+          <label>Data</label>
+          <input type="date" id="new-dayoff-date">
+          <label>Descrição curta</label>
+          <input type="text" id="new-dayoff-reason" placeholder="Ex: Feriado" maxlength="30">
+          <div style="height:10px"></div>
+          <button class="btn btn-outline" onclick="addDayOff()">+ Adicionar dia sem atendimento</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottomnav">
+      <div class="navitem active" data-tab="agenda" onclick="switchTab('agenda')">
+        <div class="navicon">📅</div>Agenda
+        <div class="navbadge" id="nav-badge" style="display:none;">0</div>
+      </div>
+      <div class="navitem" data-tab="clientes" onclick="switchTab('clientes')"><div class="navicon">👥</div>Clientes</div>
+      <div class="navitem" data-tab="servicos" onclick="switchTab('servicos')"><div class="navicon">💈</div>Serviços</div>
+      <div class="navitem" data-tab="horarios" onclick="switchTab('horarios')"><div class="navicon">🕒</div>Horários</div>
+      <div class="navitem" data-tab="faturamento" onclick="switchTab('faturamento')"><div class="navicon">💰</div>Faturamento</div>
+      <div class="navitem" data-tab="avaliacoes" onclick="switchTab('avaliacoes')"><div class="navicon">⭐</div>Avaliações</div>
+      <div class="navitem" id="nav-preview-toggle" onclick="toggleClientPreview()"><div class="navicon">👁️</div>Ver cliente</div>
+    </div>
+  </div>
+
+  <!-- ============ TRIAL EXPIRADO / GOLD ============ -->
+  <div class="screen" id="screen-trial-expired">
+    <div class="hero" style="padding-top:56px;">
+      <div class="logo-circle">🔒</div>
+      <h1 id="gold-title">Seu teste grátis acabou</h1>
+      <p id="gold-subtitle">Você aproveitou os 14 dias de teste do BarberFlow. Para continuar usando o app sem limites, escolha um plano Gold.</p>
+    </div>
+    <div class="container stack">
+      <button class="btn btn-primary" onclick="showScreen('screen-plans')">💎 Ver planos Gold</button>
+      <div class="card" style="margin-top:6px;">
+        <h3>🔑 Já comprou? Ative seu código</h3>
+        <label>Código de ativação Gold</label>
+        <input type="text" id="gold-redeem-code" placeholder="Ex: GOLD-XXXX" style="text-transform:uppercase;">
+        <div class="error-text" id="gold-redeem-error"></div>
+        <div style="height:8px"></div>
+        <button class="btn btn-success" onclick="redeemGoldCode()">Ativar versão Gold</button>
+      </div>
+      <button class="btn btn-ghost" onclick="logoutBarber()">Sair da conta</button>
+    </div>
+  </div>
+
+  <!-- ============ TELA DE PLANOS GOLD ============ -->
+  <div class="screen" id="screen-plans">
+    <div class="topbar">
+      <h1>Planos Gold</h1>
+      <div class="icon-btn" onclick="closePlansScreen()">←</div>
+    </div>
+    <div class="container stack" style="padding-bottom:32px;">
+      <p class="helper-text" style="margin-top:0;">Escolha o plano ideal pra sua barbearia. Quanto maior o período, maior o desconto.</p>
+      <div id="plans-list" class="stack"></div>
+      <div class="card" style="margin-top:6px;">
+        <h3>🔑 Já comprou? Ative seu código</h3>
+        <label>Código de ativação Gold</label>
+        <input type="text" id="gold-redeem-code-plans" placeholder="Ex: GOLD-XXXX" style="text-transform:uppercase;">
+        <div class="error-text" id="gold-redeem-error-plans"></div>
+        <div style="height:8px"></div>
+        <button class="btn btn-success" onclick="redeemGoldCode('gold-redeem-code-plans','gold-redeem-error-plans')">Ativar versão Gold</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BARBER CONFIG (customize + link) ============ -->
+  <div class="screen" id="screen-barber-config">
+    <div class="topbar">
+      <h1>Configurações</h1>
+      <div class="icon-btn" onclick="showScreen('screen-barber-dashboard')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="card">
+        <h3>🔗 Link para clientes</h3>
+        <div class="link-box">
+          <code id="config-code">------</code>
+          <button class="btn btn-sm btn-ghost" onclick="copyCode()">Copiar</button>
+        </div>
+        <div class="helper-text">Código da sua conta. Use se preferir pedir pro cliente digitar na mão.</div>
+        <div style="height:6px"></div>
+        <div class="link-box">
+          <code id="config-full-link" style="word-break:break-all;">------</code>
+          <button class="btn btn-sm btn-ghost" onclick="copyFullClientLink()">Copiar link</button>
+        </div>
+        <div class="helper-text" style="margin-top:0;">Seu link pronto — já com seu código incluso. É só copiar e enviar (Instagram, WhatsApp, cartão, etc).</div>
+        <div class="divider"></div>
+        <label>Link do app do cliente</label>
+        <input type="text" id="config-client-url" oninput="refreshFullClientLink()" placeholder="Ex: https://seusite.com/cliente.html">
+        <div class="helper-text" style="margin-top:0;">Endereço onde o app do cliente está publicado na internet. É a partir dele que o link pronto acima é montado.</div>
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="shareClientLink()">📲 Compartilhar no WhatsApp (Status)</button>
+        <div class="helper-text" style="margin-top:8px;">Vai abrir o menu de compartilhar do seu celular — escolha <b>WhatsApp → Status</b>. Quando o cliente tocar no link, o app dele já abre pronto, com seu código preenchido, e um aviso pra adicionar o ícone na tela inicial.</div>
+      </div>
+      <div class="card">
+        <h3>🎨 Personalização</h3>
+        <label>Nome da barbearia</label>
+        <input type="text" id="config-shop-name">
+        <label>Nome do barbeiro</label>
+        <input type="text" id="config-barber-name">
+        <label>Mensagem de boas-vindas (aparece pro cliente)</label>
+        <textarea id="config-welcome-msg" rows="2" placeholder="Ex: Bem-vindo! Marque seu horário 💈"></textarea>
+        <label>Cor principal</label>
+        <input type="color" id="config-color">
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveShopConfig()">Salvar personalização</button>
+      </div>
+      <div class="card">
+        <h3>🎨 Fundo e aparência</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Personalize as cores e a fonte do app. Seus clientes veem a mesma aparência assim que você salvar.</div>
+        <label>Fundo do app</label>
+        <div class="chip-row" style="margin-bottom:12px;">
+          <div class="chip" data-bgtype="default" onclick="setBgType('default')">Padrão</div>
+          <div class="chip" data-bgtype="color" onclick="setBgType('color')">Cor</div>
+          <div class="chip" data-bgtype="image" onclick="setBgType('image')">Imagem</div>
+        </div>
+        <div id="config-bg-color-row" style="display:none;">
+          <label>Cor de fundo</label>
+          <input type="color" id="config-bg-color">
+        </div>
+        <div id="config-bg-image-row" style="display:none;">
+          <label>Imagem de fundo</label>
+          <div id="config-bg-image-preview-wrap"></div>
+          <input type="file" id="config-bg-image-input" accept="image/*" style="display:none" onchange="onBgImageSelected(event)">
+        </div>
+        <div class="divider"></div>
+        <label>Cor das letras</label>
+        <input type="color" id="config-text-color">
+        <label>Cor dos quadrados</label>
+        <input type="color" id="config-card-color">
+        <label>Cor dos avisos e títulos (textos apagados)</label>
+        <input type="color" id="config-dim-text-color">
+        <div class="helper-text" style="margin-top:0;">Controla textos como "Nenhum agendamento", títulos de seção e avisos — que por padrão são mais claros/apagados e podem ficar difíceis de ler dependendo da imagem de fundo.</div>
+        <label>Estilo das letras</label>
+        <div class="chip-row" style="margin-bottom:4px;">
+          <div class="chip" data-font="padrao" onclick="setFontStyle('padrao')">Padrão</div>
+          <div class="chip" data-font="moderna" onclick="setFontStyle('moderna')">Moderna</div>
+          <div class="chip" data-font="elegante" onclick="setFontStyle('elegante')">Elegante</div>
+          <div class="chip" data-font="divertida" onclick="setFontStyle('divertida')">Divertida</div>
+        </div>
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveBackgroundConfig()">Salvar aparência</button>
+      </div>
+      <div class="card">
+        <h3>📍 Localização</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Esse endereço aparece em destaque no topo do app do seu cliente, com um botão para abrir direto no mapa. Preencha só os campos que quiser — todos são opcionais.</div>
+        <label>Cidade</label>
+        <input type="text" id="config-addr-cidade" placeholder="Ex: São Paulo - SP">
+        <label>Rua</label>
+        <input type="text" id="config-addr-rua" placeholder="Ex: Rua das Flores">
+        <label>Bairro</label>
+        <input type="text" id="config-addr-bairro" placeholder="Ex: Centro">
+        <label>Número</label>
+        <input type="text" id="config-addr-numero" placeholder="Ex: 123">
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveShopConfig()">Salvar localização</button>
+      </div>
+      <div class="card">
+        <h3>💳 Pagamento via Pix</h3>
+        <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Cadastre sua chave ou código Pix copia e cola. O cliente poderá pagar antecipado direto pelo app.</div>
+        <label>Código Pix (copia e cola) ou chave</label>
+        <textarea id="config-pix-code" rows="3" placeholder="Cole aqui seu código Pix copia e cola, ou sua chave (CPF, e-mail, telefone...)"></textarea>
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" onclick="saveShopConfig()">Salvar Pix</button>
+      </div>
+      <div class="card">
+        <h3>🔔 Notificações</h3>
+        <div class="settings-row">
+          <div>
+            <div class="label">Ativar notificações</div>
+            <div class="desc">Som e aviso na tela para agendamentos e pagamentos</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="notif-master-toggle-barber" onchange="toggleNotifMaster('barber',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="divider"></div>
+        <label style="margin-top:0;">Som da notificação</label>
+        <div class="sound-chip-row" id="notif-sound-picker-barber"></div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="testNotifSound('barber')">▶️ Testar som</button>
+        <label>Volume</label>
+        <input type="range" id="notif-volume-barber" min="0" max="1" step="0.05" oninput="setNotifVolume('barber',this.value)">
+        <div class="divider"></div>
+        <label style="margin-top:0;">Avisar sobre</label>
+        <div id="notif-type-toggles-barber"></div>
+        <div class="divider"></div>
+        <div class="settings-row">
+          <div>
+            <div class="label">Notificações do navegador</div>
+            <div class="desc" id="notif-system-status-barber">Receba avisos mesmo com o app em segundo plano</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="notif-system-btn-barber" onclick="requestSystemNotifPermission('barber')">Ativar</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>👤 Minha conta</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;color:var(--text-dim);" id="config-account-email">-</span>
+          <span class="gold-badge" id="config-plan-badge" style="display:none;">✨ Gold</span>
+        </div>
+        <div class="helper-text" id="config-trial-text" style="margin-top:2px;"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
+      <button class="btn btn-outline" onclick="logoutBarber()">Sair da conta</button>
+      <button class="btn btn-danger" onclick="deleteShopConfirm()">Excluir minha conta e barbearia</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT REGISTER ============ -->
+  <div class="screen" id="screen-client-register">
+    <div class="topbar">
+      <h1>Bem-vindo</h1>
+      <div class="icon-btn" onclick="showScreen('screen-welcome')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="helper-text" style="margin-bottom:6px;">Complete seu cadastro para agendar nesta barbearia.</div>
+      <label>Seu nome</label>
+      <input type="text" id="reg-name" placeholder="Nome completo">
+      <label>Seu telefone</label>
+      <input type="tel" id="reg-phone" placeholder="(00) 00000-0000">
+      <div style="height:8px"></div>
+      <button class="btn btn-primary" onclick="registerClient()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT HOME ============ -->
+  <div class="screen" id="screen-client-home">
+    <div id="preview-banner" style="display:none;background:var(--surface2);padding:12px 20px;align-items:center;justify-content:space-between;gap:10px;">
+      <span style="font-size:12.5px;color:var(--text-dim);">👁️ <b style="color:var(--text);">Modo prévia</b> — assim seus clientes veem o app</span>
+      <button class="btn btn-sm btn-primary" style="flex:none;" onclick="exitClientPreview()">Voltar ao painel</button>
+    </div>
+    <div class="topbar">
+      <div>
+        <h1 id="client-shop-name">Barbearia</h1>
+        <div class="sub" id="client-barber-name">Barbeiro</div>
+      </div>
+      <div class="icon-btn" onclick="showScreen('screen-client-settings')">⚙️</div>
+    </div>
+    <div class="container">
+      <a class="location-bar" id="client-location-bar" style="display:none;" href="#" onclick="return openShopLocation();">
+        <div class="loc-icon">📍</div>
+        <div class="loc-text">
+          <div class="loc-label">Localização</div>
+          <div class="loc-address" id="client-location-address"></div>
+        </div>
+        <div class="loc-arrow">›</div>
+      </a>
+      <div class="shop-banner" id="client-banner">
+        <h2 id="client-banner-title">Bem-vindo!</h2>
+        <p id="client-welcome-msg">Marque seu horário</p>
+        <div class="badge-line" id="client-inshop-count" style="display:none;"></div>
+        <div class="badge-line" id="client-next-appt" style="display:none;"></div>
+      </div>
+
+      <div class="section-title">Escolha os serviços</div>
+      <div class="services-carousel" id="client-services-list"></div>
+
+      <div class="card" style="margin-top:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--text-dim);font-size:13px;">Total</span>
+          <span class="appt-total" id="client-total" style="font-size:19px;">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="section-title">Escolha o dia</div>
+      <input type="date" id="client-date" onchange="renderSlots()">
+      <div class="card" id="client-dayoff-banner" style="display:none;margin-top:10px;border-left:4px solid var(--danger);background:rgba(229,72,77,.1);color:var(--danger);"></div>
+
+      <div class="section-title" style="margin-bottom:4px;">Horários disponíveis</div>
+      <div class="period-row" id="client-period-row">
+        <div class="period-banner" id="period-manha" onclick="selectPeriod('manha')">
+          <span class="picon">🌅</span>
+          <span class="plabel">Manhã</span>
+        </div>
+        <div class="period-banner" id="period-tarde" onclick="selectPeriod('tarde')">
+          <span class="picon">☀️</span>
+          <span class="plabel">Tarde</span>
+        </div>
+        <div class="period-banner" id="period-noite" onclick="selectPeriod('noite')">
+          <span class="picon">🌙</span>
+          <span class="plabel">Noite</span>
+        </div>
+      </div>
+      <div class="slot-grid" id="client-slots"></div>
+
+      <div style="height:16px"></div>
+      <button class="btn btn-primary" id="btn-schedule" onclick="submitAppointment()" disabled>Solicitar agendamento</button>
+
+      <div class="section-title">Meus agendamentos</div>
+      <div id="client-my-appts"></div>
+      <button class="btn btn-outline" onclick="clearClientHistory()" style="margin-top:4px;">Apagar histórico</button>
+
+      <div class="section-title">Avaliações</div>
+      <div class="card rating-summary-card" id="client-rating-summary">
+        <div class="avg-wrap">
+          <div class="avg" id="client-rating-avg">–</div>
+          <div class="stars-display" id="client-rating-stars"></div>
+        </div>
+        <div class="count" id="client-rating-count">Ainda sem avaliações</div>
+      </div>
+      <div id="client-reviews-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT SETTINGS ============ -->
+  <div class="screen" id="screen-client-settings">
+    <div class="topbar">
+      <h1>Configurações</h1>
+      <div class="icon-btn" onclick="showScreen('screen-client-home')">←</div>
+    </div>
+    <div class="container stack">
+      <div class="card">
+        <h3>👤 Seus dados</h3>
+        <label>Nome</label>
+        <input type="text" id="client-edit-name">
+        <label>Telefone</label>
+        <input type="tel" id="client-edit-phone">
+        <div style="height:8px"></div>
+        <button class="btn btn-primary" onclick="saveClientProfile()">Salvar</button>
+      </div>
+
+      <div class="card">
+        <h3>🔔 Notificações</h3>
+        <div class="settings-row">
+          <div>
+            <div class="label">Ativar notificações</div>
+            <div class="desc">Som e aviso na tela quando seu agendamento mudar</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="notif-master-toggle-client" onchange="toggleNotifMaster('client',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="divider"></div>
+        <label style="margin-top:0;">Som da notificação</label>
+        <div class="sound-chip-row" id="notif-sound-picker-client"></div>
+        <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="testNotifSound('client')">▶️ Testar som</button>
+        <label>Volume</label>
+        <input type="range" id="notif-volume-client" min="0" max="1" step="0.05" oninput="setNotifVolume('client',this.value)">
+        <div class="divider"></div>
+        <label style="margin-top:0;">Avisar sobre</label>
+        <div id="notif-type-toggles-client"></div>
+        <div class="divider"></div>
+        <div class="settings-row">
+          <div>
+            <div class="label">Notificações do navegador</div>
+            <div class="desc" id="notif-system-status-client">Receba avisos mesmo com o app em segundo plano</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="notif-system-btn-client" onclick="requestSystemNotifPermission('client')">Ativar</button>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
+    </div>
+  </div>
+
+  <!-- ============ CLIENT BANNED ============ -->
+  <div class="screen" id="screen-client-banned">
+    <div class="topbar">
+      <div>
+        <h1>Acesso bloqueado</h1>
+        <div class="sub" id="banned-shop-name">Barbearia</div>
+      </div>
+    </div>
+    <div class="container stack">
+      <div class="card" style="border-left:4px solid var(--danger);background:rgba(229,72,77,.1);">
+        <h3 style="color:var(--danger);margin-bottom:8px;">🚫 Você foi banido(a) desta barbearia</h3>
+        <div class="helper-text" style="margin:0 0 8px;">Banido em <b id="banned-date" style="color:var(--text);"></b></div>
+        <div class="helper-text" style="margin:0;color:var(--text);" id="banned-reason"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-form-card">
+        <h3>📩 Pedir para ser desbanido(a)</h3>
+        <div class="helper-text" style="margin-top:0;">Explique o motivo para o barbeiro reconsiderar o seu caso.</div>
+        <textarea id="banned-appeal-input" rows="4" maxlength="300" placeholder="Escreva sua mensagem..."></textarea>
+        <div style="height:8px"></div>
+        <button class="btn btn-primary" onclick="submitBanAppeal()">Enviar pedido</button>
+      </div>
+
+      <div class="card" id="banned-appeal-pending-card" style="display:none;">
+        <h3>📩 Pedido enviado</h3>
+        <div class="helper-text" style="margin:0 0 6px;">Aguardando resposta do barbeiro:</div>
+        <div class="helper-text" style="color:var(--text);margin:0;" id="banned-appeal-pending-msg"></div>
+      </div>
+
+      <div class="card" id="banned-appeal-rejected-card" style="display:none;">
+        <h3>📩 Pedido recusado</h3>
+        <div class="helper-text" style="margin:0;" id="banned-appeal-rejected-info"></div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="goHomeMenu()">Sair</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="notif-banner" id="notif-banner">
+  <div class="nb-icon" id="notif-banner-icon">🔔</div>
+  <div class="nb-text">
+    <div class="nb-title" id="notif-banner-title"></div>
+    <div class="nb-body" id="notif-banner-body"></div>
+  </div>
+  <div class="nb-close">✕</div>
+</div>
+
+<!-- ============ SERVICE MODAL ============ -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-service')">✕</div>
+    <h3 id="service-modal-title">Novo serviço</h3>
+    <label>Nome do serviço</label>
+    <input type="text" id="svc-name" placeholder="Ex: Corte, Barba, Sobrancelha">
+    <label>Preço (R$)</label>
+    <input type="number" id="svc-price" placeholder="Ex: 35">
+    <label>Ícone do serviço</label>
+    <div class="icon-picker-grid" id="svc-icon-picker"></div>
+    <label>Ou envie uma imagem do corte</label>
+    <div id="svc-image-preview-wrap"></div>
+    <input type="file" id="svc-image-input" accept="image/*" style="display:none" onchange="onServiceImageSelected(event)">
+    <div style="height:14px"></div>
+    <button class="btn btn-primary" onclick="saveService()">Salvar serviço</button>
+    <div id="svc-delete-wrap"></div>
+  </div>
+</div>
+
+<!-- ============ PIX PAYMENT MODAL ============ -->
+<div class="modal-overlay" id="modal-pix">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-pix')">✕</div>
+    <h3>💳 Pagar com Pix</h3>
+    <div style="text-align:center;margin:14px 0;">
+      <img id="pix-qr-img" src="" alt="QR Code Pix" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;">
+    </div>
+    <label>Código Pix (copia e cola)</label>
+    <div class="link-box">
+      <code id="pix-code-text" style="font-size:12px;">------</code>
+      <button class="btn btn-sm btn-ghost" onclick="copyPixCode()">Copiar</button>
+    </div>
+    <div class="helper-text">Depois de pagar, confirme abaixo para o barbeiro saber que já recebeu.</div>
+    <div style="height:12px"></div>
+    <button class="btn btn-success" onclick="confirmPixPaid()">Avisar que já paguei</button>
+  </div>
+</div>
+
+<!-- ============ REVIEW MODAL ============ -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-review')">✕</div>
+    <h3>⭐ Avaliar atendimento</h3>
+    <div class="helper-text" style="margin-top:0;">Sua nota e comentário ficam visíveis para o barbeiro e para outros clientes.</div>
+    <div class="star-picker" id="review-star-picker"></div>
+    <label>Comentário (opcional)</label>
+    <textarea id="review-comment" rows="3" maxlength="300" placeholder="Como foi seu atendimento?"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="submitReview()">Enviar avaliação</button>
+  </div>
+</div>
+
+<!-- ============ BAN CLIENT MODAL ============ -->
+<div class="modal-overlay" id="modal-ban">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="close-x" onclick="closeModal('modal-ban')">✕</div>
+    <h3>🚫 Banir cliente</h3>
+    <div class="helper-text" style="margin-top:0;">O cliente sai da lista de clientes, some da sua agenda para novos pedidos e não consegue mais agendar. Ele vai ver um aviso no app dele.</div>
+    <label>Motivo (opcional, o cliente vai ver)</label>
+    <textarea id="ban-reason-input" rows="3" maxlength="300" placeholder="Ex: Faltou a vários agendamentos sem avisar"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn btn-danger" onclick="confirmBanClient()">Banir cliente</button>
+  </div>
+</div>
+
+<!-- ============ NEW SHOP NAME PROMPT ============ -->
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ============================================================
+   FIREBASE (banco de dados online)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCvJ6ZKfMmnsIeJZauSnuQfxPx_RMpc0zs",
+  authDomain: "teste-funcionarios.firebaseapp.com",
+  projectId: "teste-funcionarios",
+  storageBucket: "teste-funcionarios.firebasestorage.app",
+  messagingSenderId: "873793027226",
+  appId: "1:873793027226:web:7371d8536e77219195f323"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+// Gaveta própria do BarberFlow dentro do projeto, separada do app de funcionários
+const SHOPS_COLLECTION = 'barberflow_shops';
+const USERS_COLLECTION = 'barberflow_users';
+const DEVICE_TRIALS_COLLECTION = 'barberflow_device_trials';
+const GIFTCODES_COLLECTION = 'barberflow_giftcodes';
+
+/* ============================================================
+   DATA LAYER
+   ============================================================ */
+const DB_KEY = 'barberflow_shops_v1';
+const SESSION_KEY = 'barberflow_session_v1';
+const WEEKDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function loadShops(){
+  try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }catch(e){ return {}; }
+}
+// Salva a barbearia ativa (session.code, ou codeOverride) na nuvem, e mantém uma cópia local como cache/fallback.
+function saveShops(shopsObj, codeOverride){
+  const code = codeOverride || (session && session.code);
+  if(code && shopsObj[code]){
+    db.collection(SHOPS_COLLECTION).doc(code).set(shopsObj[code]).catch(function(err){
+      console.error('Erro ao salvar na nuvem:', err);
+      toast('Sem conexão com a internet — verifique e tente novamente');
+    });
+  }
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(shopsObj)); }catch(e){}
+}
+function loadSession(){
+  try{ return JSON.parse(localStorage.getItem(SESSION_KEY)) || null; }catch(e){ return null; }
+}
+function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+function genCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out=''; for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+// Link padrão do app do cliente publicado (usado se o barbeiro não preencher outro)
+const DEFAULT_CLIENT_APP_URL = 'https://nogueiraapps.github.io/BarberFlow/';
+
+/* ============================================================
+   TESTE GRÁTIS (14 dias) + VERSÃO GOLD — controle por conta
+   ============================================================ */
+const TRIAL_DAYS = 14;
+const WHATSAPP_NUMBER = '5588981488038';
+const WHATSAPP_MESSAGE = 'Olá! Meu teste grátis do BarberFlow acabou e quero adquirir a versão Gold.';
+// URL do worker (Deno Deploy) que cria a cobrança no Mercado Pago.
+const CREATE_PREFERENCE_URL = 'https://barberflow-payments.toondancing000.deno.net/create-preference';
+
+// Planos pagos oferecidos após o fim do teste grátis.
+// Para mudar preços, basta editar os valores abaixo.
+const PLANS = [
+  { id:'mensal',    label:'1 mês',      price:29.90,  perMonth:29.90, badge:null,               desc:'Cobrança única, sem fidelidade' },
+  { id:'semestral', label:'6 meses',    price:149.90, perMonth:24.98, badge:'Economize 16%',    desc:'Equivale a R$ 24,98/mês' },
+  { id:'anual',     label:'1 ano',      price:249.90, perMonth:20.83, badge:'Mais popular · Economize 30%', desc:'Equivale a R$ 20,83/mês' },
+  { id:'vitalicio', label:'Vitalício',  price:497.00, perMonth:null,  badge:'Pague uma vez',    desc:'Acesso Gold para sempre, sem mensalidade' }
+];
+function formatBRL(v){ return 'R$ ' + v.toFixed(2).replace('.',','); }
+function renderPlans(){
+  const list = document.getElementById('plans-list');
+  if(!list) return;
+  list.innerHTML = PLANS.map(function(p){
+    return '<div class="card" style="border:1px solid var(--primary);">'
+      + (p.badge ? '<div class="gold-badge" style="margin-bottom:8px;">'+p.badge+'</div>' : '')
+      + '<h3 style="margin-bottom:2px;">'+p.label+'</h3>'
+      + '<div style="font-size:22px;font-weight:800;color:var(--primary);">'+formatBRL(p.price)+'</div>'
+      + '<div class="helper-text" style="margin-top:2px;">'+p.desc+'</div>'
+      + '<div style="height:10px"></div>'
+      + '<button class="btn btn-primary" id="plan-btn-'+p.id+'" onclick="payWithMercadoPago(\''+p.id+'\')">Escolher esse plano</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Chama o worker (Deno Deploy) para criar a cobrança no Mercado Pago e
+// redireciona o barbeiro para a página de pagamento. Se der qualquer
+// problema (sem internet, worker fora do ar etc.), cai no WhatsApp manual.
+async function payWithMercadoPago(planId){
+  const btn = document.getElementById('plan-btn-'+planId);
+  const uidToCharge = currentUser ? currentUser.uid : null;
+  const emailToCharge = currentUser ? currentUser.email : null;
+  if(!uidToCharge){
+    openWhatsAppPurchase(planId);
+    return;
+  }
+  const originalText = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Abrindo pagamento...'; }
+  try{
+    const res = await fetch(CREATE_PREFERENCE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: uidToCharge, planoId: planId, email: emailToCharge })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.init_point) throw new Error('sem init_point');
+    window.location.href = data.init_point;
+  }catch(err){
+    console.error('Falha ao criar pagamento:', err);
+    if(btn){ btn.disabled = false; btn.textContent = originalText; }
+    openWhatsAppPurchase(planId);
+  }
+}
+
+// Identificador do aparelho: usado para impedir que o mesmo celular
+// fique criando contas novas para "renovar" o teste grátis.
+function getDeviceId(){
+  let id = localStorage.getItem('barberflow_device_id');
+  if(!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : ('dev_'+Math.random().toString(36).slice(2)+Date.now()));
+    localStorage.setItem('barberflow_device_id', id);
+  }
+  return id;
+}
+
+// Duração (em dias) de cada plano pago. null = nunca expira (vitalício).
+// Precisa bater com o campo "plano" gravado em cada código no Firestore
+// (veja o app admin.html usado para gerar os códigos).
+const PLAN_DURATIONS = { mensal:30, semestral:180, anual:365, vitalicio:null };
+
+function trialDaysLeftForUser(u){
+  if(!u || u.plan==='gold') return TRIAL_DAYS;
+  if(!u.trialStartedAt) return TRIAL_DAYS;
+  const started = new Date(u.trialStartedAt).getTime();
+  const elapsedDays = (Date.now() - started) / 86400000;
+  return Math.max(0, Math.ceil(TRIAL_DAYS - elapsedDays));
+}
+function isTrialExpiredForUser(u){
+  if(!u) return false;
+  if(u.plan==='gold') return false;
+  if(!u.trialStartedAt) return false;
+  const started = new Date(u.trialStartedAt).getTime();
+  const elapsedDays = (Date.now() - started) / 86400000;
+  return elapsedDays >= TRIAL_DAYS;
+}
+// Plano Gold vence quando goldExpiresAt existir e já tiver passado.
+// Sem goldExpiresAt = vitalício, nunca expira.
+function isGoldExpiredForUser(u){
+  if(!u || u.plan!=='gold') return false;
+  if(!u.goldExpiresAt) return false;
+  return Date.now() >= new Date(u.goldExpiresAt).getTime();
+}
+// Checagem única usada em toda a área do barbeiro: true = acesso bloqueado
+// (seja porque o teste grátis acabou, seja porque o plano Gold venceu).
+function isAccessExpiredForUser(u){
+  if(!u) return false;
+  if(u.plan==='gold') return isGoldExpiredForUser(u);
+  return isTrialExpiredForUser(u);
+}
+function goldDaysLeftForUser(u){
+  if(!u || u.plan!=='gold' || !u.goldExpiresAt) return null;
+  const diffDays = (new Date(u.goldExpiresAt).getTime() - Date.now()) / 86400000;
+  return Math.max(0, Math.ceil(diffDays));
+}
+function updateTrialBanner(u){
+  const el = document.getElementById('trial-days-text');
+  const banner = document.getElementById('trial-banner');
+  if(!el || !banner) return;
+  if(!u){ banner.style.display='none'; return; }
+  // Gold vitalício ou sem data de expiração: sem banner de contagem.
+  if(u.plan==='gold' && !u.goldExpiresAt){ banner.style.display='none'; return; }
+  banner.style.display='flex';
+  const days = u.plan==='gold' ? goldDaysLeftForUser(u) : trialDaysLeftForUser(u);
+  const label = u.plan==='gold' ? 'plano Gold' : 'teste grátis';
+  if(days <= 3){
+    el.textContent = days<=1 ? `Último dia do seu ${label} — renove para não perder o acesso` : `Faltam ${days} dias do seu ${label}`;
+    banner.style.background = '#3a1414';
+    banner.style.color = '#e5787c';
+  } else {
+    el.textContent = `${label==='plano Gold' ? 'Plano Gold' : 'Teste grátis'}: ${days} dias restantes`;
+    banner.style.background = '#2a2210';
+    banner.style.color = '#e0b84a';
+  }
+}
+// Botão "←" da tela de Planos Gold: antes voltava sempre para a tela de
+// bloqueio (screen-trial-expired), mesmo quando o teste grátis ainda estava
+// válido. Agora só bloqueia se o acesso estiver realmente expirado.
+function closePlansScreen(){
+  if(isAccessExpiredForUser(currentUserDoc)){
+    showScreen('screen-trial-expired');
+    return;
+  }
+  const shop = currentShop();
+  if(shop){ enterBarberArea(shop); }
+  else { showScreen('screen-welcome'); }
+}
+function openWhatsAppPurchase(planId){
+  const plan = PLANS.find(function(p){ return p.id===planId; });
+  const msg = plan
+    ? 'Olá! Meu teste grátis do BarberFlow acabou e quero adquirir o plano "'+plan.label+'" ('+formatBRL(plan.price)+').'
+    : WHATSAPP_MESSAGE;
+  const link = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
+  // window.location.href costuma ser mais compatível do que window.open em WebViews
+  // de apps gerados por conversores site-para-apk (usados para publicar na Play Store).
+  window.location.href = link;
+}
+// Ponto único de entrada na área do barbeiro: verifica se o tutorial já foi visto
+// e se a conta ainda tem acesso (teste válido ou Gold ainda não vencido) antes de mostrar o painel.
+function enterBarberArea(shop){
+  if(!currentUserDoc){ showScreen('screen-welcome'); return; }
+  if(!currentUserDoc.onboardingSeen){
+    showScreen('screen-onboarding-barber');
+    return;
+  }
+  if(isAccessExpiredForUser(currentUserDoc)){
+    const wasGold = currentUserDoc.plan==='gold';
+    document.getElementById('gold-title').textContent = wasGold ? 'Seu plano Gold venceu' : 'Seu teste grátis acabou';
+    document.getElementById('gold-subtitle').textContent = wasGold
+      ? 'Seu plano Gold chegou ao fim. Escolha um novo plano para continuar usando o app sem limites.'
+      : 'Você aproveitou os 14 dias de teste do BarberFlow. Para continuar usando o app sem limites, escolha um plano Gold.';
+    showScreen('screen-trial-expired');
+    return;
+  }
+  applyTheme(shop.color);
+  applyAppearance(shop);
+  renderBarberDashboard();
+  updateTrialBanner(currentUserDoc);
+  showScreen('screen-barber-dashboard');
+}
+
+function defaultShop(code, ownerUid){
+  return {
+    code,
+    ownerUid: ownerUid || null,
+    shopName:'Minha Barbearia',
+    barberName:'Barbeiro',
+    welcomeMsg:'Bem-vindo! Marque seu horário 💈',
+    color:'#c9a24d',
+    services:[],
+    workDays:[1,2,3,4,5,6],
+    workTimes:['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30'],
+    daysOff:[],
+    pixCode:'',
+    clientAppUrl:DEFAULT_CLIENT_APP_URL,
+    clients:[],
+    appointments:[],
+    reviews:[]
+  };
+}
+// Preenche campos que podem faltar em barbearias criadas antes de alguma atualização do app.
+function normalizeShop(shop){
+  if(!shop) return shop;
+  if(!shop.daysOff) shop.daysOff = [];
+  if(shop.pixCode===undefined) shop.pixCode = '';
+  if(!shop.addressDetails) shop.addressDetails = {cidade:'', rua:'', bairro:'', numero:''};
+  if(!shop.clientAppUrl || shop.clientAppUrl === 'https://nox-games.github.io/BarberFlow/cliente.html' || shop.clientAppUrl === 'https://sl1nk.com/rvz58ye') shop.clientAppUrl = DEFAULT_CLIENT_APP_URL;
+  if(!shop.services) shop.services = [];
+  if(!shop.clients) shop.clients = [];
+  shop.clients.forEach(function(c){
+    if(c.banned===undefined) c.banned = false;
+    if(c.banReason===undefined) c.banReason = '';
+    if(c.bannedAt===undefined) c.bannedAt = null;
+    if(c.banAppeal===undefined) c.banAppeal = null;
+  });
+  if(!shop.appointments) shop.appointments = [];
+  if(!shop.reviews) shop.reviews = [];
+  if(!shop.workTimes){
+    shop.workTimes = [];
+    if(shop.workStart && shop.workEnd){
+      const toMin = t=>{const [h,m]=t.split(':').map(Number); return h*60+m;};
+      const toTime = m=>{const h=Math.floor(m/60), mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0');};
+      const step = shop.slotDuration || 30;
+      for(let m=toMin(shop.workStart); m+step<=toMin(shop.workEnd); m+=step){
+        shop.workTimes.push(toTime(m));
+      }
+    }
+  }
+  if(shop.bgType===undefined) shop.bgType = 'default';
+  if(shop.bgColor===undefined) shop.bgColor = '#0a0a0d';
+  if(shop.bgImage===undefined) shop.bgImage = '';
+  if(shop.textColor===undefined) shop.textColor = '';
+  if(shop.cardColor===undefined) shop.cardColor = '';
+  if(shop.fontKey===undefined) shop.fontKey = 'padrao';
+  return shop;
+}
+
+/* ============================================================
+   NOTIFICAÇÕES — som + aviso na tela + notificação do navegador
+   (o barbeiro e o cliente têm cada um suas próprias preferências,
+   guardadas separadamente no aparelho de cada um)
+   ============================================================ */
+const NOTIF_SOUND_PRESETS = {
+  sino:     {label:'Sino',     notes:[[1318.5,'sine',0.16,0],[1760,'sine',0.26,0.12]]},
+  alerta:   {label:'Alerta',   notes:[[880,'square',0.08,0],[880,'square',0.08,0.16],[880,'square',0.08,0.32]]},
+  suave:    {label:'Suave',    notes:[[660,'sine',0.4,0]]},
+  pop:      {label:'Pop',      notes:[[220,'triangle',0.07,0],[440,'triangle',0.09,0.06]]},
+  classico: {label:'Clássico', notes:[[523.25,'triangle',0.13,0],[659.25,'triangle',0.13,0.1],[783.99,'triangle',0.2,0.2]]}
+};
+const NOTIF_TYPES = {
+  barber: {
+    newAppt:   {label:'Novo agendamento', icon:'🔔'},
+    payment:   {label:'Aviso de pagamento', icon:'💳'},
+    cancelled: {label:'Cliente cancelou', icon:'❌'},
+    review:    {label:'Nova avaliação', icon:'⭐'},
+    banAppeal: {label:'Pedido de desbanimento', icon:'📩'}
+  },
+  client: {
+    accepted:         {label:'Agendamento confirmado', icon:'✅'},
+    rejected:         {label:'Agendamento recusado',    icon:'❌'},
+    done:             {label:'Atendimento concluído',   icon:'💈'},
+    paymentConfirmed: {label:'Pagamento confirmado',    icon:'💳'}
+  }
+};
+function notifKey(scope){ return 'barberflow_notif_settings_'+scope+'_v1'; }
+function defaultNotifSettings(scope){
+  const t = {}; Object.keys(NOTIF_TYPES[scope]).forEach(k=>t[k]=true);
+  return {enabled:true, sound: scope==='barber'?'sino':'alerta', volume:0.85, types:t, systemEnabled:false};
+}
+function loadNotifSettings(scope){
+  const def = defaultNotifSettings(scope);
+  try{
+    const raw = JSON.parse(localStorage.getItem(notifKey(scope)));
+    if(!raw) return def;
+    return Object.assign({}, def, raw, {types:Object.assign({}, def.types, raw.types||{})});
+  }catch(e){ return def; }
+}
+let notifSettingsBarber = loadNotifSettings('barber');
+let notifSettingsClient = loadNotifSettings('client');
+function notifSettingsFor(scope){ return scope==='barber' ? notifSettingsBarber : notifSettingsClient; }
+function saveNotifSettings(scope){ localStorage.setItem(notifKey(scope), JSON.stringify(notifSettingsFor(scope))); }
+
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
+  return audioCtx;
+}
+// Destrava o áudio no primeiro toque (política de autoplay dos navegadores)
+['pointerdown','touchstart','click'].forEach(evt=>{
+  window.addEventListener(evt, function unlock(){ getAudioCtx(); }, {once:true, passive:true});
+});
+
+/* ---------- Som suave de toque nos botões (um único som para todo o app) ---------- */
+function playUiClickSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  // Duas camadas suaves e quentes, como um "toc" macio de madeira — calmo, nada estridente.
+  [[560, 0.05, 'sine'], [340, 0.032, 'sine']].forEach(function(layer){
+    const freq = layer[0], peak = layer[1], type = layer[2];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.86, now+0.11);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(peak, now+0.014);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now+0.24);
+  });
+}
+document.addEventListener('click', function(e){
+  const el = e.target.closest('button, .btn, .icon-btn, .chip, .navitem, .slot-btn, .day-toggle, .close-x, .icon-picker-item, .service-item, .service-card-h, .checkbox-dot');
+  if(el) playUiClickSound();
+}, true);
+function playNotifSound(soundKey, volume){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const preset = NOTIF_SOUND_PRESETS[soundKey] || NOTIF_SOUND_PRESETS.sino;
+  const vol = volume==null ? 0.85 : Number(volume);
+  preset.notes.forEach(function(n){
+    const freq=n[0], type=n[1], dur=n[2], delay=n[3];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    const start = ctx.currentTime + delay;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(Math.max(0.0002,vol*0.5), start+0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start+dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(start); osc.stop(start+dur+0.03);
+  });
+}
+function testNotifSound(scope){ const s=notifSettingsFor(scope); playNotifSound(s.sound, s.volume); }
+
+function showNotifBanner(icon, title, body){
+  const el = document.getElementById('notif-banner');
+  if(!el) return;
+  document.getElementById('notif-banner-icon').textContent = icon;
+  document.getElementById('notif-banner-title').textContent = title;
+  document.getElementById('notif-banner-body').textContent = body;
+  el.classList.add('show');
+  clearTimeout(window._notifBannerTimer);
+  window._notifBannerTimer = setTimeout(function(){ el.classList.remove('show'); }, 4800);
+}
+(function(){
+  const el = document.getElementById('notif-banner');
+  if(el) el.addEventListener('click', function(){ el.classList.remove('show'); });
+})();
+function fireSystemNotification(enabled, title, body){
+  if(!enabled) return;
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  if(document.visibilityState==='visible') return;
+  try{ new Notification(title, {body:body, tag:'bf-'+Date.now()}); }catch(e){}
+}
+// Ponto único: som + aviso na tela + notificação do navegador (se em segundo plano)
+function notify(scope, typeKey, title, body, icon){
+  const s = notifSettingsFor(scope);
+  if(!s.enabled) return;
+  if(s.types && s.types[typeKey]===false) return;
+  playNotifSound(s.sound, s.volume);
+  showNotifBanner(icon||'🔔', title, body);
+  fireSystemNotification(s.systemEnabled, title, body);
+  if(navigator.vibrate){ try{ navigator.vibrate([80,40,80]); }catch(e){} }
+}
+function requestSystemNotifPermission(scope){
+  if(!('Notification' in window)){ toast('Seu navegador não suporta notificações do sistema'); return; }
+  Notification.requestPermission().then(function(perm){
+    const s = notifSettingsFor(scope);
+    s.systemEnabled = (perm==='granted');
+    saveNotifSettings(scope);
+    renderNotifSettingsUI(scope);
+    toast(perm==='granted' ? 'Notificações do navegador ativadas' : 'Permissão não concedida');
+  });
+}
+function toggleNotifMaster(scope, checked){ notifSettingsFor(scope).enabled = checked; saveNotifSettings(scope); }
+function selectNotifSound(scope, key){ notifSettingsFor(scope).sound = key; saveNotifSettings(scope); renderNotifSettingsUI(scope); playNotifSound(key, notifSettingsFor(scope).volume); }
+function setNotifVolume(scope, val){ notifSettingsFor(scope).volume = Number(val); saveNotifSettings(scope); }
+function toggleNotifType(scope, key, checked){ notifSettingsFor(scope).types[key] = checked; saveNotifSettings(scope); }
+function renderNotifSettingsUI(scope){
+  const s = notifSettingsFor(scope);
+  const types = NOTIF_TYPES[scope];
+  const master = document.getElementById('notif-master-toggle-'+scope);
+  if(!master) return; // essa tela não está montada agora
+  master.checked = s.enabled;
+  const soundWrap = document.getElementById('notif-sound-picker-'+scope);
+  soundWrap.innerHTML = Object.keys(NOTIF_SOUND_PRESETS).map(function(k){
+    return '<div class="chip '+(s.sound===k?'selected':'')+'" onclick="selectNotifSound(\''+scope+'\',\''+k+'\')">'+NOTIF_SOUND_PRESETS[k].label+'</div>';
+  }).join('');
+  document.getElementById('notif-volume-'+scope).value = s.volume;
+  const typesWrap = document.getElementById('notif-type-toggles-'+scope);
+  typesWrap.innerHTML = Object.keys(types).map(function(k){
+    const t = types[k];
+    return '<div class="settings-row"><div><div class="label">'+t.icon+' '+t.label+'</div></div>'+
+      '<label class="switch"><input type="checkbox" '+(s.types[k]!==false?'checked':'')+' onchange="toggleNotifType(\''+scope+'\',\''+k+'\',this.checked)"><span class="slider"></span></label></div>';
+  }).join('');
+  const sysBtn = document.getElementById('notif-system-btn-'+scope);
+  const sysStatus = document.getElementById('notif-system-status-'+scope);
+  const supported = 'Notification' in window;
+  if(!supported){
+    sysBtn.style.display = 'none';
+    sysStatus.textContent = 'Seu navegador não suporta notificações do sistema';
+  } else if(Notification.permission==='granted' && s.systemEnabled){
+    sysBtn.textContent = 'Ativado ✓'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Você vai receber avisos mesmo com o app em segundo plano';
+  } else if(Notification.permission==='denied'){
+    sysBtn.textContent = 'Bloqueado'; sysBtn.disabled = true;
+    sysStatus.textContent = 'Permissão bloqueada no navegador — ative manualmente nas configurações do site';
+  } else {
+    sysBtn.style.display = ''; sysBtn.textContent = 'Ativar'; sysBtn.disabled = false;
+    sysStatus.textContent = 'Receba avisos mesmo com o app em segundo plano';
+  }
+}
+// Compara o estado anterior da barbearia com o novo e dispara as notificações do barbeiro
+// (novo agendamento, aviso de pagamento Pix, cliente cancelou, nova avaliação)
+function detectBarberEvents(prevShop, newShop){
+  if(!prevShop || !newShop) return;
+  const prevAppts = {};
+  (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
+  (newShop.appointments||[]).forEach(function(a){
+    const prev = prevAppts[a.id];
+    if(!prev){
+      if(a.status==='pending'){
+        notify('barber', 'newAppt', 'Novo agendamento', a.clientName+' pediu horário em '+formatDate(a.date)+' às '+a.time+'.', '🔔');
+      }
+      return;
+    }
+    if((prev.status==='pending'||prev.status==='accepted') && a.status==='cancelled'){
+      notify('barber', 'cancelled', 'Agendamento cancelado', a.clientName+' cancelou o horário de '+formatDate(a.date)+' às '+a.time+'.', '❌');
+    }
+    if(prev.paymentStatus!=='aguardando' && a.paymentStatus==='aguardando'){
+      notify('barber', 'payment', 'Aviso de pagamento', a.clientName+' avisou que pagou via Pix — confirme o recebimento.', '💳');
+    }
+  });
+  const prevReviewIds = {};
+  (prevShop.reviews||[]).forEach(function(r){ prevReviewIds[r.id] = true; });
+  (newShop.reviews||[]).forEach(function(r){
+    if(!prevReviewIds[r.id]){
+      notify('barber', 'review', 'Nova avaliação', (r.clientName||'Cliente')+' avaliou com '+r.rating+'★.', '⭐');
+    }
+  });
+  const prevClients = {};
+  (prevShop.clients||[]).forEach(function(c){ prevClients[c.id] = c; });
+  (newShop.clients||[]).forEach(function(c){
+    const prev = prevClients[c.id];
+    if(prev && c.banAppeal && c.banAppeal.status==='pending' && (!prev.banAppeal || prev.banAppeal.sentAt!==c.banAppeal.sentAt)){
+      notify('barber', 'banAppeal', 'Pedido de desbanimento', (c.name||'Cliente')+' pediu para ser desbanido(a).', '📩');
+    }
+  });
+}
+// Compara o estado anterior da barbearia com o novo e dispara as notificações do cliente
+// (agendamento aceito/recusado, atendimento concluído, pagamento confirmado)
+function detectClientEvents(prevShop, newShop){
+  if(!prevShop || !newShop || !session || !session.clientId) return;
+  const prevAppts = {};
+  (prevShop.appointments||[]).forEach(function(a){ prevAppts[a.id] = a; });
+  (newShop.appointments||[]).filter(function(a){ return a.clientId===session.clientId; }).forEach(function(a){
+    const prev = prevAppts[a.id];
+    if(!prev) return;
+    if(prev.status==='pending' && a.status==='accepted'){
+      notify('client', 'accepted', 'Agendamento confirmado!', 'Seu horário em '+formatDate(a.date)+' às '+a.time+' foi confirmado pelo barbeiro.', '✅');
+    }
+    if(prev.status==='pending' && a.status==='rejected'){
+      notify('client', 'rejected', 'Agendamento recusado', 'Seu pedido para '+formatDate(a.date)+' às '+a.time+' foi recusado pelo barbeiro.', '❌');
+    }
+    if(prev.status!=='done' && a.status==='done'){
+      notify('client', 'done', 'Atendimento concluído', 'Esperamos que tenha gostado do seu corte! Que tal deixar uma avaliação?', '💈');
+    }
+    if(prev.paymentStatus!=='pago' && a.paymentStatus==='pago'){
+      notify('client', 'paymentConfirmed', 'Pagamento confirmado', 'Seu pagamento de R$ '+Number(a.total).toFixed(2).replace('.',',')+' foi confirmado.', '💳');
+    }
+  });
+}
+// Roteia as mudanças para o detector certo, conforme o papel da sessão atual
+function detectShopChanges(scope, prevShop, newShop){
+  if(scope==='barber') detectBarberEvents(prevShop, newShop);
+  else detectClientEvents(prevShop, newShop);
+}
+
+let shops = loadShops();
+let session = loadSession();
+let previewMode = false; // true quando o barbeiro está vendo a "Visão do cliente"
+let currentUser = null;      // usuário do Firebase Auth logado (barbeiro)
+let currentUserDoc = null;   // documento barberflow_users/{uid} em cache
+// Fica "true" durante o processo de cadastro (entre criar o login no Firebase
+// Auth e terminar de gravar os documentos no Firestore). Evita que o listener
+// onAuthStateChanged, que dispara assim que o login é criado, trate a conta
+// como "não encontrada" só porque a gravação ainda não terminou.
+let signupInProgress = false;
+
+/* ============================================================
+   SINCRONIZAÇÃO EM TEMPO REAL COM A NUVEM
+   ============================================================ */
+let unsubscribeShopListener = null;
+let listenedCode = null;
+let unsubscribeUserListener = null;
+// Conecta o documento do barbeiro (plano/teste grátis) em tempo real —
+// assim, se ele ativar um código Gold, o acesso libera na hora.
+function listenToUser(uid){
+  if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+  unsubscribeUserListener = db.collection(USERS_COLLECTION).doc(uid).onSnapshot(function(doc){
+    if(!doc.exists) return;
+    currentUserDoc = doc.data();
+    if(session && session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
+      updateTrialBanner(currentUserDoc);
+    }
+    if(document.getElementById('screen-trial-expired').classList.contains('active') && !isAccessExpiredForUser(currentUserDoc)){
+      const shop = currentShop();
+      if(shop) enterBarberArea(shop);
+    }
+  }, function(err){ console.error('Erro ao sincronizar conta:', err); });
+}
+// Conecta a barbearia `code` ao Firestore em tempo real: qualquer mudança feita
+// por outro aparelho (barbeiro ou cliente) chega aqui e re-renderiza a tela ativa.
+function listenToShop(code, onFirstLoad){
+  if(unsubscribeShopListener && listenedCode !== code){
+    unsubscribeShopListener();
+    unsubscribeShopListener = null;
+  }
+  listenedCode = code;
+  let first = true;
+  unsubscribeShopListener = db.collection(SHOPS_COLLECTION).doc(code).onSnapshot(function(doc){
+    if(!doc.exists){
+      if(first){ first=false; onFirstLoad && onFirstLoad(null); }
+      return;
+    }
+    const prevShop = shops[code];
+    shops[code] = normalizeShop(doc.data());
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    if(first){
+      first = false;
+      onFirstLoad && onFirstLoad(shops[code]);
+    } else if(session && session.code===code){
+      detectShopChanges(session.role==='client' ? 'client' : 'barber', prevShop, shops[code]);
+      if(session.role==='barber' && document.getElementById('screen-barber-dashboard').classList.contains('active')){
+        if(isAccessExpiredForUser(currentUserDoc)){
+          showScreen('screen-trial-expired');
+        } else {
+          renderBarberDashboard();
+          updateTrialBanner(currentUserDoc);
+        }
+      }
+      if((session.role==='client' || previewMode) && (document.getElementById('screen-client-home').classList.contains('active') || document.getElementById('screen-client-banned').classList.contains('active'))) enterClientHome();
+    }
+  }, function(err){
+    console.error('Erro de sincronização com o Firebase:', err);
+    toast('Falha de conexão com a internet');
+  });
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='screen-plans') renderPlans();
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function applyTheme(color){
+  const dark = shadeColor(color,-18);
+  document.documentElement.style.setProperty('--primary', color);
+  document.documentElement.style.setProperty('--primary-dark', dark);
+}
+const DEFAULT_BG_COLOR = '#0a0a0d';
+const DEFAULT_TEXT_COLOR = '#f5f1e9';
+const DEFAULT_DIM_TEXT_COLOR = '#ffffff';
+const DEFAULT_CARD_COLOR = '#15151a';
+const FONT_OPTIONS = {
+  padrao:    {label:'Padrão',    css:"'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif"},
+  moderna:   {label:'Moderna',   css:"'Poppins','Segoe UI',system-ui,-apple-system,sans-serif"},
+  elegante:  {label:'Elegante',  css:"'Playfair Display',Georgia,serif"},
+  divertida: {label:'Divertida', css:"'Fredoka','Segoe UI',system-ui,-apple-system,sans-serif"}
+};
+function applyAppearance(shop){
+  const body = document.body;
+  if(shop && shop.bgType==='image' && shop.bgImage){
+    body.style.backgroundImage = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url('${shop.bgImage}')`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundRepeat = 'no-repeat';
+    body.style.backgroundAttachment = 'fixed';
+    document.documentElement.style.setProperty('--bg', DEFAULT_BG_COLOR);
+  } else {
+    body.style.backgroundImage = '';
+    body.style.backgroundSize = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundRepeat = '';
+    body.style.backgroundAttachment = '';
+    const color = (shop && shop.bgType==='color' && shop.bgColor) ? shop.bgColor : DEFAULT_BG_COLOR;
+    document.documentElement.style.setProperty('--bg', color);
+  }
+  // Cor das letras
+  const textColor = (shop && shop.textColor) || DEFAULT_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text', textColor);
+  // Cor dos avisos e títulos de seção (textos apagados: "Nenhum...", títulos em maiúsculo, chips)
+  const dimTextColor = (shop && shop.dimTextColor) || DEFAULT_DIM_TEXT_COLOR;
+  document.documentElement.style.setProperty('--text-dim', dimTextColor);
+  document.documentElement.style.setProperty('--text-faint', dimTextColor);
+  // Cor dos quadrados (cards)
+  const cardColor = (shop && shop.cardColor) || DEFAULT_CARD_COLOR;
+  document.documentElement.style.setProperty('--surface', cardColor);
+  document.documentElement.style.setProperty('--surface2', shadeColor(cardColor, 8));
+  document.documentElement.style.setProperty('--surface3', shadeColor(cardColor, 16));
+  // Estilo das letras (fonte)
+  const fontKey = (shop && shop.fontKey) || 'padrao';
+  const fontCss = (FONT_OPTIONS[fontKey] || FONT_OPTIONS.padrao).css;
+  document.documentElement.style.setProperty('--font', fontCss);
+}
+function shadeColor(hex, percent){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const num = parseInt(hex,16);
+  let r=(num>>16)+Math.round(255*(percent/100));
+  let g=((num>>8)&0x00FF)+Math.round(255*(percent/100));
+  let b=(num&0x0000FF)+Math.round(255*(percent/100));
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+(0x1000000+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function goHomeMenu(){
+  if(previewMode){ exitClientPreview(); return; }
+  if(session && session.role==='barber'){
+    if(currentShop()) enterBarberArea(currentShop());
+    return;
+  }
+  clearSession();
+  session = null;
+  showScreen('screen-welcome');
+}
+
+/* ============================================================
+   PRÉVIA: "Ver como cliente" (o barbeiro navega no app do jeito
+   que os clientes veem, usando os dados reais da própria barbearia,
+   sem gravar nenhum agendamento/edição de verdade)
+   ============================================================ */
+function enterClientPreview(){
+  const shop = currentShop();
+  if(!shop) return;
+  previewMode = true;
+  applyTheme(shop.color);
+  renderClientHome();
+  document.getElementById('preview-banner').style.display = 'flex';
+  showScreen('screen-client-home');
+}
+function exitClientPreview(){
+  previewMode = false;
+  document.getElementById('preview-banner').style.display = 'none';
+  const shop = currentShop();
+  if(shop) enterBarberArea(shop);
+}
+function toggleClientPreview(){
+  if(previewMode){
+    exitClientPreview();
+  } else {
+    enterClientPreview();
+  }
+}
+
+/* ============================================================
+   INIT / ROUTER — a sessão do barbeiro agora é controlada pelo
+   Firebase Authentication (login por e-mail e senha)
+   ============================================================ */
+function init(){
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      currentUser = user;
+      loadBarberAccount(user);
+    } else {
+      currentUser = null;
+      currentUserDoc = null;
+      if(session && session.role==='client' && session.code){
+        listenToShop(session.code, function(shopData){
+          if(!shopData){ toast('Barbearia não encontrada na nuvem'); goHomeMenu(); return; }
+          applyTheme(shopData.color);
+          enterClientHome();
+        });
+      } else {
+        showScreen('screen-welcome');
+      }
+    }
+  });
+}
+// Carrega os dados da conta do barbeiro (barberflow_users/{uid}) e, a partir
+// dela, a barbearia vinculada, aplicando as regras de teste grátis / Gold.
+function loadBarberAccount(user){
+  db.collection(USERS_COLLECTION).doc(user.uid).get().then(function(doc){
+    if(!doc.exists){
+      if(signupInProgress){
+        // Ainda estamos no meio do cadastro (o documento está sendo gravado
+        // agora mesmo) — não faz nada aqui. A própria função signupBarber()
+        // vai concluir e entrar no painel quando a gravação terminar.
+        return;
+      }
+      // Login existe no Firebase Auth mas o cadastro da barbearia nunca foi
+      // gravado no Firestore (ex.: conexão caiu durante o cadastro, ou as
+      // regras do Firestore não estavam publicadas naquele momento). Como
+      // não há como recuperar os dados que nunca foram salvos, removemos
+      // esse login quebrado para a pessoa poder criar a conta do zero.
+      toast('Sua conta não foi concluída da última vez. Crie sua conta novamente, por favor.');
+      user.delete().catch(function(delErr){
+        // Se o Firebase exigir login recente para apagar, apenas desloga —
+        // a pessoa cria a conta de novo (com outro e-mail, se preferir).
+        console.error('Não foi possível remover login órfão, saindo mesmo assim:', delErr);
+        auth.signOut();
+      });
+      clearSession();
+      session = null;
+      currentUser = null;
+      currentUserDoc = null;
+      showScreen('screen-welcome');
+      return;
+    }
+    currentUserDoc = doc.data();
+    listenToUser(user.uid);
+    session = {role:'barber', code:currentUserDoc.shopCode, uid:user.uid};
+    saveSession(session);
+    listenToShop(currentUserDoc.shopCode, function(shopData){
+      if(!shopData){ toast('Barbearia não encontrada na nuvem'); logoutBarber(); return; }
+      enterBarberArea(shopData);
+    });
+  }).catch(function(err){
+    console.error('Erro ao carregar conta:', err);
+    toast('Erro de conexão. Verifique sua internet.');
+  });
+}
+
+/* ============================================================
+   BARBER: AUTENTICAÇÃO (login / criar conta / recuperar senha)
+   ============================================================ */
+function openLoginScreen(){
+  document.getElementById('login-email').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-error').classList.remove('show');
+  showScreen('screen-login');
+}
+function openSignupScreen(){
+  document.getElementById('signup-shop-name').value='';
+  document.getElementById('signup-barber-name').value='';
+  document.getElementById('signup-color').value='#c9a24d';
+  document.getElementById('signup-email').value='';
+  document.getElementById('signup-password').value='';
+  document.getElementById('signup-password2').value='';
+  document.getElementById('signup-error').classList.remove('show');
+  showScreen('screen-signup');
+}
+function openForgotScreen(){
+  document.getElementById('forgot-email').value = document.getElementById('login-email').value || '';
+  document.getElementById('forgot-error').classList.remove('show');
+  showScreen('screen-forgot');
+}
+function showFieldError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function authErrorMessage(err){
+  const map = {
+    'auth/invalid-email':'E-mail inválido.',
+    'auth/user-not-found':'Não existe conta com esse e-mail.',
+    'auth/wrong-password':'Senha incorreta.',
+    'auth/invalid-credential':'E-mail ou senha incorretos.',
+    'auth/email-already-in-use':'Já existe uma conta com esse e-mail.',
+    'auth/weak-password':'A senha precisa ter no mínimo 6 caracteres.',
+    'auth/too-many-requests':'Muitas tentativas. Aguarde um pouco e tente de novo.',
+    'auth/network-request-failed':'Sem conexão com a internet.'
+  };
+  return map[err.code] || ('Erro: '+err.message);
+}
+function loginBarber(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  document.getElementById('login-error').classList.remove('show');
+  if(!email || !password){ showFieldError('login-error','Preencha e-mail e senha'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  auth.signInWithEmailAndPassword(email, password).catch(function(err){
+    showFieldError('login-error', authErrorMessage(err));
+  }).finally(function(){
+    btn.disabled = false; btn.textContent = 'Entrar';
+  });
+}
+function signupBarber(){
+  const shopName = document.getElementById('signup-shop-name').value.trim();
+  const barberName = document.getElementById('signup-barber-name').value.trim();
+  const color = document.getElementById('signup-color').value;
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const password2 = document.getElementById('signup-password2').value;
+  document.getElementById('signup-error').classList.remove('show');
+  if(!shopName || !barberName){ showFieldError('signup-error','Preencha o nome da barbearia e o seu nome'); return; }
+  if(!email || !password){ showFieldError('signup-error','Preencha e-mail e senha'); return; }
+  if(password.length<6){ showFieldError('signup-error','A senha precisa ter no mínimo 6 caracteres'); return; }
+  if(password!==password2){ showFieldError('signup-error','As senhas não coincidem'); return; }
+
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  const deviceId = getDeviceId();
+
+  let createdCred = null; // guardamos a credencial para poder desfazer o Auth se o Firestore falhar
+  signupInProgress = true;
+
+  auth.createUserWithEmailAndPassword(email, password).then(function(cred){
+    createdCred = cred;
+    const uid = cred.user.uid;
+    // Verifica se este aparelho já usou o teste grátis com outra conta.
+    return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).get().then(function(devDoc){
+      let trialStartedAt;
+      if(devDoc.exists){
+        // Aparelho já tem um teste iniciado — herda a mesma data (não reinicia os 14 dias).
+        trialStartedAt = devDoc.data().firstTrialStartedAt;
+        return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).set({
+          firstTrialStartedAt: trialStartedAt,
+          emails: firebase.firestore.FieldValue.arrayUnion(email)
+        }, {merge:true}).then(function(){ return trialStartedAt; });
+      } else {
+        trialStartedAt = new Date().toISOString();
+        return db.collection(DEVICE_TRIALS_COLLECTION).doc(deviceId).set({
+          firstTrialStartedAt: trialStartedAt,
+          emails: [email]
+        }).then(function(){ return trialStartedAt; });
+      }
+    }).then(function(trialStartedAt){
+      let code = genCode();
+      // (checagem simples de colisão de código; extremamente raro)
+      const shop = defaultShop(code, uid);
+      shop.shopName = shopName; shop.barberName = barberName; shop.color = color;
+      const userDoc = {
+        email: email,
+        shopCode: code,
+        deviceId: deviceId,
+        plan: 'trial',
+        trialStartedAt: trialStartedAt,
+        onboardingSeen: false,
+        createdAt: new Date().toISOString()
+      };
+      return Promise.all([
+        db.collection(SHOPS_COLLECTION).doc(code).set(shop),
+        db.collection(USERS_COLLECTION).doc(uid).set(userDoc)
+      ]).then(function(){
+        shops[code] = shop;
+        try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+        toast('Conta criada! Bem-vindo(a) ao BarberFlow.');
+        // Entra no painel diretamente agora que os documentos existem de
+        // verdade — não dependemos do onAuthStateChanged disparar de novo,
+        // porque ele já disparou (e foi ignorado) lá no início do cadastro.
+        currentUser = createdCred.user;
+        currentUserDoc = userDoc;
+        listenToUser(uid);
+        session = {role:'barber', code:code, uid:uid};
+        saveSession(session);
+        listenToShop(code, function(shopData){
+          enterBarberArea(shopData || shop);
+        });
+      });
+    });
+  }).catch(function(err){
+    console.error('Erro ao criar conta:', err);
+    // Se o login já tinha sido criado no Firebase Auth mas algum passo seguinte
+    // (gravar no Firestore) falhou, a conta ficaria "órfã": com login, mas sem
+    // documento em barberflow_users — e o barbeiro veria "Não encontramos sua
+    // conta" para sempre. Para evitar isso, desfazemos o login criado.
+    if(createdCred && createdCred.user){
+      createdCred.user.delete().catch(function(delErr){
+        console.error('Não foi possível desfazer o login após falha no cadastro:', delErr);
+      });
+      auth.signOut();
+    }
+    showFieldError('signup-error', authErrorMessage(err) + ' Tente novamente — se o problema continuar, verifique sua conexão.');
+  }).finally(function(){
+    signupInProgress = false;
+    btn.disabled = false; btn.textContent = 'Criar conta e começar teste grátis';
+  });
+}
+function sendPasswordReset(){
+  const email = document.getElementById('forgot-email').value.trim();
+  document.getElementById('forgot-error').classList.remove('show');
+  if(!email){ showFieldError('forgot-error','Digite seu e-mail'); return; }
+  auth.sendPasswordResetEmail(email).then(function(){
+    toast('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+    showScreen('screen-login');
+  }).catch(function(err){
+    showFieldError('forgot-error', authErrorMessage(err));
+  });
+}
+function logoutBarber(){
+  if(unsubscribeShopListener){ unsubscribeShopListener(); unsubscribeShopListener=null; listenedCode=null; }
+  if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+  auth.signOut().then(function(){
+    clearSession();
+    session = null;
+    currentUser = null;
+    currentUserDoc = null;
+    showScreen('screen-welcome');
+  });
+}
+function finishOnboarding(){
+  if(!currentUser) return;
+  db.collection(USERS_COLLECTION).doc(currentUser.uid).update({onboardingSeen:true}).then(function(){
+    currentUserDoc.onboardingSeen = true;
+    const shop = currentShop();
+    if(shop) enterBarberArea(shop);
+  });
+}
+function redeemGoldCode(inputId, errorId){
+  const raw = document.getElementById(inputId||'gold-redeem-code').value.trim().toUpperCase();
+  const errEl = document.getElementById(errorId||'gold-redeem-error');
+  errEl.classList.remove('show');
+  if(!raw){ errEl.textContent='Digite o código de ativação'; errEl.classList.add('show'); return; }
+  if(!currentUser){ return; }
+  const codeRef = db.collection(GIFTCODES_COLLECTION).doc(raw);
+  const userRef = db.collection(USERS_COLLECTION).doc(currentUser.uid);
+  let planoId, expiresAt, activatedAt;
+  // Transação: marcar o código como usado e atualizar o plano do usuário
+  // acontecem como UMA ÚNICA operação atômica. Se qualquer uma das duas
+  // partes falhar, o Firestore desfaz tudo — assim o código nunca fica
+  // "queimado" (marcado como usado) sem o usuário realmente virar Gold.
+  db.runTransaction(function(transaction){
+    return transaction.get(codeRef).then(function(doc){
+      if(!doc.exists){ return Promise.reject({code:'not-found'}); }
+      const codeData = doc.data();
+      if(codeData.used){ return Promise.reject({code:'used'}); }
+      // planoId vem do código (mensal/semestral/anual/vitalicio); se não vier,
+      // trata como vitalício por segurança (evita expirar sem querer).
+      planoId = codeData.plano || 'vitalicio';
+      const durationDays = Object.prototype.hasOwnProperty.call(PLAN_DURATIONS, planoId) ? PLAN_DURATIONS[planoId] : null;
+      activatedAt = new Date();
+      expiresAt = durationDays ? new Date(activatedAt.getTime() + durationDays*86400000).toISOString() : null;
+      transaction.update(codeRef, {used:true, usedBy:currentUser.uid, usedByEmail:currentUser.email, usedAt:activatedAt.toISOString()});
+      transaction.update(userRef, {
+        plan:'gold', goldCode:raw, goldPlano:planoId,
+        goldActivatedAt:activatedAt.toISOString(), goldExpiresAt:expiresAt
+      });
+    });
+  }).then(function(){
+    currentUserDoc.plan = 'gold';
+    currentUserDoc.goldPlano = planoId;
+    currentUserDoc.goldExpiresAt = expiresAt;
+    toast('Versão Gold ativada! Aproveite 🎉');
+    const shop = currentShop();
+    if(shop) enterBarberArea(shop);
+  }).catch(function(err){
+    console.error('Erro ao ativar código:', err);
+    if(err && err.code==='not-found'){ errEl.textContent='Código não encontrado. Confira com quem te vendeu.'; }
+    else if(err && err.code==='used'){ errEl.textContent='Esse código já foi usado.'; }
+    else { errEl.textContent='Erro de conexão. Tente novamente.'; }
+    errEl.classList.add('show');
+  });
+}
+function deleteShopConfirm(){
+  if(!session || !currentUser) return;
+  if(confirm('Tem certeza que deseja excluir sua conta e a barbearia com todos os dados? Essa ação não pode ser desfeita.')){
+    const code = session.code;
+    const uid = currentUser.uid;
+    if(unsubscribeShopListener){ unsubscribeShopListener(); unsubscribeShopListener=null; listenedCode=null; }
+    if(unsubscribeUserListener){ unsubscribeUserListener(); unsubscribeUserListener=null; }
+    db.collection(SHOPS_COLLECTION).doc(code).delete().catch(function(err){ console.error('Erro ao excluir barbearia:', err); });
+    db.collection(USERS_COLLECTION).doc(uid).delete().catch(function(err){ console.error('Erro ao excluir conta:', err); });
+    delete shops[code];
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    const user = auth.currentUser;
+    clearSession();
+    session = null; currentUser = null; currentUserDoc = null;
+    showScreen('screen-welcome');
+    toast('Barbearia e conta excluídas');
+    if(user){ user.delete().catch(function(){ auth.signOut(); }); } else { auth.signOut(); }
+  }
+}
+
+/* ============================================================
+   BARBER: DASHBOARD
+   ============================================================ */
+let currentTab = 'agenda';
+function switchTab(tab){
+  currentTab = tab;
+  ['agenda','clientes','servicos','horarios','faturamento','avaliacoes'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = (t===tab)?'block':'none';
+  });
+  document.querySelectorAll('.navitem').forEach(n=>{
+    n.classList.toggle('active', n.dataset.tab===tab);
+  });
+  renderBarberDashboard();
+}
+function currentShop(){ return shops[session.code]; }
+
+function renderBarberDashboard(){
+  const shop = currentShop();
+  if(!shop) return;
+  updateTrialBanner(currentUserDoc);
+  document.getElementById('dash-shop-name').textContent = shop.shopName;
+  document.getElementById('dash-barber-name').textContent = shop.barberName;
+
+  const pending = shop.appointments.filter(a=>a.status==='pending');
+  const accepted = shop.appointments.filter(a=>a.status==='accepted').sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  const pendingPayments = shop.appointments.filter(a=>a.paymentStatus==='aguardando' || (a.paymentMethod==='pessoal' && a.paymentStatus==='pendente')).sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  const history = shop.appointments.filter(a=>a.status==='done' || a.status==='rejected' || a.status==='cancelled').sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  // badges
+  const badge = document.getElementById('nav-badge');
+  const badgeCount = pending.length + pendingPayments.length;
+  if(badgeCount>0){ badge.style.display='flex'; badge.textContent = badgeCount; }
+  else{ badge.style.display='none'; }
+
+  if(currentTab==='agenda'){
+    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-today').textContent = accepted.filter(a=>a.date===todayStr).length;
+
+    const payWrap = document.getElementById('list-pending-payments');
+    if(payWrap){
+      payWrap.innerHTML = pendingPayments.length===0
+        ? `<div class="empty-state" style="padding:24px;"><div class="em">💸</div>Nenhum pagamento aguardando confirmação</div>`
+        : pendingPayments.map(a=>renderApptCard(a,'plain')).join('');
+    }
+
+    const pendWrap = document.getElementById('list-pending');
+    pendWrap.innerHTML = pending.length===0
+      ? `<div class="empty-state" style="padding:24px;"><div class="em">🔔</div>Nenhuma solicitação pendente</div>`
+      : pending.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>renderApptCard(a,'pending')).join('');
+
+    const accWrap = document.getElementById('list-accepted');
+    accWrap.innerHTML = accepted.length===0
+      ? `<div class="empty-state" style="padding:24px;"><div class="em">📅</div>Nenhum agendamento confirmado</div>`
+      : accepted.map(a=>renderApptCard(a,'accepted')).join('');
+
+    const histWrap = document.getElementById('list-history');
+    histWrap.innerHTML = history.length===0
+      ? `<div class="empty-state" style="padding:24px;"><div class="em">🗂️</div>Nenhum histórico ainda</div>`
+      : history.map(a=>renderApptCard(a,'plain')).join('');
+  }
+
+  if(currentTab==='clientes'){
+    if(checkExpiredBanAppeals(shop)) saveShops(shops);
+    const activeClients = shop.clients.filter(c=>!c.banned);
+    const bannedClients = shop.clients.filter(c=>c.banned);
+    document.getElementById('stat-total-clients').textContent = activeClients.length;
+    document.getElementById('stat-in').textContent = activeClients.filter(c=>c.status==='dentro').length;
+    const bannedChip = document.getElementById('banned-count-chip');
+    if(bannedChip) bannedChip.textContent = bannedClients.length>0 ? ' ('+bannedClients.length+')' : '';
+    const titleEl = document.getElementById('clients-list-title');
+    if(titleEl) titleEl.textContent = clientsSubView==='ativos' ? 'Lista de clientes' : 'Clientes banidos';
+    const cWrap = document.getElementById('list-clients');
+
+    if(clientsSubView==='ativos'){
+      cWrap.innerHTML = activeClients.length===0
+        ? `<div class="empty-state" style="padding:24px;"><div class="em">👥</div>Nenhum cliente cadastrado ainda</div>`
+        : activeClients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`
+          <div class="client-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="client-row">
+                <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                <div class="client-info">
+                  <b>${escapeHtml(c.name)}</b>
+                  <span>${escapeHtml(c.phone||'sem telefone')}</span>
+                </div>
+              </div>
+              <span class="dot-status ${c.status==='dentro'?'dentro':'fora'}"></span>
+            </div>
+            <div class="row" style="gap:6px;">
+              <button class="btn btn-sm btn-ghost" style="flex:1;" onclick="toggleClientStatus('${c.id}')">${c.status==='dentro'?'Marcar saída':'Marcar entrada'}</button>
+              <button class="btn btn-sm btn-ghost" style="flex:none;" title="Banir" onclick="openBanModal('${c.id}')">🚫</button>
+              <button class="btn btn-sm btn-ghost" style="flex:none;color:var(--danger);" title="Excluir" onclick="deleteClient('${c.id}')">🗑️</button>
+            </div>
+          </div>
+        `).join('');
+    } else {
+      cWrap.innerHTML = bannedClients.length===0
+        ? `<div class="empty-state" style="padding:24px;"><div class="em">🚫</div>Nenhum cliente banido</div>`
+        : bannedClients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>{
+          let appealHtml = '';
+          if(c.banAppeal && c.banAppeal.status==='pending'){
+            appealHtml = `<div style="background:var(--surface3);border-radius:12px;padding:11px 13px;">
+              <b style="font-size:12.5px;">📩 Pedido de desbanimento</b>
+              <div style="font-size:13px;margin-top:4px;">"${escapeHtml(c.banAppeal.message)}"</div>
+              <div class="helper-text" style="margin:4px 0 0;">Aguardando sua resposta — recusa automática em 1 dia sem resposta.</div>
+            </div>`;
+          } else if(c.banAppeal && c.banAppeal.status==='rejected'){
+            appealHtml = `<div class="helper-text" style="margin:0;">Último pedido de desbanimento ("${escapeHtml(c.banAppeal.message)}") foi recusado${c.banAppeal.autoRejected?' automaticamente (sem resposta em 1 dia)':''}.</div>`;
+          }
+          return `
+          <div class="client-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+            <div class="client-row">
+              <div class="avatar" style="opacity:.55;">${(c.name||'?').charAt(0).toUpperCase()}</div>
+              <div class="client-info">
+                <b>${escapeHtml(c.name)}</b>
+                <span>${escapeHtml(c.phone||'sem telefone')}</span>
+              </div>
+            </div>
+            <div class="helper-text" style="margin:0;">
+              Banido em ${c.bannedAt?formatDate(c.bannedAt.slice(0,10)):'-'}<br>
+              ${c.banReason ? 'Motivo: '+escapeHtml(c.banReason) : 'Nenhum motivo informado'}
+            </div>
+            ${appealHtml}
+            <div class="row" style="gap:6px;">
+              <button class="btn btn-sm btn-success" style="flex:1;" onclick="unbanClient('${c.id}')">Desbanir</button>
+              ${c.banAppeal && c.banAppeal.status==='pending' ? `<button class="btn btn-sm btn-danger" style="flex:1;" onclick="rejectBanAppeal('${c.id}')">Recusar pedido</button>` : ''}
+            </div>
+          </div>
+        `;
+        }).join('');
+    }
+  }
+
+  if(currentTab==='servicos'){
+    const sWrap = document.getElementById('list-services');
+    sWrap.innerHTML = shop.services.length===0
+      ? `<div class="empty-state" style="padding:24px;"><div class="em">💈</div>Nenhum serviço cadastrado.<br>Adicione cortes, barba, etc.</div>`
+      : shop.services.map(s=>`
+        <div class="service-item" onclick="openServiceModal('${s.id}')">
+          <div style="display:flex;align-items:center;">
+            <div class="service-icon-wrap">${svcVisualHtml(s,20)}</div>
+            <div class="info"><b>${escapeHtml(s.name)}</b></div>
+          </div>
+          <div class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</div>
+        </div>
+      `).join('');
+  }
+
+  if(currentTab==='horarios'){
+    renderWorkdaysRow(shop);
+    renderWorkTimesList(shop);
+    renderDaysOffList(shop);
+  }
+
+  if(currentTab==='faturamento'){
+    renderFinanceTab();
+  }
+
+  if(currentTab==='avaliacoes'){
+    renderReviewsTab();
+  }
+}
+
+/* ============================================================
+   AVALIAÇÕES (estrelas + comentários dos clientes)
+   ============================================================ */
+function starsHtml(rating){
+  let s = '';
+  for(let i=1;i<=5;i++){ s += `<span class="st ${i<=Math.round(rating)?'on':''}">★</span>`; }
+  return s;
+}
+function shopRatingStats(shop){
+  const reviews = shop.reviews || [];
+  const count = reviews.length;
+  const avg = count===0 ? 0 : reviews.reduce((sum,r)=>sum+Number(r.rating||0),0) / count;
+  return {count, avg};
+}
+function renderReviewCard(r){
+  const dateFmt = r.createdAt ? formatDate(r.createdAt.slice(0,10)) : '';
+  return `
+    <div class="review-card">
+      <div class="rtop">
+        <span class="rname">${escapeHtml(r.clientName||'Cliente')}</span>
+        <span class="rdate">${dateFmt}</span>
+      </div>
+      <div class="stars-display">${starsHtml(r.rating)}</div>
+      ${r.comment ? `<div class="rcomment">${escapeHtml(r.comment)}</div>` : ''}
+    </div>
+  `;
+}
+function renderReviewsTab(){
+  const shop = currentShop();
+  if(!shop) return;
+  const {count, avg} = shopRatingStats(shop);
+  document.getElementById('barber-rating-avg').textContent = count===0 ? '–' : avg.toFixed(1).replace('.',',');
+  document.getElementById('barber-rating-stars').innerHTML = starsHtml(avg);
+  document.getElementById('barber-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
+  const listWrap = document.getElementById('list-reviews');
+  const sorted = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  listWrap.classList.toggle('reviews-carousel', sorted.length>1);
+  listWrap.innerHTML = sorted.length===0
+    ? `<div class="empty-state" style="padding:24px;"><div class="em">⭐</div>Nenhuma avaliação recebida ainda</div>`
+    : sorted.map(r=>renderReviewCard(r)).join('');
+}
+
+function renderApptCard(a, mode){
+  const shop = currentShop();
+  const svcNames = a.serviceIds.map(id=>{
+    const s = shop.services.find(x=>x.id===id); return s?s.name:'';
+  }).filter(Boolean).join(', ');
+  const dateFmt = formatDate(a.date);
+  const statusLabels = {pending:'Pendente', accepted:'Confirmado', rejected:'Recusado', done:'Atendido'};
+  return `
+    <div class="appt-card ${a.status}">
+      <div class="appt-top">
+        <b>${escapeHtml(a.clientName)}</b>
+        <span class="status-tag ${a.status}">${statusLabels[a.status]||a.status}</span>
+      </div>
+      <div class="appt-meta">📅 ${dateFmt} às ${a.time}</div>
+      <div class="appt-services">${escapeHtml(svcNames)}</div>
+      <div class="appt-total">R$ ${Number(a.total).toFixed(2).replace('.',',')}</div>
+      ${a.paymentMethod ? `<div class="payment-tag">${a.paymentMethod==='pix'?(a.paymentStatus==='pago'?'💳 Pago via Pix':'⏳ Cliente avisou pagamento via Pix'):(a.paymentStatus==='pago'?'💵 Pagamento recebido':'💵 Vai pagar pessoalmente')}</div>` : ''}
+      ${a.paymentMethod && a.paymentStatus!=='pago' ? `
+        <div class="row" style="margin-top:10px;">
+          <button class="btn btn-sm btn-success" onclick="confirmPaymentReceived('${a.id}')">${a.paymentMethod==='pessoal' ? 'Confirmar pagamento pessoalmente' : 'Confirmar pagamento recebido'}</button>
+        </div>` : ''}
+      ${mode==='pending' ? `
+        <div class="row" style="margin-top:12px;">
+          <button class="btn btn-sm btn-success" onclick="respondAppt('${a.id}','accepted')">Aceitar</button>
+          <button class="btn btn-sm btn-danger" onclick="respondAppt('${a.id}','rejected')">Recusar</button>
+        </div>` : ''}
+      ${mode==='accepted' ? `
+        <div class="row" style="margin-top:12px;">
+          <button class="btn btn-sm btn-ghost" onclick="markAsDone('${a.id}')">Marcar como atendido</button>
+        </div>` : ''}
+    </div>
+  `;
+}
+function formatDate(iso){
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function respondAppt(apptId, status){
+  const shop = currentShop();
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  if(status==='accepted'){
+    // check conflict: another accepted appt same date/time
+    const conflict = shop.appointments.find(a=>a.id!==apptId && a.date===appt.date && a.time===appt.time && a.status==='accepted');
+    if(conflict){ toast('Esse horário já foi confirmado com outro cliente'); return; }
+    // reject any other pending requests for the same slot automatically? -> just leave, barber can reject manually
+  }
+  appt.status = status;
+  saveShops(shops);
+  renderBarberDashboard();
+  toast(status==='accepted' ? 'Agendamento confirmado!' : 'Solicitação recusada');
+}
+function confirmPaymentReceived(apptId){
+  const shop = currentShop();
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  appt.paymentStatus = 'pago';
+  saveShops(shops);
+  renderBarberDashboard();
+  toast('Pagamento confirmado!');
+}
+function markAsDone(apptId){
+  const shop = currentShop();
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  appt.status = 'done';
+  saveShops(shops);
+  renderBarberDashboard();
+  toast('Atendimento marcado como concluído!');
+}
+function clearBarberHistory(){
+  const shop = currentShop();
+  const hasHistory = shop.appointments.some(a=>a.status==='done'||a.status==='rejected'||a.status==='cancelled');
+  if(!hasHistory){ toast('Não há histórico para apagar'); return; }
+  if(confirm('Apagar todo o histórico de atendimentos concluídos, recusados e cancelados?')){
+    shop.appointments = shop.appointments.filter(a=>a.status!=='done' && a.status!=='rejected' && a.status!=='cancelled');
+    saveShops(shops);
+    renderBarberDashboard();
+    toast('Histórico apagado');
+  }
+}
+/* ============================================================
+   BARBER: FATURAMENTO (relatório de ganhos)
+   ============================================================ */
+let financeView = 'dia';
+let financeOffsets = {dia:0, semana:0, mes:0, ano:0};
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function setFinanceView(view){
+  financeView = view;
+  document.querySelectorAll('#tab-faturamento .chip').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.view===view);
+  });
+  renderFinanceTab();
+}
+function financeNav(dir){
+  let next = financeOffsets[financeView] + dir;
+  if(next > 0) next = 0; // não deixa navegar para o futuro
+  financeOffsets[financeView] = next;
+  renderFinanceTab();
+}
+function pad2(n){ return String(n).padStart(2,'0'); }
+function toISODateStr(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function getWeekStartMonday(d){
+  const day = d.getDay(); // 0=domingo..6=sábado
+  const diff = (day===0 ? -6 : 1-day);
+  const monday = new Date(d);
+  monday.setDate(d.getDate()+diff);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+function getFinancePeriodRange(view, offset){
+  const now = new Date(); now.setHours(0,0,0,0);
+  if(view==='dia'){
+    const d = new Date(now); d.setDate(d.getDate()+offset);
+    const label = (offset===0 ? 'Hoje · ' : '') + formatDate(toISODateStr(d));
+    return {startStr:toISODateStr(d), endStr:toISODateStr(d), label};
+  }
+  if(view==='semana'){
+    const monday = getWeekStartMonday(now);
+    monday.setDate(monday.getDate()+offset*7);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+    const label = (offset===0 ? 'Esta semana · ' : '') + `${formatDate(toISODateStr(monday))} a ${formatDate(toISODateStr(sunday))}`;
+    return {startStr:toISODateStr(monday), endStr:toISODateStr(sunday), label};
+  }
+  if(view==='mes'){
+    const base = new Date(now.getFullYear(), now.getMonth()+offset, 1);
+    const start = new Date(base.getFullYear(), base.getMonth(), 1);
+    const end = new Date(base.getFullYear(), base.getMonth()+1, 0);
+    const label = `${MONTH_NAMES[base.getMonth()]} de ${base.getFullYear()}`;
+    return {startStr:toISODateStr(start), endStr:toISODateStr(end), label};
+  }
+  // ano
+  const year = now.getFullYear()+offset;
+  const start = new Date(year,0,1);
+  const end = new Date(year,11,31);
+  return {startStr:toISODateStr(start), endStr:toISODateStr(end), label:String(year)};
+}
+function formatMoney(v){ return 'R$ '+Number(v||0).toFixed(2).replace('.',','); }
+
+function renderFinanceTab(){
+  const shop = currentShop();
+  if(!shop) return;
+  const doneAppts = shop.appointments.filter(a=>a.status==='done');
+
+  // total geral, somando tudo que já foi atendido desde sempre
+  const allTotal = doneAppts.reduce((sum,a)=>sum+Number(a.total||0),0);
+  document.getElementById('finance-alltime-total').textContent = formatMoney(allTotal);
+  document.getElementById('finance-alltime-count').textContent = doneAppts.length + (doneAppts.length===1?' atendimento':' atendimentos');
+
+  const {startStr, endStr, label} = getFinancePeriodRange(financeView, financeOffsets[financeView]);
+  document.getElementById('finance-period-label').textContent = label;
+  document.getElementById('finance-next-btn').classList.toggle('disabled', financeOffsets[financeView] >= 0);
+
+  const periodAppts = doneAppts
+    .filter(a=>a.date>=startStr && a.date<=endStr)
+    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const periodTotal = periodAppts.reduce((sum,a)=>sum+Number(a.total||0),0);
+  document.getElementById('finance-period-total').textContent = formatMoney(periodTotal);
+  document.getElementById('finance-period-count').textContent = periodAppts.length;
+
+  const listWrap = document.getElementById('finance-period-list');
+  listWrap.innerHTML = periodAppts.length===0
+    ? `<div class="empty-state" style="padding:24px;"><div class="em">💰</div>Nenhum atendimento faturado nesse período</div>`
+    : periodAppts.map(a=>renderApptCard(a,'plain')).join('');
+}
+
+function toggleClientStatus(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c) return;
+  c.status = c.status==='dentro' ? 'fora' : 'dentro';
+  saveShops(shops);
+  renderBarberDashboard();
+}
+
+/* ---------- Clientes: banir / desbanir / excluir / pedidos de desbanimento ---------- */
+let clientsSubView = 'ativos';
+function setClientsSubView(view){
+  clientsSubView = view;
+  document.querySelectorAll('#tab-clientes .chip').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.csub===view);
+  });
+  renderBarberDashboard();
+}
+let banTargetClientId = null;
+function openBanModal(clientId){
+  banTargetClientId = clientId;
+  document.getElementById('ban-reason-input').value = '';
+  document.getElementById('modal-ban').classList.add('active');
+}
+function confirmBanClient(){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===banTargetClientId);
+  if(!c) return;
+  c.banned = true;
+  c.banReason = document.getElementById('ban-reason-input').value.trim();
+  c.bannedAt = new Date().toISOString();
+  c.banAppeal = null;
+  saveShops(shops);
+  closeModal('modal-ban');
+  toast('Cliente banido');
+  renderBarberDashboard();
+}
+function unbanClient(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c) return;
+  if(!confirm('Desbanir '+c.name+'? Ele volta a aparecer na lista de clientes e pode agendar de novo.')) return;
+  c.banned = false;
+  c.banReason = '';
+  c.bannedAt = null;
+  c.banAppeal = null;
+  saveShops(shops);
+  toast('Cliente desbanido');
+  renderBarberDashboard();
+}
+function rejectBanAppeal(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c || !c.banAppeal) return;
+  c.banAppeal.status = 'rejected';
+  c.banAppeal.resolvedAt = new Date().toISOString();
+  c.banAppeal.autoRejected = false;
+  saveShops(shops);
+  toast('Pedido de desbanimento recusado');
+  renderBarberDashboard();
+}
+function deleteClient(clientId){
+  const shop = currentShop();
+  const c = shop.clients.find(x=>x.id===clientId);
+  if(!c) return;
+  if(!confirm('Excluir '+c.name+' definitivamente? Essa ação não pode ser desfeita — ele só volta a usar o app se fizer um novo cadastro pelo link enviado por você.')) return;
+  shop.clients = shop.clients.filter(x=>x.id!==clientId);
+  saveShops(shops);
+  toast('Cliente excluído');
+  renderBarberDashboard();
+}
+// Se um pedido de desbanimento ficar mais de 1 dia sem resposta do barbeiro,
+// é recusado automaticamente e o cliente é avisado no app dele.
+function checkExpiredBanAppeals(shop){
+  if(!shop || !shop.clients) return false;
+  const now = Date.now();
+  let changed = false;
+  shop.clients.forEach(function(c){
+    if(c.banned && c.banAppeal && c.banAppeal.status==='pending'){
+      const sentAt = new Date(c.banAppeal.sentAt).getTime();
+      if(now - sentAt > 24*60*60*1000){
+        c.banAppeal.status = 'rejected';
+        c.banAppeal.resolvedAt = new Date().toISOString();
+        c.banAppeal.autoRejected = true;
+        changed = true;
+      }
+    }
+  });
+  return changed;
+}
+
+/* ---------- Ícones de serviço ---------- */
+const SERVICE_ICON_KEYS = ['tesoura','degrade','social','undercut','barba','sobrancelha','navalha','infantil','platinado'];
+function serviceIconPaths(key){
+  const icons = {
+    tesoura: '<circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><line x1="20" y1="4" x2="8.5" y2="15.5"/><line x1="14" y1="14" x2="20" y2="20"/><line x1="8.5" y1="8.5" x2="12" y2="12"/>',
+    degrade: '<rect x="8" y="3" width="8" height="12" rx="2"/><rect x="9" y="15" width="6" height="2.5" rx="1"/><path d="M10 17.5v2.5M12.5 17.5v3M15 17.5v2.5"/><path d="M10 7h4M10 10h4"/>',
+    social: '<path d="M4 5h16" stroke-width="2.2"/><path d="M6 5v11M9.5 5v9M13 5v11M16.5 5v9M20 5v11"/>',
+    undercut: '<path d="M5 5v14M9 5v14M13 5v14M17 5v14M21 5v14"/>',
+    barba: '<path d="M8 4h8v5c0 5-1 8.5-2.3 10.7-.7 1.2-1.3 1.8-1.7 1.8s-1-.6-1.7-1.8C9 17.5 8 14 8 9z"/><path d="M9 8c1.5-1 4.5-1 6 0"/><path d="M9.5 13h5M10 16.5h4"/>',
+    sobrancelha: '<path d="M3 14q5-7 10-1"/><path d="M11 14q5-7 10-1"/>',
+    navalha: '<rect x="4" y="7" width="16" height="10" rx="2"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>',
+    infantil: '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>',
+    platinado: '<path d="M12 2l1.8 6.7L20 10l-6.2 1.7L12 18l-1.8-6.3L4 10l6.2-1.3z"/><path d="M19 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'
+  };
+  return icons[key] || icons.tesoura;
+}
+function svcIconHtml(key, size){
+  size = size || 22;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${serviceIconPaths(key)}</svg>`;
+}
+// Retorna a imagem enviada pelo barbeiro (se houver) ou o ícone padrão do serviço.
+function svcVisualHtml(s, size){
+  size = size || 22;
+  if(s.customImage){
+    return `<img src="${s.customImage}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;">`;
+  }
+  return svcIconHtml(s.icon||'tesoura', size);
+}
+
+/* ---------- Serviços ---------- */
+let editingServiceId = null;
+let editingServiceIcon = 'tesoura';
+let editingServiceImage = null;
+let editingBgType = 'default';
+let editingBgImage = '';
+let editingFontKey = 'padrao';
+function renderIconPicker(){
+  const wrap = document.getElementById('svc-icon-picker');
+  wrap.innerHTML = SERVICE_ICON_KEYS.map(k=>`
+    <div class="icon-picker-item ${k===editingServiceIcon?'selected':''}" onclick="selectServiceIcon('${k}')">${svcIconHtml(k,24)}</div>
+  `).join('');
+}
+function selectServiceIcon(k){
+  editingServiceIcon = k;
+  renderIconPicker();
+}
+function renderImagePicker(){
+  const wrap = document.getElementById('svc-image-preview-wrap');
+  if(editingServiceImage){
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('svc-image-input').click()">
+        <img class="thumb" src="${editingServiceImage}">
+        <div class="txt"><b>Imagem enviada</b>Toque para trocar</div>
+        <button type="button" class="img-remove-btn" onclick="event.stopPropagation();removeServiceImage()">Remover</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('svc-image-input').click()">
+        <div class="placeholder">📷</div>
+        <div class="txt"><b>Nenhuma imagem</b>Toque para enviar uma foto ou desenho do corte</div>
+      </div>`;
+  }
+}
+function onServiceImageSelected(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona pra não pesar no armazenamento
+      const maxSize = 300;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      editingServiceImage = canvas.toDataURL('image/jpeg', 0.82);
+      renderImagePicker();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function removeServiceImage(){
+  editingServiceImage = null;
+  renderImagePicker();
+}
+function openServiceModal(serviceId){
+  editingServiceId = serviceId || null;
+  const shop = currentShop();
+  const delWrap = document.getElementById('svc-delete-wrap');
+  if(serviceId){
+    const s = shop.services.find(x=>x.id===serviceId);
+    document.getElementById('service-modal-title').textContent = 'Editar serviço';
+    document.getElementById('svc-name').value = s.name;
+    document.getElementById('svc-price').value = s.price;
+    editingServiceIcon = s.icon || 'tesoura';
+    editingServiceImage = s.customImage || null;
+    delWrap.innerHTML = `<div style="height:10px"></div><button class="btn btn-danger" onclick="deleteService()">Excluir serviço</button>`;
+  } else {
+    document.getElementById('service-modal-title').textContent = 'Novo serviço';
+    document.getElementById('svc-name').value = '';
+    document.getElementById('svc-price').value = '';
+    editingServiceIcon = 'tesoura';
+    editingServiceImage = null;
+    delWrap.innerHTML = '';
+  }
+  renderIconPicker();
+  renderImagePicker();
+  document.getElementById('modal-service').classList.add('active');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function saveService(){
+  const name = document.getElementById('svc-name').value.trim();
+  const price = parseFloat(document.getElementById('svc-price').value);
+  if(!name || isNaN(price)){ toast('Preencha todos os campos do serviço'); return; }
+  const shop = currentShop();
+  if(editingServiceId){
+    const s = shop.services.find(x=>x.id===editingServiceId);
+    s.name=name; s.price=price; s.icon=editingServiceIcon; s.customImage=editingServiceImage||null;
+  } else {
+    shop.services.push({id:uid('svc'), name, price, icon:editingServiceIcon, customImage:editingServiceImage||null});
+  }
+  saveShops(shops);
+  closeModal('modal-service');
+  renderBarberDashboard();
+}
+function deleteService(){
+  const shop = currentShop();
+  shop.services = shop.services.filter(x=>x.id!==editingServiceId);
+  saveShops(shops);
+  closeModal('modal-service');
+  renderBarberDashboard();
+}
+
+/* ---------- Horários ---------- */
+function renderWorkdaysRow(shop){
+  const wrap = document.getElementById('workdays-row');
+  wrap.innerHTML = WEEKDAYS.map((d,i)=>`
+    <div class="day-toggle ${shop.workDays.includes(i)?'on':''}" onclick="toggleWorkday(${i})">${d}</div>
+  `).join('');
+}
+function toggleWorkday(i){
+  const shop = currentShop();
+  if(shop.workDays.includes(i)) shop.workDays = shop.workDays.filter(x=>x!==i);
+  else shop.workDays.push(i);
+  saveShops(shops);
+  renderWorkdaysRow(shop);
+}
+function saveWorkTimes(){ saveShops(shops); }
+function renderWorkTimesList(shop){
+  const wrap = document.getElementById('worktimes-list');
+  const times = (shop.workTimes||[]).slice().sort();
+  wrap.innerHTML = times.length===0
+    ? `<div class="empty-state" style="padding:20px;">Nenhum horário adicionado ainda</div>`
+    : times.map(t=>`
+      <div class="list-select-item" style="cursor:default;">
+        <b>${t}</b>
+        <button class="btn btn-sm btn-danger" onclick="removeWorkTime('${t}')">Remover</button>
+      </div>
+    `).join('');
+}
+function addWorkTime(){
+  const input = document.getElementById('new-work-time');
+  const t = input.value;
+  if(!t){ toast('Escolha um horário para adicionar'); return; }
+  const shop = currentShop();
+  if(!shop.workTimes) shop.workTimes = [];
+  if(shop.workTimes.includes(t)){ toast('Esse horário já foi adicionado'); return; }
+  shop.workTimes.push(t);
+  saveWorkTimes();
+  input.value = '';
+  renderWorkTimesList(shop);
+  toast('Horário adicionado!');
+}
+function removeWorkTime(t){
+  const shop = currentShop();
+  shop.workTimes = (shop.workTimes||[]).filter(x=>x!==t);
+  saveWorkTimes();
+  renderWorkTimesList(shop);
+}
+
+function renderDaysOffList(shop){
+  const wrap = document.getElementById('daysoff-list');
+  const days = (shop.daysOff||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  wrap.innerHTML = days.length===0
+    ? `<div class="empty-state" style="padding:16px;">Nenhum dia marcado</div>`
+    : days.map(d=>`
+      <div class="list-select-item" style="cursor:default;">
+        <div>
+          <b style="color:var(--danger);">${formatDate(d.date)}</b><br>
+          <span>${escapeHtml(d.reason)}</span>
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="removeDayOff('${d.date}')">Remover</button>
+      </div>
+    `).join('');
+}
+function addDayOff(){
+  const dateInput = document.getElementById('new-dayoff-date');
+  const reasonInput = document.getElementById('new-dayoff-reason');
+  const date = dateInput.value;
+  const reason = reasonInput.value.trim();
+  if(!date || !reason){ toast('Escolha a data e escreva uma descrição curta'); return; }
+  const shop = currentShop();
+  if(!shop.daysOff) shop.daysOff = [];
+  shop.daysOff = shop.daysOff.filter(d=>d.date!==date);
+  shop.daysOff.push({date, reason});
+  saveShops(shops);
+  dateInput.value=''; reasonInput.value='';
+  renderDaysOffList(shop);
+  toast('Dia sem atendimento adicionado!');
+}
+function removeDayOff(date){
+  const shop = currentShop();
+  shop.daysOff = (shop.daysOff||[]).filter(d=>d.date!==date);
+  saveShops(shops);
+  renderDaysOffList(shop);
+}
+
+/* ---------- Configurações / Personalização ---------- */
+function openConfigScreen(){
+  const shop = currentShop();
+  document.getElementById('config-code').textContent = shop.code;
+  document.getElementById('config-shop-name').value = shop.shopName;
+  document.getElementById('config-barber-name').value = shop.barberName;
+  document.getElementById('config-welcome-msg').value = shop.welcomeMsg;
+  document.getElementById('config-color').value = shop.color;
+  editingBgType = shop.bgType || 'default';
+  editingBgImage = shop.bgImage || '';
+  editingFontKey = shop.fontKey || 'padrao';
+  document.getElementById('config-bg-color').value = shop.bgColor || '#0a0a0d';
+  document.getElementById('config-text-color').value = shop.textColor || '#f5f1e9';
+  document.getElementById('config-card-color').value = shop.cardColor || '#15151a';
+  document.getElementById('config-dim-text-color').value = shop.dimTextColor || '#ffffff';
+  renderBgTypeChips();
+  renderBgImagePicker();
+  renderFontChips();
+  const addr = shop.addressDetails || {};
+  if(shop.address && !addr.cidade && !addr.rua && !addr.bairro && !addr.numero){
+    addr.rua = shop.address;
+  }
+  document.getElementById('config-addr-cidade').value = addr.cidade || '';
+  document.getElementById('config-addr-rua').value = addr.rua || '';
+  document.getElementById('config-addr-bairro').value = addr.bairro || '';
+  document.getElementById('config-addr-numero').value = addr.numero || '';
+  document.getElementById('config-pix-code').value = shop.pixCode || '';
+  document.getElementById('config-client-url').value = shop.clientAppUrl || '';
+  refreshFullClientLink();
+  document.getElementById('config-account-email').textContent = (currentUser && currentUser.email) || '-';
+  const badge = document.getElementById('config-plan-badge');
+  const trialText = document.getElementById('config-trial-text');
+  if(currentUserDoc && currentUserDoc.plan==='gold'){
+    badge.style.display = 'inline-flex';
+    if(currentUserDoc.goldExpiresAt){
+      const days = goldDaysLeftForUser(currentUserDoc);
+      trialText.textContent = 'Plano Gold ('+(currentUserDoc.goldPlano||'')+'): '+days+' dia(s) restante(s).';
+    } else {
+      trialText.textContent = 'Você tem a versão Gold vitalícia. Obrigado!';
+    }
+  } else {
+    badge.style.display = 'none';
+    const days = currentUserDoc ? trialDaysLeftForUser(currentUserDoc) : 0;
+    trialText.textContent = 'Teste grátis: '+days+' dia(s) restante(s).';
+  }
+  renderNotifSettingsUI('barber');
+}
+document.getElementById('screen-barber-config').addEventListener('transitionend',()=>{});
+function saveShopConfig(){
+  const shop = currentShop();
+  shop.shopName = document.getElementById('config-shop-name').value.trim() || shop.shopName;
+  shop.barberName = document.getElementById('config-barber-name').value.trim() || shop.barberName;
+  shop.welcomeMsg = document.getElementById('config-welcome-msg').value.trim() || shop.welcomeMsg;
+  shop.color = document.getElementById('config-color').value;
+  shop.addressDetails = {
+    cidade: document.getElementById('config-addr-cidade').value.trim(),
+    rua: document.getElementById('config-addr-rua').value.trim(),
+    bairro: document.getElementById('config-addr-bairro').value.trim(),
+    numero: document.getElementById('config-addr-numero').value.trim()
+  };
+  shop.address = '';
+  shop.pixCode = document.getElementById('config-pix-code').value.trim();
+  shop.clientAppUrl = document.getElementById('config-client-url').value.trim();
+  saveShops(shops);
+  applyTheme(shop.color);
+  applyAppearance(shop);
+  toast('Personalização salva! O app do cliente já atualiza sozinho.');
+  renderBarberDashboard();
+}
+/* ---------- Fundo do app (cor sólida ou imagem) ---------- */
+function setBgType(type){
+  editingBgType = type;
+  renderBgTypeChips();
+}
+function renderBgTypeChips(){
+  document.querySelectorAll('[data-bgtype]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-bgtype')===editingBgType);
+  });
+  document.getElementById('config-bg-color-row').style.display = editingBgType==='color' ? 'block' : 'none';
+  document.getElementById('config-bg-image-row').style.display = editingBgType==='image' ? 'block' : 'none';
+}
+function setFontStyle(key){
+  editingFontKey = key;
+  renderFontChips();
+}
+function renderFontChips(){
+  document.querySelectorAll('[data-font]').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-font')===editingFontKey);
+  });
+}
+function renderBgImagePicker(){
+  const wrap = document.getElementById('config-bg-image-preview-wrap');
+  if(editingBgImage){
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <img class="thumb" src="${editingBgImage}">
+        <div class="txt"><b>Imagem enviada</b>Toque para trocar</div>
+        <button type="button" class="img-remove-btn" onclick="event.stopPropagation();removeBgImage()">Remover</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="img-upload-box" onclick="document.getElementById('config-bg-image-input').click()">
+        <div class="placeholder">🖼️</div>
+        <div class="txt"><b>Nenhuma imagem</b>Toque para enviar uma foto para o fundo do app</div>
+      </div>`;
+  }
+}
+function onBgImageSelected(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona pra não pesar no armazenamento
+      const maxSize = 1080;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h >= w && h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      editingBgImage = canvas.toDataURL('image/jpeg', 0.75);
+      renderBgImagePicker();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function removeBgImage(){
+  editingBgImage = '';
+  renderBgImagePicker();
+}
+function saveBackgroundConfig(){
+  const shop = currentShop();
+  if(editingBgType==='image' && !editingBgImage){
+    toast('Envie uma imagem ou escolha outro tipo de fundo');
+    return;
+  }
+  shop.bgType = editingBgType;
+  shop.bgColor = document.getElementById('config-bg-color').value;
+  shop.bgImage = editingBgImage;
+  shop.textColor = document.getElementById('config-text-color').value;
+  shop.cardColor = document.getElementById('config-card-color').value;
+  shop.dimTextColor = document.getElementById('config-dim-text-color').value;
+  shop.fontKey = editingFontKey;
+  saveShops(shops);
+  applyAppearance(shop);
+  toast('Aparência salva! O app do cliente já atualiza sozinho.');
+}
+function copyCode(){
+  const shop = currentShop();
+  navigator.clipboard && navigator.clipboard.writeText(shop.code).catch(()=>{});
+  toast('Código copiado: '+shop.code);
+}
+// Monta o link completo (base + ?code=) usando o código único desta conta
+// e mostra na tela de Configurações, atualizando sempre que o campo de
+// base do link do cliente mudar.
+function buildFullClientLink(){
+  const shop = currentShop();
+  if(!shop) return '';
+  const baseUrl = (document.getElementById('config-client-url').value || shop.clientAppUrl || '').trim();
+  if(!baseUrl) return '';
+  return baseUrl.replace(/\/+$/,'') + '?code=' + shop.code;
+}
+function refreshFullClientLink(){
+  const el = document.getElementById('config-full-link');
+  if(!el) return;
+  const link = buildFullClientLink();
+  el.textContent = link || 'Preencha o link acima primeiro';
+}
+function copyFullClientLink(){
+  const link = buildFullClientLink();
+  if(!link){ toast('Antes, cole o link onde o app do cliente está publicado'); return; }
+  navigator.clipboard && navigator.clipboard.writeText(link).catch(()=>{});
+  toast('Link copiado! Já vem com seu código.');
+}
+function shareClientLink(){
+  const shop = currentShop();
+  if(!shop) return;
+  const baseUrl = (document.getElementById('config-client-url').value || shop.clientAppUrl || '').trim();
+  if(!baseUrl){
+    toast('Antes, cole o link onde o app do cliente está publicado (cliente.html)');
+    document.getElementById('config-client-url').focus();
+    return;
+  }
+  // salva o link já para não perder, mesmo se o barbeiro sair sem clicar "Salvar"
+  shop.clientAppUrl = baseUrl;
+  saveShops(shops);
+
+  const link = baseUrl.replace(/\/+$/,'') + '?code=' + shop.code;
+  const text = `💈 Agende seu horário na ${shop.shopName}! É só tocar aqui: ${link}`;
+
+  if(navigator.share){
+    // Abre o menu nativo de compartilhar do celular. O barbeiro escolhe
+    // WhatsApp e depois "Status" (não existe forma de pular essa etapa,
+    // é uma restrição do próprio WhatsApp/sistema, não do app).
+    navigator.share({title: shop.shopName, text: text}).catch(()=>{});
+  } else {
+    // Fallback: navegadores sem suporte ao menu nativo (ex: desktop).
+    // Abre o WhatsApp com a mensagem pronta; o barbeiro escolhe o Status
+    // manualmente por lá.
+    const waLink = 'https://wa.me/?text=' + encodeURIComponent(text);
+    window.open(waLink, '_blank');
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(text).catch(()=>{});
+      toast('Mensagem também copiada, caso precise colar manualmente');
+    }
+  }
+}
+
+/* ============================================================
+   CLIENT SIDE
+   ============================================================ */
+function joinAsClient(){
+  const raw = document.getElementById('input-join-code').value.trim().toUpperCase();
+  if(!raw){ toast('Cole o código enviado pelo barbeiro'); return; }
+  toast('Procurando barbearia...');
+  db.collection(SHOPS_COLLECTION).doc(raw).get().then(function(doc){
+    if(!doc.exists){ toast('Código não encontrado. Confira com seu barbeiro.'); return; }
+    shops[raw] = normalizeShop(doc.data());
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(shops)); }catch(e){}
+    const shop = shops[raw];
+    applyTheme(shop.color);
+
+    // check if this device already registered as a client for this shop
+    const existingLocalId = localStorage.getItem('barberflow_client_'+raw);
+    if(existingLocalId && shop.clients.find(c=>c.id===existingLocalId)){
+      session = {role:'client', code:raw, clientId:existingLocalId};
+      saveSession(session);
+      listenToShop(raw, function(){
+        enterClientHome();
+      });
+    } else {
+      session = {role:'client', code:raw, clientId:null};
+      saveSession(session);
+      listenToShop(raw, function(){
+        showScreen('screen-client-register');
+      });
+    }
+  }).catch(function(err){
+    console.error('Erro ao buscar barbearia:', err);
+    toast('Erro de conexão. Verifique sua internet e tente de novo.');
+  });
+}
+function registerClient(){
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  if(!name){ toast('Digite seu nome'); return; }
+  const shop = shops[session.code];
+  const client = {id:uid('cli'), name, phone, status:'fora', createdAt:new Date().toISOString(), banned:false, banReason:'', bannedAt:null, banAppeal:null};
+  shop.clients.push(client);
+  saveShops(shops);
+  localStorage.setItem('barberflow_client_'+session.code, client.id);
+  session.clientId = client.id;
+  saveSession(session);
+  renderClientHome();
+  showScreen('screen-client-home');
+  toast('Cadastro concluído! Bem-vindo(a), '+name);
+}
+
+let selectedServiceIds = [];
+let selectedSlot = null;
+let selectedPeriod = 'manha'; // 'manha' | 'tarde' | 'noite'
+
+// Pega o registro do cliente logado na barbearia atual (ou null).
+function getClientRecord(){
+  const shop = shops[session.code];
+  if(!shop || !session || !session.clientId) return null;
+  return shop.clients.find(c=>c.id===session.clientId) || null;
+}
+// Ponto único de entrada pra tela inicial do cliente: se ele está banido,
+// manda pra tela de banido em vez da home. Substitui o antigo par
+// "renderClientHome(); showScreen('screen-client-home');" nos pontos de entrada.
+function enterClientHome(){
+  const c = getClientRecord();
+  if(c && c.banned){ showClientBannedScreen(); return; }
+  renderClientHome();
+  showScreen('screen-client-home');
+}
+// Monta e mostra a tela de "banido" com o motivo e o estado do pedido de desbanimento.
+function showClientBannedScreen(){
+  const shop = shops[session.code];
+  const c = getClientRecord();
+  if(!shop || !c) return;
+  applyTheme(shop.color);
+  document.getElementById('banned-shop-name').textContent = shop.shopName || '';
+  document.getElementById('banned-date').textContent = c.bannedAt ? formatDate(c.bannedAt.slice(0,10)) : '-';
+  document.getElementById('banned-reason').textContent = c.banReason ? ('Motivo: '+c.banReason) : 'Nenhum motivo foi informado pelo barbeiro.';
+
+  const formCard = document.getElementById('banned-appeal-form-card');
+  const pendingCard = document.getElementById('banned-appeal-pending-card');
+  const rejectedCard = document.getElementById('banned-appeal-rejected-card');
+  formCard.style.display = 'none';
+  pendingCard.style.display = 'none';
+  rejectedCard.style.display = 'none';
+
+  if(c.banAppeal && c.banAppeal.status==='pending'){
+    pendingCard.style.display = 'block';
+    document.getElementById('banned-appeal-pending-msg').textContent = '"'+c.banAppeal.message+'"';
+  } else {
+    if(c.banAppeal && c.banAppeal.status==='rejected'){
+      rejectedCard.style.display = 'block';
+      document.getElementById('banned-appeal-rejected-info').textContent =
+        'Seu último pedido ("'+c.banAppeal.message+'") foi recusado'+(c.banAppeal.autoRejected?' automaticamente (sem resposta em 1 dia).':' pelo barbeiro.');
+    }
+    formCard.style.display = 'block';
+    document.getElementById('banned-appeal-input').value = '';
+  }
+  showScreen('screen-client-banned');
+}
+// Cliente banido envia uma mensagem pedindo pra ser desbanido; o barbeiro
+// já recebe notificação disso automaticamente (ver notify('barber','banAppeal',...)).
+function submitBanAppeal(){
+  const c = getClientRecord();
+  if(!c) return;
+  const msg = document.getElementById('banned-appeal-input').value.trim();
+  if(!msg){ toast('Escreva uma mensagem para o barbeiro'); return; }
+  c.banAppeal = {status:'pending', message: msg, sentAt: new Date().toISOString()};
+  saveShops(shops);
+  toast('Pedido enviado ao barbeiro');
+  showClientBannedScreen();
+}
+
+function renderClientHome(){
+  const shop = shops[session.code];
+  if(!shop) return;
+  const __clientRec = getClientRecord();
+  if(__clientRec && __clientRec.banned){ showClientBannedScreen(); return; }
+  applyTheme(shop.color);
+  applyAppearance(shop);
+  document.getElementById('client-shop-name').textContent = shop.shopName;
+  document.getElementById('client-barber-name').textContent = shop.barberName;
+  document.getElementById('client-banner-title').textContent = shop.shopName;
+  document.getElementById('client-welcome-msg').textContent = shop.welcomeMsg;
+
+  // localização da barbearia
+  const locBar = document.getElementById('client-location-bar');
+  const addrParts = shopAddressParts(shop);
+  if(addrParts.length>0){
+    locBar.style.display = 'flex';
+    document.getElementById('client-location-address').innerHTML = addrParts.map(p=>
+      `<div class="addr-row"><span class="addr-k">${escapeHtml(p.k)}:</span><span class="addr-v">${escapeHtml(p.v)}</span></div>`
+    ).join('');
+  } else {
+    locBar.style.display = 'none';
+  }
+
+  // pessoas cortando cabelo agora, na barbearia
+  const inShopCount = shop.clients.filter(c=>c.status==='dentro' && !c.banned).length;
+  const inShopTag = document.getElementById('client-inshop-count');
+  if(inShopCount>0){
+    inShopTag.style.display='inline-block';
+    inShopTag.textContent = `✂️ ${inShopCount} ${inShopCount===1?'pessoa cortando':'pessoas cortando'} o cabelo agora`;
+  } else {
+    inShopTag.style.display='none';
+  }
+
+  // next appointment banner
+  const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId && !a.hiddenFromClient);
+  const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=new Date().toISOString().slice(0,10))
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+  const bannerTag = document.getElementById('client-next-appt');
+  if(nextAccepted){
+    bannerTag.style.display='inline-block';
+    bannerTag.textContent = `✅ Agendado: ${formatDate(nextAccepted.date)} às ${nextAccepted.time}`;
+  } else {
+    bannerTag.style.display='none';
+  }
+
+  // services
+  selectedServiceIds = [];
+  const svcWrap = document.getElementById('client-services-list');
+  svcWrap.innerHTML = shop.services.length===0
+    ? `<div class="empty-state" style="padding:20px;"><div class="em">💈</div>O barbeiro ainda não cadastrou serviços</div>`
+    : shop.services.map(s=>`
+      <div class="service-card-h" id="csvc-${s.id}" onclick="toggleClientService('${s.id}')" style="position:relative;">
+        <span class="check-dot">✓</span>
+        <div class="service-icon-wrap">${svcVisualHtml(s,24)}</div>
+        <b>${escapeHtml(s.name)}</b>
+        <span class="price">R$ ${Number(s.price).toFixed(2).replace('.',',')}</span>
+      </div>
+    `).join('');
+  updateClientTotal();
+
+  // date default = today
+  const dateInput = document.getElementById('client-date');
+  if(!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
+  dateInput.min = new Date().toISOString().slice(0,10);
+  renderSlots();
+
+  // my appointments list
+  const listWrap = document.getElementById('client-my-appts');
+  const sorted = myAppts.slice().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  listWrap.innerHTML = sorted.length===0
+    ? `<div class="empty-state" style="padding:20px;"><div class="em">🗓️</div>Você ainda não tem agendamentos</div>`
+    : sorted.map(a=>renderClientApptCard(a)).join('');
+
+  // avaliações da barbearia (visíveis para todos os clientes)
+  const {count, avg} = shopRatingStats(shop);
+  document.getElementById('client-rating-avg').textContent = count===0 ? '–' : avg.toFixed(1).replace('.',',');
+  document.getElementById('client-rating-stars').innerHTML = starsHtml(avg);
+  document.getElementById('client-rating-count').textContent = count===0 ? 'Ainda sem avaliações' : `${count} ${count===1?'avaliação':'avaliações'}`;
+  const reviewsWrap = document.getElementById('client-reviews-list');
+  const sortedReviews = (shop.reviews||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  reviewsWrap.classList.toggle('reviews-carousel', sortedReviews.length>1);
+  reviewsWrap.innerHTML = sortedReviews.length===0
+    ? `<div class="empty-state" style="padding:16px;"><div class="em">⭐</div>Seja o primeiro a avaliar!</div>`
+    : sortedReviews.map(r=>renderReviewCard(r)).join('');
+}
+function renderClientApptCard(a){
+  const shop = shops[session.code];
+  const svcNames = a.serviceIds.map(id=>{
+    const s = shop.services.find(x=>x.id===id); return s?s.name:'';
+  }).filter(Boolean).join(', ');
+  const statusLabels = {pending:'Pendente', accepted:'Confirmado', rejected:'Recusado', done:'Atendido', cancelled:'Cancelado'};
+  const cancellable = (a.status==='pending' || a.status==='accepted');
+  const paymentLabel = a.paymentMethod==='pix'
+    ? (a.paymentStatus==='pago' ? '💳 Pago via Pix (confirmado pelo barbeiro)' : '⏳ Pix avisado, aguardando confirmação do barbeiro')
+    : a.paymentMethod==='pessoal'
+      ? (a.paymentStatus==='pago' ? '💵 Pagamento recebido pelo barbeiro' : '💵 Vai pagar pessoalmente')
+      : '';
+  const showPaymentButtons = cancellable && !a.paymentMethod;
+  const myReview = a.status==='done' ? (shop.reviews||[]).find(r=>r.apptId===a.id) : null;
+  return `
+    <div class="appt-card ${a.status}" ${cancellable ? `onclick="confirmCancelAppt('${a.id}')"` : ''} style="${cancellable?'cursor:pointer;':''}">
+      <div class="appt-top">
+        <b>${escapeHtml(a.clientName)}</b>
+        <span class="status-tag ${a.status}">${statusLabels[a.status]||a.status}</span>
+      </div>
+      <div class="appt-meta">📅 ${formatDate(a.date)} às ${a.time}</div>
+      <div class="appt-services">${escapeHtml(svcNames)}</div>
+      <div class="appt-total">R$ ${Number(a.total).toFixed(2).replace('.',',')}</div>
+      ${paymentLabel ? `<div class="payment-tag">${paymentLabel}</div>` : ''}
+      ${showPaymentButtons ? `
+        <div class="payment-row" onclick="event.stopPropagation()">
+          ${shop.pixCode ? `<button class="btn btn-sm btn-primary" onclick="openPixModal('${a.id}')">Pagar com Pix</button>` : ''}
+          <button class="btn btn-sm btn-outline" onclick="payPersonally('${a.id}')">Pagar pessoalmente</button>
+        </div>` : ''}
+      ${a.status==='done' && !myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-primary" onclick="openReviewModal('${a.id}')">⭐ Avaliar atendimento</button>
+        </div>` : ''}
+      ${myReview ? `
+        <div style="margin-top:10px;" onclick="event.stopPropagation()">
+          <div class="stars-display">${starsHtml(myReview.rating)}</div>
+          ${myReview.comment ? `<div class="rcomment">${escapeHtml(myReview.comment)}</div>` : ''}
+        </div>` : ''}
+      ${cancellable ? `<div class="helper-text" style="margin-top:8px;">Toque no card para cancelar este agendamento</div>` : ''}
+    </div>
+  `;
+}
+function confirmCancelAppt(apptId){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  if(confirm('Deseja cancelar esse agendamento?')){
+    appt.status = 'cancelled';
+    saveShops(shops);
+    renderClientHome();
+    toast('Agendamento cancelado');
+  }
+}
+let pixTargetApptId = null;
+function openPixModal(apptId){
+  pixTargetApptId = apptId;
+  const shop = shops[session.code];
+  document.getElementById('pix-code-text').textContent = shop.pixCode;
+  document.getElementById('pix-qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(shop.pixCode);
+  document.getElementById('modal-pix').classList.add('active');
+}
+function copyPixCode(){
+  const shop = shops[session.code];
+  navigator.clipboard && navigator.clipboard.writeText(shop.pixCode).catch(()=>{});
+  toast('Código Pix copiado');
+}
+function confirmPixPaid(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); closeModal('modal-pix'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===pixTargetApptId);
+  if(appt){
+    appt.paymentMethod = 'pix';
+    appt.paymentStatus = 'aguardando';
+    saveShops(shops);
+    renderClientHome();
+    toast('Barbeiro avisado! Ele vai confirmar o recebimento.');
+  }
+  closeModal('modal-pix');
+}
+function payPersonally(apptId){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===apptId);
+  if(!appt) return;
+  appt.paymentMethod = 'pessoal';
+  appt.paymentStatus = 'pendente';
+  saveShops(shops);
+  renderClientHome();
+  toast('Combinado: pagamento pessoalmente na hora');
+}
+let reviewTargetApptId = null;
+let reviewRating = 0;
+function openReviewModal(apptId){
+  reviewTargetApptId = apptId;
+  reviewRating = 0;
+  document.getElementById('review-comment').value = '';
+  renderStarPicker();
+  document.getElementById('modal-review').classList.add('active');
+}
+function renderStarPicker(){
+  const wrap = document.getElementById('review-star-picker');
+  wrap.innerHTML = [1,2,3,4,5].map(n=>`<span class="st ${n<=reviewRating?'on':''}" onclick="setReviewRating(${n})">★</span>`).join('');
+}
+function setReviewRating(n){
+  reviewRating = n;
+  renderStarPicker();
+}
+function submitReview(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma avaliação real é salva'); closeModal('modal-review'); return; }
+  if(reviewRating<1){ toast('Escolha de 1 a 5 estrelas'); return; }
+  const shop = shops[session.code];
+  const appt = shop.appointments.find(a=>a.id===reviewTargetApptId);
+  if(!appt) return;
+  if(!shop.reviews) shop.reviews = [];
+  const client = shop.clients.find(c=>c.id===session.clientId);
+  shop.reviews.push({
+    id: uid('review'),
+    apptId: reviewTargetApptId,
+    clientId: session.clientId,
+    clientName: (client ? client.name : appt.clientName) || 'Cliente',
+    rating: reviewRating,
+    comment: document.getElementById('review-comment').value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  saveShops(shops);
+  closeModal('modal-review');
+  toast('Obrigado pela avaliação!');
+  renderClientHome();
+}
+function clearClientHistory(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
+  const shop = shops[session.code];
+  const hasHistory = shop.appointments.some(a=>a.clientId===session.clientId && !a.hiddenFromClient && (a.status==='done'||a.status==='rejected'||a.status==='cancelled'));
+  if(!hasHistory){ toast('Não há histórico para apagar'); return; }
+  if(confirm('Apagar seu histórico de agendamentos concluídos, recusados e cancelados?')){
+    // Importante: NUNCA remover o registro em si — atendimentos concluídos ('done')
+    // contam para o faturamento do barbeiro. Apenas marcamos como "escondido do
+    // cliente", assim ele some da tela do cliente mas continua intacto no painel
+    // do barbeiro (faturamento, relatórios etc.).
+    shop.appointments.forEach(a=>{
+      if(a.clientId===session.clientId && (a.status==='done'||a.status==='rejected'||a.status==='cancelled')){
+        a.hiddenFromClient = true;
+      }
+    });
+    saveShops(shops);
+    renderClientHome();
+    toast('Histórico apagado');
+  }
+}
+
+function openShopLocation(){
+  const shop = shops[session.code];
+  if(!shop) return false;
+  const query = shopAddressQuery(shop);
+  if(!query) return false;
+  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+  window.open(url, '_blank');
+  return false;
+}
+function shopAddressParts(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const order = [['Cidade',addr.cidade], ['Rua',addr.rua], ['Bairro',addr.bairro], ['Número',addr.numero]];
+  const parts = order.filter(([k,v])=>v).map(([k,v])=>({k,v}));
+  if(parts.length===0 && shop && shop.address) parts.push({k:'Endereço', v: shop.address});
+  return parts;
+}
+function shopAddressQuery(shop){
+  const addr = (shop && shop.addressDetails) || {};
+  const bits = [];
+  let ruaLine = addr.rua || '';
+  if(addr.numero) ruaLine = ruaLine ? (ruaLine+', '+addr.numero) : addr.numero;
+  if(ruaLine) bits.push(ruaLine);
+  if(addr.bairro) bits.push(addr.bairro);
+  if(addr.cidade) bits.push(addr.cidade);
+  if(bits.length===0 && shop && shop.address) return shop.address;
+  return bits.join(' - ');
+}
+function toggleClientService(id){
+  const el = document.getElementById('csvc-'+id);
+  if(selectedServiceIds.includes(id)){
+    selectedServiceIds = selectedServiceIds.filter(x=>x!==id);
+    el.classList.remove('selected');
+  } else {
+    selectedServiceIds.push(id);
+    el.classList.add('selected');
+  }
+  updateClientTotal();
+  renderSlots();
+}
+function updateClientTotal(){
+  const shop = shops[session.code];
+  const total = selectedServiceIds.reduce((sum,id)=>{
+    const s = shop.services.find(x=>x.id===id);
+    return sum + (s?Number(s.price):0);
+  },0);
+  document.getElementById('client-total').textContent = 'R$ '+total.toFixed(2).replace('.',',');
+  updateScheduleButton();
+}
+
+function timeToMinutes(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function minutesToTime(m){ const h=Math.floor(m/60); const mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+
+// Faixas de horário: manhã até 12:00, tarde de 12:30 até 17:30, noite de 18:00 em diante.
+function periodOfTime(t){
+  const m = timeToMinutes(t);
+  if(m <= 12*60) return 'manha';
+  if(m <= 17*60+30) return 'tarde';
+  return 'noite';
+}
+function selectPeriod(period){
+  selectedPeriod = period;
+  renderSlots();
+}
+function updatePeriodBanners(){
+  ['manha','tarde','noite'].forEach(p=>{
+    const el = document.getElementById('period-'+p);
+    if(el) el.classList.toggle('active', selectedPeriod===p);
+  });
+}
+function renderSlots(){
+  selectedSlot = null;
+  updatePeriodBanners();
+  const shop = shops[session.code];
+  const dateStr = document.getElementById('client-date').value;
+  const wrap = document.getElementById('client-slots');
+  const dayoffBanner = document.getElementById('client-dayoff-banner');
+  if(!dateStr){ wrap.innerHTML=''; dayoffBanner.style.display='none'; return; }
+
+  const dayOff = (shop.daysOff||[]).find(d=>d.date===dateStr);
+  if(dayOff){
+    dayoffBanner.style.display='block';
+    dayoffBanner.innerHTML = `🚫 <b>Sem atendimento nesse dia</b><br>${escapeHtml(dayOff.reason)}`;
+    wrap.innerHTML = '';
+    updateScheduleButton();
+    return;
+  }
+  dayoffBanner.style.display='none';
+
+  const dateObj = new Date(dateStr+'T00:00:00');
+  const weekday = dateObj.getDay();
+  if(!shop.workDays.includes(weekday)){
+    wrap.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Barbearia fechada nesse dia</div>`;
+    updateScheduleButton();
+    return;
+  }
+  const acceptedTimes = shop.appointments.filter(a=>a.date===dateStr && a.status==='accepted').map(a=>a.time);
+  const slots = (shop.workTimes||[]).slice().sort().filter(t=>periodOfTime(t)===selectedPeriod);
+  wrap.innerHTML = slots.map(t=>{
+    const taken = acceptedTimes.includes(t);
+    return `<div class="slot-btn ${taken?'taken':''}" onclick="${taken?'':`selectSlot('${t}')`}">${t}</div>`;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários nesse período</div>`;
+  updateScheduleButton();
+}
+function selectSlot(t){
+  selectedSlot = t;
+  document.querySelectorAll('.slot-btn').forEach(el=>{
+    el.classList.toggle('selected', el.textContent.trim()===t);
+  });
+  updateScheduleButton();
+}
+function updateScheduleButton(){
+  const btn = document.getElementById('btn-schedule');
+  btn.disabled = !(selectedServiceIds.length>0 && selectedSlot);
+}
+function submitAppointment(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhum agendamento real é criado'); selectedServiceIds=[]; selectedSlot=null; renderClientHome(); return; }
+  const shop = shops[session.code];
+  const dateStr = document.getElementById('client-date').value;
+  if((shop.daysOff||[]).find(d=>d.date===dateStr)){ toast('O barbeiro não atende nesse dia'); return; }
+  if(!dateStr || !selectedSlot || selectedServiceIds.length===0){ toast('Escolha serviço, dia e horário'); return; }
+  const client = shop.clients.find(c=>c.id===session.clientId);
+  const total = selectedServiceIds.reduce((sum,id)=>{
+    const s = shop.services.find(x=>x.id===id); return sum + (s?Number(s.price):0);
+  },0);
+  const appt = {
+    id: uid('appt'),
+    clientId: session.clientId,
+    clientName: client ? client.name : 'Cliente',
+    date: dateStr,
+    time: selectedSlot,
+    serviceIds: selectedServiceIds.slice(),
+    total,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  shop.appointments.push(appt);
+  saveShops(shops);
+  toast('Solicitação enviada! Aguarde a confirmação do barbeiro.');
+  selectedServiceIds = [];
+  selectedSlot = null;
+  renderClientHome();
+}
+
+function saveClientProfile(){
+  if(previewMode){ toast('Isso é só uma prévia — nenhuma ação real é salva'); return; }
+  const shop = shops[session.code];
+  const c = shop.clients.find(x=>x.id===session.clientId);
+  if(!c) return;
+  c.name = document.getElementById('client-edit-name').value.trim() || c.name;
+  c.phone = document.getElementById('client-edit-phone').value.trim();
+  saveShops(shops);
+  toast('Dados atualizados');
+  renderClientHome();
+}
+function openClientSettings(){
+  const shop = shops[session.code];
+  const c = shop.clients.find(x=>x.id===session.clientId);
+  if(!c) return;
+  document.getElementById('client-edit-name').value = c.name;
+  document.getElementById('client-edit-phone').value = c.phone || '';
+  renderNotifSettingsUI('client');
+}
+
+/* ============================================================
+   HOOKS for screens that need pre-render on navigation
+   ============================================================ */
+const originalShowScreen = showScreen;
+showScreen = function(id){
+  originalShowScreen(id);
+  if(id==='screen-barber-config') openConfigScreen();
+  if(id==='screen-client-settings') openClientSettings();
+};
+
+/* A sincronização entre aparelhos agora é feita em tempo real pelo Firestore (listenToShop),
+   então o polling antigo baseado em localStorage não é mais necessário. */
+
+init();
+</script>
+</body>
+</html>
