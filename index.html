@@ -1953,18 +1953,33 @@ function init(){
   // com o código desta barbearia (evita cair sem código depois de instalado,
   // o que faria o app entender que é um barbeiro logado voltando ao painel).
   personalizeManifestForCode(getUrlCode());
-  // Se um barbeiro logado (Firebase Auth) cair nesta página — por exemplo,
-  // ao voltar/cancelar o pagamento no Mercado Pago e o link de retorno
-  // apontar pra cá — manda ele direto de volta pro painel do barbeiro,
-  // em vez de entrar como cliente.
+  // Se um barbeiro logado de verdade (Firebase Auth com e-mail/senha) cair
+  // nesta página — por exemplo, ao voltar/cancelar o pagamento no Mercado
+  // Pago e o link de retorno apontar pra cá — manda ele direto de volta pro
+  // painel do barbeiro, em vez de entrar como cliente. Um cliente comum
+  // nunca cai aqui, porque ele é autenticado de forma ANÔNIMA (ver abaixo),
+  // não com e-mail/senha — daí o "!user.isAnonymous".
   auth.onAuthStateChanged(function(user){
     const urlCode = getUrlCode();
     const hasExplicitCode = new URLSearchParams(window.location.search).get('code');
-    if(user && !hasExplicitCode){
+    if(user && !user.isAnonymous && !hasExplicitCode){
       window.location.replace('barbeiro.html');
       return;
     }
-    enterViaCode(urlCode);
+    if(user){
+      // já tem login (anônimo, do próprio cliente, ou barbeiro com ?code=
+      // explícito) — pode ler/gravar no Firestore normalmente.
+      enterViaCode(urlCode);
+      return;
+    }
+    // Ninguém logado ainda: faz login anônimo. Sem isso, o Firestore recusa
+    // a gravação do cadastro do cliente (ele nunca aparece no painel do
+    // barbeiro). Quando o login terminar, este mesmo onAuthStateChanged
+    // dispara de novo, já com o usuário anônimo preenchido.
+    auth.signInAnonymously().catch(function(err){
+      console.error('Erro ao entrar anonimamente:', err);
+      toast('Erro de conexão. Verifique sua internet e tente de novo.');
+    });
   });
 }
 // Busca o manifest.webmanifest original, troca só o start_url para incluir
