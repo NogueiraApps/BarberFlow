@@ -152,12 +152,12 @@ textarea{resize:vertical;font-family:var(--font);}
   z-index:20;box-shadow:0 -10px 30px rgba(0,0,0,.35);
 }
 .navitem{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:8px 2px;border-radius:14px;color:var(--text-faint);font-size:10px;font-weight:700;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-height:58px;padding:10px 2px;border-radius:14px;color:var(--text-faint);font-size:10.5px;font-weight:700;
   cursor:pointer;position:relative;transition:background .15s ease, color .15s ease;
 }
 .navitem.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,transparent);}
-.navitem .navicon{font-size:19px;transition:transform .15s ease;display:block;}
+.navitem .navicon{font-size:21px;transition:transform .15s ease;display:block;}
 .navitem.active .navicon{transform:translateY(-1px);}
 .navitem .navbadge{
   position:absolute;top:0;right:16%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
@@ -191,10 +191,10 @@ textarea{resize:vertical;font-family:var(--font);}
 }
 .service-item.selected .checkbox-dot{background:var(--primary);border-color:var(--primary);color:#1a1408;font-weight:800;font-size:13px;}
 .stars-display{display:inline-flex;gap:1px;}
-.stars-display .st{font-size:14px;color:var(--border-strong);}
+.stars-display .st{font-size:14px;color:var(--star-off,var(--border-strong));}
 .stars-display .st.on{color:var(--primary);}
 .star-picker{display:flex;gap:10px;justify-content:center;margin:16px 0 4px;}
-.star-picker .st{font-size:36px;cursor:pointer;color:var(--border-strong);transition:transform .1s ease, color .15s ease;}
+.star-picker .st{font-size:36px;cursor:pointer;color:var(--star-off,var(--border-strong));transition:transform .1s ease, color .15s ease;}
 .star-picker .st.on{color:var(--primary);}
 .star-picker .st:active{transform:scale(.88);}
 .rating-summary-card{display:flex;align-items:center;gap:16px;text-align:left;}
@@ -648,77 +648,86 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <button class="btn btn-outline" onclick="openServiceModal()">+ Adicionar serviço</button>
       </div>
 
-      <!-- TAB: FATURAMENTO -->
-      <div id="tab-faturamento" style="display:none;">
-        <div class="card" style="text-align:center;">
-          <div class="lbl" style="color:var(--text-dim);font-size:12px;margin-bottom:4px;">Total já faturado (tudo)</div>
-          <div style="font-size:27px;font-weight:800;color:var(--primary);" id="finance-alltime-total">R$ 0,00</div>
-          <div style="font-size:12px;color:var(--text-dim);margin-top:2px;" id="finance-alltime-count">0 atendimentos</div>
+      <!-- TAB: MAIS (Faturamento, Avaliações, Horários) -->
+      <div id="tab-mais" style="display:none;">
+        <div class="chip-row" style="margin-bottom:14px;">
+          <div class="chip selected" data-maissub="faturamento" onclick="setMaisSubView('faturamento')">💰 Faturamento</div>
+          <div class="chip" data-maissub="avaliacoes" onclick="setMaisSubView('avaliacoes')">⭐ Avaliações</div>
+          <div class="chip" data-maissub="horarios" onclick="setMaisSubView('horarios')">🕒 Horários</div>
         </div>
 
-        <div class="chip-row" style="margin-bottom:12px;">
-          <div class="chip selected" data-view="dia" onclick="setFinanceView('dia')">Dia</div>
-          <div class="chip" data-view="semana" onclick="setFinanceView('semana')">Semana</div>
-          <div class="chip" data-view="mes" onclick="setFinanceView('mes')">Mês</div>
-          <div class="chip" data-view="ano" onclick="setFinanceView('ano')">Ano</div>
-        </div>
+        <!-- SUB: FATURAMENTO -->
+        <div id="tab-faturamento">
+          <div class="card" style="text-align:center;">
+            <div class="lbl" style="color:var(--text-dim);font-size:12px;margin-bottom:4px;">Total já faturado (tudo)</div>
+            <div style="font-size:27px;font-weight:800;color:var(--primary);" id="finance-alltime-total">R$ 0,00</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:2px;" id="finance-alltime-count">0 atendimentos</div>
+          </div>
 
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;">
-            <div class="icon-btn" onclick="financeNav(-1)">‹</div>
-            <div style="text-align:center;flex:1;min-width:0;">
-              <div style="font-size:13.5px;font-weight:700;" id="finance-period-label">-</div>
+          <div class="chip-row" style="margin-bottom:12px;">
+            <div class="chip selected" data-view="dia" onclick="setFinanceView('dia')">Dia</div>
+            <div class="chip" data-view="semana" onclick="setFinanceView('semana')">Semana</div>
+            <div class="chip" data-view="mes" onclick="setFinanceView('mes')">Mês</div>
+            <div class="chip" data-view="ano" onclick="setFinanceView('ano')">Ano</div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;">
+              <div class="icon-btn" onclick="financeNav(-1)">‹</div>
+              <div style="text-align:center;flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:700;" id="finance-period-label">-</div>
+              </div>
+              <div class="icon-btn" id="finance-next-btn" onclick="financeNav(1)">›</div>
             </div>
-            <div class="icon-btn" id="finance-next-btn" onclick="financeNav(1)">›</div>
+            <div class="stat-grid" style="margin-bottom:0;">
+              <div class="stat-box"><div class="num" id="finance-period-total" style="font-size:19px;">R$ 0,00</div><div class="lbl">Faturado no período</div></div>
+              <div class="stat-box"><div class="num" id="finance-period-count">0</div><div class="lbl">Atendimentos</div></div>
+            </div>
           </div>
-          <div class="stat-grid" style="margin-bottom:0;">
-            <div class="stat-box"><div class="num" id="finance-period-total" style="font-size:19px;">R$ 0,00</div><div class="lbl">Faturado no período</div></div>
-            <div class="stat-box"><div class="num" id="finance-period-count">0</div><div class="lbl">Atendimentos</div></div>
-          </div>
+
+          <div class="section-title">Atendimentos do período</div>
+          <div id="finance-period-list" class="hscroll"></div>
         </div>
 
-        <div class="section-title">Atendimentos do período</div>
-        <div id="finance-period-list" class="hscroll"></div>
-      </div>
-
-      <!-- TAB: AVALIAÇÕES -->
-      <div id="tab-avaliacoes" style="display:none;">
-        <div class="card rating-summary-card" id="barber-rating-summary">
-          <div class="avg-wrap">
-            <div class="avg" id="barber-rating-avg">–</div>
-            <div class="stars-display" id="barber-rating-stars"></div>
+        <!-- SUB: AVALIAÇÕES -->
+        <div id="tab-avaliacoes" style="display:none;">
+          <div class="card rating-summary-card" id="barber-rating-summary">
+            <div class="avg-wrap">
+              <div class="avg" id="barber-rating-avg">–</div>
+              <div class="stars-display" id="barber-rating-stars"></div>
+            </div>
+            <div class="count" id="barber-rating-count">Ainda sem avaliações</div>
           </div>
-          <div class="count" id="barber-rating-count">Ainda sem avaliações</div>
+          <div class="section-title">O que os clientes disseram</div>
+          <div id="list-reviews"></div>
         </div>
-        <div class="section-title">O que os clientes disseram</div>
-        <div id="list-reviews"></div>
-      </div>
 
-      <!-- TAB: HORÁRIOS -->
-      <div id="tab-horarios" style="display:none;">
-        <div class="card">
-          <h3>📅 Dias de atendimento</h3>
-          <div class="day-toggle-row" id="workdays-row"></div>
-        </div>
-        <div class="card">
-          <h3>🕒 Horários disponíveis</h3>
-          <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Adicione manualmente cada horário que você quer disponibilizar. Só esses horários vão aparecer para o cliente.</div>
-          <div id="worktimes-list"></div>
-          <div class="row" style="margin-top:12px;">
-            <input type="time" id="new-work-time" style="flex:1;">
-            <button class="btn btn-primary" style="flex:none;" onclick="addWorkTime()">+ Adicionar</button>
+        <!-- SUB: HORÁRIOS -->
+        <div id="tab-horarios" style="display:none;">
+          <div class="card">
+            <h3>📅 Dias de atendimento</h3>
+            <div class="day-toggle-row" id="workdays-row"></div>
           </div>
-        </div>
-        <div class="card">
-          <h3>🚫 Dias sem atendimento</h3>
-          <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Marque um dia específico que você não vai trabalhar (feriado, folga, viagem...). Ele aparece em vermelho para o cliente.</div>
-          <div id="daysoff-list"></div>
-          <label>Data</label>
-          <input type="date" id="new-dayoff-date">
-          <label>Descrição curta</label>
-          <input type="text" id="new-dayoff-reason" placeholder="Ex: Feriado" maxlength="30">
-          <div style="height:10px"></div>
-          <button class="btn btn-outline" onclick="addDayOff()">+ Adicionar dia sem atendimento</button>
+          <div class="card">
+            <h3>🕒 Horários disponíveis</h3>
+            <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Adicione manualmente cada horário que você quer disponibilizar. Só esses horários vão aparecer para o cliente.</div>
+            <div id="worktimes-list"></div>
+            <div class="row" style="margin-top:12px;">
+              <input type="time" id="new-work-time" style="flex:1;">
+              <button class="btn btn-primary" style="flex:none;" onclick="addWorkTime()">+ Adicionar</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>🚫 Dias sem atendimento</h3>
+            <div class="helper-text" style="margin-top:0;margin-bottom:12px;">Marque um dia específico que você não vai trabalhar (feriado, folga, viagem...). Ele aparece em vermelho para o cliente.</div>
+            <div id="daysoff-list"></div>
+            <label>Data</label>
+            <input type="date" id="new-dayoff-date">
+            <label>Descrição curta</label>
+            <input type="text" id="new-dayoff-reason" placeholder="Ex: Feriado" maxlength="30">
+            <div style="height:10px"></div>
+            <button class="btn btn-outline" onclick="addDayOff()">+ Adicionar dia sem atendimento</button>
+          </div>
         </div>
       </div>
     </div>
@@ -730,10 +739,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </div>
       <div class="navitem" data-tab="clientes" onclick="switchTab('clientes')"><div class="navicon">👥</div>Clientes</div>
       <div class="navitem" data-tab="servicos" onclick="switchTab('servicos')"><div class="navicon">💈</div>Serviços</div>
-      <div class="navitem" data-tab="horarios" onclick="switchTab('horarios')"><div class="navicon">🕒</div>Horários</div>
-      <div class="navitem" data-tab="faturamento" onclick="switchTab('faturamento')"><div class="navicon">💰</div>Faturamento</div>
-      <div class="navitem" data-tab="avaliacoes" onclick="switchTab('avaliacoes')"><div class="navicon">⭐</div>Avaliações</div>
-      <div class="navitem" id="nav-preview-toggle" onclick="toggleClientPreview()"><div class="navicon">👁️</div>Ver cliente</div>
+      <div class="navitem" data-tab="mais" onclick="switchTab('mais')"><div class="navicon">⋯</div>Mais</div>
+      <div class="navitem" onclick="showScreen('screen-barber-config')"><div class="navicon">⚙️</div>Configurar</div>
     </div>
   </div>
 
@@ -906,6 +913,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         </div>
         <div class="helper-text" id="config-trial-text" style="margin-top:2px;"></div>
       </div>
+      <button class="btn btn-outline" id="nav-preview-toggle" onclick="toggleClientPreview()">👁️ Ver como cliente</button>
       <button class="btn btn-ghost" onclick="goHomeMenu()">Menu inicial</button>
       <button class="btn btn-outline" onclick="logoutBarber()">Sair da conta</button>
       <button class="btn btn-danger" onclick="deleteShopConfirm()">Excluir minha conta e barbearia</button>
@@ -1894,10 +1902,22 @@ function applyAppearance(shop){
   document.documentElement.style.setProperty('--surface', cardColor);
   document.documentElement.style.setProperty('--surface2', shadeColor(cardColor, 8));
   document.documentElement.style.setProperty('--surface3', shadeColor(cardColor, 16));
+  // Cor das estrelas (não marcadas): se o quadrado for branco/quase branco, estrela preta; qualquer outra cor, estrela branca
+  document.documentElement.style.setProperty('--star-off', isWhiteColor(cardColor) ? '#000000' : '#ffffff');
   // Estilo das letras (fonte)
   const fontKey = (shop && shop.fontKey) || 'padrao';
   const fontCss = (FONT_OPTIONS[fontKey] || FONT_OPTIONS.padrao).css;
   document.documentElement.style.setProperty('--font', fontCss);
+}
+function isWhiteColor(hex){
+  if(!hex) return true;
+  hex = String(hex).trim().replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  if(hex.length!==6) return true;
+  const num = parseInt(hex,16);
+  const r=(num>>16)&0xFF, g=(num>>8)&0xFF, b=num&0xFF;
+  // considera "branco" quando os 3 canais estão bem claros (tolerância p/ quase-branco)
+  return r>=245 && g>=245 && b>=245;
 }
 function shadeColor(hex, percent){
   hex = hex.replace('#','');
@@ -2363,13 +2383,35 @@ function deleteShopConfirm(){
    BARBER: DASHBOARD
    ============================================================ */
 let currentTab = 'agenda';
+let currentMaisSub = 'faturamento';
 function switchTab(tab){
+  if(tab==='mais'){
+    ['agenda','clientes','servicos','mais'].forEach(t=>{
+      document.getElementById('tab-'+t).style.display = (t==='mais')?'block':'none';
+    });
+    document.querySelectorAll('.navitem').forEach(n=>{
+      n.classList.toggle('active', n.dataset.tab==='mais');
+    });
+    setMaisSubView(currentMaisSub);
+    return;
+  }
   currentTab = tab;
-  ['agenda','clientes','servicos','horarios','faturamento','avaliacoes'].forEach(t=>{
+  ['agenda','clientes','servicos','mais'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===tab)?'block':'none';
   });
   document.querySelectorAll('.navitem').forEach(n=>{
     n.classList.toggle('active', n.dataset.tab===tab);
+  });
+  renderBarberDashboard();
+}
+function setMaisSubView(sub){
+  currentMaisSub = sub;
+  currentTab = sub;
+  document.getElementById('tab-faturamento').style.display = sub==='faturamento' ? 'block' : 'none';
+  document.getElementById('tab-avaliacoes').style.display = sub==='avaliacoes' ? 'block' : 'none';
+  document.getElementById('tab-horarios').style.display = sub==='horarios' ? 'block' : 'none';
+  document.querySelectorAll('#tab-mais [data-maissub]').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.maissub===sub);
   });
   renderBarberDashboard();
 }
@@ -2496,7 +2538,7 @@ function renderBarberDashboard(){
   if(currentTab==='servicos'){
     const sWrap = document.getElementById('list-services');
     sWrap.innerHTML = shop.services.length===0
-      ? `<div class="empty-state" style="padding:24px;"><div class="em">💈</div>Nenhum serviço cadastrado.<br>Adicione cortes, barba, etc.</div>`
+      ? `<div class="empty-state" style="padding:24px;"><div class="em">💈</div>Nenhum serviço cadastrado.<br>Adicione cortes, barba, etc.<div style="height:14px"></div><button class="btn btn-sm btn-primary" onclick="openServiceModal()">+ Adicionar serviço</button></div>`
       : shop.services.map(s=>`
         <div class="service-item" onclick="openServiceModal('${s.id}')">
           <div style="display:flex;align-items:center;">
