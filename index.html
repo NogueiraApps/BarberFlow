@@ -272,18 +272,18 @@ textarea{resize:vertical;font-family:var(--font);}
 .appt-card.accepted{border-left-color:var(--success);}
 .appt-card.rejected{border-left-color:var(--danger);opacity:.55;}
 .appt-card.cancelled{border-left-color:var(--text-dim);opacity:.55;}
-.appt-card.done{border-left-color:#6a8fd8;opacity:.7;}
+.appt-card.done{border-left-color:#6a8fd8;}
 .appt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:8px;}
 .appt-top b{font-size:15px;font-weight:800;}
-.status-tag{font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
-.status-tag.pending{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning);}
-.status-tag.accepted{background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);}
-.status-tag.rejected{background:color-mix(in srgb,var(--danger) 18%,transparent);color:var(--danger);}
-.status-tag.cancelled{background:color-mix(in srgb,var(--text-dim) 18%,transparent);color:var(--text-dim);}
+.status-tag{font-size:10px;font-weight:700;padding:4px 10px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;color:#fff;}
+.status-tag.pending{background:color-mix(in srgb,var(--warning) 78%,black 12%);}
+.status-tag.accepted{background:color-mix(in srgb,var(--success) 78%,black 12%);}
+.status-tag.rejected{background:color-mix(in srgb,var(--danger) 78%,black 12%);}
+.status-tag.cancelled{background:color-mix(in srgb,var(--text-dim) 78%,black 12%);}
 .payment-row{display:flex;gap:8px;margin-top:11px;}
 .payment-row .btn{flex:1;}
 .payment-tag{font-size:12px;color:var(--text-dim);margin-top:8px;}
-.status-tag.done{background:rgba(106,143,216,.18);color:#6a8fd8;}
+.status-tag.done{background:color-mix(in srgb,#6a8fd8 78%,black 12%);}
 .appt-meta{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
 .appt-services{font-size:12.5px;color:var(--text-dim);}
 .appt-total{font-weight:800;color:var(--primary);font-size:14.5px;margin-top:7px;}
