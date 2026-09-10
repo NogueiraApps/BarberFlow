@@ -1251,6 +1251,15 @@ function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+// Retorna a data (YYYY-MM-DD) no fuso horário LOCAL do dispositivo, em vez de UTC.
+// (toISOString() sempre usa UTC e "pula" pro dia seguinte antes da meia-noite local no Brasil)
+function localDateStr(d){
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 
 // DDDs válidos no Brasil (todos os códigos de área em uso)
 const VALID_DDDS = ['11','12','13','14','15','16','17','18','19','21','22','24','27','28',
@@ -2428,7 +2437,7 @@ function renderBarberDashboard(){
   const accepted = shop.appointments.filter(a=>a.status==='accepted').sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
   const pendingPayments = shop.appointments.filter(a=>a.paymentStatus==='aguardando' || (a.paymentMethod==='pessoal' && a.paymentStatus==='pendente')).sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
   const history = shop.appointments.filter(a=>a.status==='done' || a.status==='rejected' || a.status==='cancelled').sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
-  const todayStr = new Date().toISOString().slice(0,10);
+  const todayStr = localDateStr();
 
   // badges
   const badge = document.getElementById('nav-badge');
@@ -3460,7 +3469,7 @@ function renderClientHome(){
 
   // next appointment banner
   const myAppts = shop.appointments.filter(a=>a.clientId===session.clientId && !a.hiddenFromClient);
-  const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=new Date().toISOString().slice(0,10))
+  const nextAccepted = myAppts.filter(a=>a.status==='accepted' && a.date>=localDateStr())
     .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
   const bannerTag = document.getElementById('client-next-appt');
   if(nextAccepted){
@@ -3487,8 +3496,8 @@ function renderClientHome(){
 
   // date default = today
   const dateInput = document.getElementById('client-date');
-  if(!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
-  dateInput.min = new Date().toISOString().slice(0,10);
+  if(!dateInput.value) dateInput.value = localDateStr();
+  dateInput.min = localDateStr();
   renderSlots();
 
   // my appointments list
