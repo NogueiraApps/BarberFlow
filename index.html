@@ -3769,9 +3769,12 @@ function renderSlots(){
     return;
   }
   const acceptedTimes = shop.appointments.filter(a=>a.date===dateStr && a.status==='accepted').map(a=>a.time);
+  // Se a data escolhida for hoje, qualquer horário que já passou também fica bloqueado (cinza, igual a um horário ocupado)
+  const isToday = dateStr === localDateStr();
+  const nowTimeStr = new Date().toTimeString().slice(0,5);
   const slots = (shop.workTimes||[]).slice().sort().filter(t=>periodOfTime(t)===selectedPeriod);
   wrap.innerHTML = slots.map(t=>{
-    const taken = acceptedTimes.includes(t);
+    const taken = acceptedTimes.includes(t) || (isToday && t <= nowTimeStr);
     return `<div class="slot-btn ${taken?'taken':''}" onclick="${taken?'':`selectSlot('${t}')`}">${t}</div>`;
   }).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:16px;">Sem horários nesse período</div>`;
   updateScheduleButton();
@@ -3793,6 +3796,12 @@ function submitAppointment(){
   const dateStr = document.getElementById('client-date').value;
   if((shop.daysOff||[]).find(d=>d.date===dateStr)){ toast('O barbeiro não atende nesse dia'); return; }
   if(!dateStr || !selectedSlot || selectedServiceIds.length===0){ toast('Escolha serviço, dia e horário'); return; }
+  if(dateStr===localDateStr() && selectedSlot <= new Date().toTimeString().slice(0,5)){
+    toast('Esse horário já passou. Escolha outro horário.');
+    selectedSlot = null;
+    renderSlots();
+    return;
+  }
   const jaTemSolicitacao = shop.appointments.find(a=>a.clientId===session.clientId && (a.status==='pending' || a.status==='accepted'));
   if(jaTemSolicitacao){
     toast(jaTemSolicitacao.status==='pending'
